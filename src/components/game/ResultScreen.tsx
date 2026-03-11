@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import confetti from "canvas-confetti";
 import { MediaDetails, GuessResult, GameStatus } from "@/types";
 import { MAX_ATTEMPTS } from "@/constants";
 import { useTranslation } from "@/i18n";
@@ -31,6 +32,36 @@ export default function ResultScreen({
   const [copied, setCopied] = useState(false);
 
   const won = status === "won";
+
+  useEffect(() => {
+    if (!won) return;
+
+    const duration = 2500;
+    const end = Date.now() + duration;
+
+    function frame() {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.6 },
+        colors: ["#7C4DFF", "#00E676", "#00BCD4", "#FFC107"],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.6 },
+        colors: ["#7C4DFF", "#00E676", "#00BCD4", "#FFC107"],
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }
+
+    frame();
+  }, [won]);
   const attempts = guesses.length;
   const exactCount = guesses.reduce(
     (sum, g) => sum + g.comparison.filter((c) => c.status === "exact").length,
