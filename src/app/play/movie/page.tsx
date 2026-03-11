@@ -8,6 +8,7 @@ import { useTranslation } from "@/i18n";
 import SearchBar from "@/components/game/SearchBar";
 import GuessCard from "@/components/game/GuessCard";
 import HintsPanel from "@/components/game/HintsPanel";
+import { ChevronLeft, Flag, CheckCircle } from "lucide-react";
 
 export default function PlayMoviePage() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export default function PlayMoviePage() {
   } = useGame(DAILY_ANSWER, t);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -30,7 +31,7 @@ export default function PlayMoviePage() {
             href="/"
             className="inline-flex items-center gap-2 text-muted transition-colors hover:text-foreground"
           >
-            <ArrowLeftIcon />
+            <ChevronLeft size={16} />
             {t.game.back}
           </Link>
           <h1 className="text-2xl font-bold text-foreground">
@@ -39,7 +40,7 @@ export default function PlayMoviePage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-[#12121e] px-3 py-2 text-sm">
+          <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-card px-3 py-2 text-sm">
             <span className="text-muted">{t.game.attempt}</span>
             <span className="font-bold text-foreground">
               {attemptCount}/{MAX_ATTEMPTS}
@@ -51,7 +52,7 @@ export default function PlayMoviePage() {
               onClick={giveUp}
               className="inline-flex items-center gap-2 rounded-lg border border-match-miss/30 px-3 py-2 text-sm text-match-miss transition-colors hover:bg-match-miss/10"
             >
-              <FlagIcon />
+              <Flag size={16} />
               {t.game.giveUp}
             </button>
           )}
@@ -66,7 +67,7 @@ export default function PlayMoviePage() {
         <div className="rounded-2xl border border-match-exact/30 bg-match-exact/5 p-6 text-center">
           <h2 className="mb-1 inline-flex items-center gap-2 text-2xl font-bold text-match-exact">
             {t.game.won}
-            <CheckCircleIcon />
+            <CheckCircle size={20} />
           </h2>
           <p className="text-sm text-muted">
             {t.game.wonMessage(DAILY_ANSWER.title, attemptCount)}
@@ -106,61 +107,5 @@ export default function PlayMoviePage() {
         </div>
       </div>
     </div>
-  );
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-function FlagIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M4 21V5" />
-      <path d="M4 5h12l-1.5 4L16 13H4" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
   );
 }

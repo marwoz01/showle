@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { MediaDetails } from "@/types";
 import { searchMockMovies } from "@/lib/mock-data";
 import { useTranslation } from "@/i18n";
+import { Search } from "lucide-react";
 
 interface SearchBarProps {
   onSelect: (movie: MediaDetails) => void;
@@ -77,20 +78,10 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="relative">
-        <svg
+        <Search
+          size={18}
           className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
+        />
         <input
           ref={inputRef}
           type="text"
@@ -99,12 +90,12 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          className="w-full rounded-xl border border-white/6 bg-[#12121e] py-3.5 pl-12 pr-4 text-sm text-foreground placeholder-muted outline-none transition-all focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/30 disabled:opacity-50"
+          className="w-full rounded-xl border border-white/6 bg-card py-3.5 pl-12 pr-4 text-sm text-foreground placeholder-muted outline-none transition-all focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/30 disabled:opacity-50"
         />
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/6 bg-[#16162a] py-1 shadow-xl shadow-black/40">
+        <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/6 bg-card-hover py-1 shadow-xl shadow-black/40">
           {results.map((movie, i) => (
             <button
               key={movie.id}

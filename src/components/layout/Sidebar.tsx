@@ -3,18 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation, Locale } from "@/i18n";
-
-type IconComponent = React.FC<{ active: boolean }>;
+import {
+  Clapperboard,
+  Home,
+  Play,
+  Sparkles,
+  User,
+} from "lucide-react";
 
 interface NavItem {
   key: string;
-  icon: IconComponent;
+  icon: React.FC<{ className?: string }>;
   href: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "home", icon: HomeIcon, href: "/" },
-  { key: "play", icon: PlayIcon, href: "/play/movie" },
+  { key: "home", icon: Home, href: "/" },
+  { key: "play", icon: Play, href: "/play/movie" },
 ];
 
 export default function Sidebar() {
@@ -29,13 +34,13 @@ export default function Sidebar() {
   const navLabel = (key: string) => t.nav[key as keyof typeof t.nav] || key;
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-white/6 bg-[#0c0c14]">
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-white/6 bg-background">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-purple/20">
-          <LogoMark />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/8">
+          <Clapperboard size={16} />
         </div>
-        <span className="font-display text-lg font-bold tracking-wider text-foreground">
+        <span className="font-display text-lg font-bold text-foreground">
           Showle
         </span>
       </div>
@@ -54,7 +59,9 @@ export default function Sidebar() {
                   : "text-muted hover:bg-white/4 hover:text-foreground"
               }`}
             >
-              <item.icon active={active} />
+              <item.icon
+                className={`h-4.5 w-4.5 ${active ? "text-accent-purple" : ""}`}
+              />
               {navLabel(item.key)}
               {active && (
                 <div className="absolute left-0 h-8 w-0.75 rounded-r-full bg-accent-purple" />
@@ -75,7 +82,7 @@ export default function Sidebar() {
             onClick={() => setLocale(lang)}
             className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
               locale === lang
-                ? "bg-accent-purple/20 text-foreground"
+                ? "bg-white/10 text-foreground"
                 : "text-muted hover:text-foreground"
             }`}
           >
@@ -85,16 +92,14 @@ export default function Sidebar() {
       </div>
 
       {/* Unlock Pro */}
-      <div className="mx-3 mb-4 rounded-xl border border-white/6 bg-white/3 p-4">
+      <div className="mx-3 mb-4 rounded-xl border border-white/6 bg-white/4 p-4">
         <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
           <span className="text-accent-purple">
-            <SparklesIcon />
+            <Sparkles size={16} />
           </span>
           {t.pro.title}
         </div>
-        <p className="mb-3 text-xs text-muted">
-          {t.pro.description}
-        </p>
+        <p className="mb-3 text-xs text-muted">{t.pro.description}</p>
         <button className="w-full rounded-lg bg-accent-purple py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90">
           {t.pro.upgrade}
         </button>
@@ -103,106 +108,10 @@ export default function Sidebar() {
       {/* Auth button */}
       <div className="border-t border-white/6 px-4 py-4">
         <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/6">
-          <UserIcon />
+          <User size={16} />
           {t.nav.login}
         </button>
       </div>
     </aside>
-  );
-}
-
-/* Icons */
-
-function LogoMark() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M7 4v16" />
-      <path d="M17 4v16" />
-      <path d="M3 12h18" />
-    </svg>
-  );
-}
-
-function SparklesIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" />
-      <path d="m19 14 .8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14Z" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function HomeIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={active ? "#7C4DFF" : "currentColor"}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  );
-}
-
-function PlayIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={active ? "#7C4DFF" : "currentColor"}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="2" y="2" width="20" height="20" rx="2" />
-      <path d="M10 8l6 4-6 4V8z" />
-    </svg>
   );
 }

@@ -1,4 +1,5 @@
 import { MatchStatus, Direction } from "@/types";
+import { ArrowUp } from "lucide-react";
 
 interface ComparisonCellProps {
   label: string;
@@ -28,30 +29,13 @@ export default function ComparisonCell({
       </span>
       <div className="flex items-center gap-1">
         <span className="text-xs font-bold">{value}</span>
-        {direction && <DirectionIcon direction={direction} />}
+        {direction && (
+          <ArrowUp
+            size={14}
+            className={direction === "down" ? "rotate-180" : ""}
+          />
+        )}
       </div>
     </div>
-  );
-}
-
-function DirectionIcon({ direction }: { direction: Exclude<Direction, null> }) {
-  const rotation = direction === "up" ? "rotate-0" : "rotate-180";
-
-  return (
-    <svg
-      className={rotation}
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 19V5" />
-      <path d="m5 12 7-7 7 7" />
-    </svg>
   );
 }

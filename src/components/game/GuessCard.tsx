@@ -15,7 +15,7 @@ export default function GuessCard({ result }: GuessCardProps) {
       className={`rounded-2xl border p-5 ${
         result.isCorrect
           ? "border-match-exact/30 bg-match-exact/5"
-          : "border-white/6 bg-[#12121e]"
+          : "border-white/6 bg-card"
       }`}
     >
       {/* Header */}
