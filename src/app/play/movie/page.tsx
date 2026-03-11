@@ -1,22 +1,64 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MOCK_MOVIES } from "@/lib/mock-data";
-import { getDailyMovie } from "@/lib/daily";
 import { MAX_ATTEMPTS } from "@/constants";
 import { useGame } from "@/hooks/useGame";
 import { useTranslation } from "@/i18n";
+import { MediaDetails } from "@/types";
 import SearchBar from "@/components/game/SearchBar";
 import GuessCard from "@/components/game/GuessCard";
 import HintsPanel from "@/components/game/HintsPanel";
 import ResultScreen from "@/components/game/ResultScreen";
 import CountdownTimer from "@/components/game/CountdownTimer";
-import { ChevronLeft, Flag } from "lucide-react";
+import { ChevronLeft, Flag, Loader2 } from "lucide-react";
 
 export default function PlayMoviePage() {
   const { t } = useTranslation();
-  const dailyAnswer = useMemo(() => getDailyMovie(), []);
+  const [dailyAnswer, setDailyAnswer] = useState<MediaDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    async function fetchDaily() {
+      try {
+        const res = await fetch("/api/movies/daily");
+        if (!res.ok) throw new Error("Failed");
+        const movie: MediaDetails = await res.json();
+        setDailyAnswer(movie);
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDaily();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-96 items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-muted" />
+      </div>
+    );
+  }
+
+  if (error || !dailyAnswer) {
+    return (
+      <div className="flex min-h-96 flex-col items-center justify-center gap-4">
+        <p className="text-muted">{t.game.back}</p>
+        <Link href="/" className="text-accent-purple hover:underline">
+          {t.game.back}
+        </Link>
+      </div>
+    );
+  }
+
+  return <GameView dailyAnswer={dailyAnswer} />;
+}
+
+function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
+  const { t } = useTranslation();
 
   const {
     guesses,
@@ -26,7 +68,7 @@ export default function PlayMoviePage() {
     attemptCount,
     submitGuess,
     giveUp,
-  } = useGame(dailyAnswer, t, MOCK_MOVIES);
+  } = useGame(dailyAnswer, t);
 
   const isFinished = status === "won" || status === "lost";
 

@@ -52,12 +52,7 @@ interface UseGameReturn {
   giveUp: () => void;
 }
 
-export function useGame(
-  answer: MediaDetails,
-  t: Translations,
-  allMovies?: MediaDetails[]
-): UseGameReturn {
-  // Restore saved state on mount
+export function useGame(answer: MediaDetails, t: Translations): UseGameReturn {
   const [initialized, setInitialized] = useState(false);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [status, setStatus] = useState<GameStatus>("playing");
@@ -71,27 +66,43 @@ export function useGame(
 
   // Restore game from localStorage on first render
   useEffect(() => {
-    const saved = loadSavedState();
-    if (saved && allMovies) {
-      const restoredGuesses: GuessResult[] = [];
-      for (const id of saved.guessIds) {
-        const movie = allMovies.find((m) => m.id === id);
-        if (movie) {
-          const comparison = compareMedia(movie, answer, t);
-          const isCorrect = movie.id === answer.id;
-          restoredGuesses.push({
-            guess: movie,
-            comparison,
-            isCorrect,
-            attemptNumber: restoredGuesses.length + 1,
-          });
+    async function restore() {
+      const saved = loadSavedState();
+      if (saved && saved.guessIds.length > 0) {
+        try {
+          // Fetch details for each saved guess from API
+          const movies = await Promise.all(
+            saved.guessIds.map(async (id) => {
+              const res = await fetch(`/api/movies/details?id=${id}`);
+              if (!res.ok) return null;
+              return (await res.json()) as MediaDetails;
+            })
+          );
+
+          const restoredGuesses: GuessResult[] = [];
+          for (const movie of movies) {
+            if (movie) {
+              const comparison = compareMedia(movie, answer, t);
+              const isCorrect = movie.id === answer.id;
+              restoredGuesses.push({
+                guess: movie,
+                comparison,
+                isCorrect,
+                attemptNumber: restoredGuesses.length + 1,
+              });
+            }
+          }
+          // Display newest first
+          setGuesses(restoredGuesses.reverse());
+          setStatus(saved.status);
+        } catch {
+          // Ignore restore errors, start fresh
         }
       }
-      // Display newest first
-      setGuesses(restoredGuesses.reverse());
-      setStatus(saved.status);
+      setInitialized(true);
     }
-    setInitialized(true);
+
+    restore();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist state changes

@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { MediaDetails } from "@/types";
-import { searchMockMovies } from "@/lib/mock-data";
 import { useTranslation } from "@/i18n";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 
 interface SearchBarProps {
   onSelect: (movie: MediaDetails) => void;
@@ -16,6 +15,7 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MediaDetails[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,17 +24,36 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
     if (query.length < 2) {
       setResults([]);
       setIsOpen(false);
+      setIsLoading(false);
       return;
     }
 
-    const timer = setTimeout(() => {
-      const found = searchMockMovies(query);
-      setResults(found);
-      setIsOpen(found.length > 0);
-      setSelectedIndex(-1);
-    }, 200);
+    setIsLoading(true);
+    const controller = new AbortController();
 
-    return () => clearTimeout(timer);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/movies/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+        const data: MediaDetails[] = await res.json();
+        setResults(data);
+        setIsOpen(data.length > 0);
+        setSelectedIndex(-1);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          setResults([]);
+          setIsOpen(false);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
 
   useEffect(() => {
@@ -78,10 +97,17 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="relative">
-        <Search
-          size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
-        />
+        {isLoading ? (
+          <Loader2
+            size={18}
+            className="absolute left-4 top-1/2 -translate-y-1/2 animate-spin text-muted"
+          />
+        ) : (
+          <Search
+            size={18}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+          />
+        )}
         <input
           ref={inputRef}
           type="text"

@@ -7,8 +7,8 @@ export function generateHints(answer: MediaDetails, t: Translations): Hint[] {
   return [
     {
       id: 1,
-      type: "director_letter",
-      content: t.hints.directorStartsWith(answer.director[0]),
+      type: "decade",
+      content: t.hints.fromDecade(decade),
       revealedAt: 1,
     },
     {
@@ -19,41 +19,23 @@ export function generateHints(answer: MediaDetails, t: Translations): Hint[] {
     },
     {
       id: 3,
-      type: "decade",
-      content: t.hints.fromDecade(decade),
+      type: "director_initials",
+      content: t.hints.directorInitials(getInitials(answer.director)),
       revealedAt: 3,
     },
     {
       id: 4,
-      type: "country",
-      content: t.hints.countryIs(answer.country),
-      revealedAt: 4,
-    },
-    {
-      id: 5,
       type: "trivia",
       content: answer.tagline
         ? t.hints.tagline(answer.tagline)
         : t.hints.overview(answer.overview.slice(0, 80)),
-      revealedAt: 5,
+      revealedAt: 4,
     },
     {
-      id: 6,
-      type: "director_initials",
-      content: t.hints.directorInitials(getInitials(answer.director)),
-      revealedAt: 6,
-    },
-    {
-      id: 7,
+      id: 5,
       type: "title_reveal",
       content: t.hints.titleStartsWith(answer.title[0]),
-      revealedAt: 7,
-    },
-    {
-      id: 8,
-      type: "title_reveal",
-      content: t.hints.titleLength(answer.title.length),
-      revealedAt: 8,
+      revealedAt: 5,
     },
   ];
 }
