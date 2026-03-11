@@ -37,7 +37,7 @@ export default function Sidebar() {
   const navLabel = (key: string) => t.nav[key as keyof typeof t.nav] || key;
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-white/[0.06] bg-[#0c0c14]">
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-white/6 bg-[#0c0c14]">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-purple/20">
@@ -50,10 +50,10 @@ export default function Sidebar() {
 
       {/* Search */}
       <div className="px-4 pb-4">
-        <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-sm text-muted">
+        <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-sm text-muted">
           <SearchIcon />
           <span>{t.nav.search}</span>
-          <span className="ml-auto rounded border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-muted">
+          <span className="ml-auto rounded border border-white/8 px-1.5 py-0.5 text-[10px] text-muted">
             ⌘F
           </span>
         </div>
@@ -70,13 +70,13 @@ export default function Sidebar() {
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
                   ? "bg-accent-purple/15 text-foreground"
-                  : "text-muted hover:bg-white/[0.04] hover:text-foreground"
+                  : "text-muted hover:bg-white/4 hover:text-foreground"
               }`}
             >
               <item.icon active={active} />
               {navLabel(item.key)}
               {active && (
-                <div className="absolute left-0 h-8 w-[3px] rounded-r-full bg-accent-purple" />
+                <div className="absolute left-0 h-8 w-0.75 rounded-r-full bg-accent-purple" />
               )}
             </Link>
           );
@@ -92,7 +92,7 @@ export default function Sidebar() {
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/[0.04] hover:text-foreground"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/4 hover:text-foreground"
           >
             <item.icon active={false} />
             {navLabel(item.key)}
@@ -104,7 +104,7 @@ export default function Sidebar() {
       <div className="flex-1" />
 
       {/* Language toggle */}
-      <div className="mx-3 mb-3 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] p-1">
+      <div className="mx-3 mb-3 flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 p-1">
         {(["pl", "en"] as Locale[]).map((lang) => (
           <button
             key={lang}
@@ -121,7 +121,7 @@ export default function Sidebar() {
       </div>
 
       {/* Unlock Pro */}
-      <div className="mx-3 mb-4 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+      <div className="mx-3 mb-4 rounded-xl border border-white/6 bg-white/3 p-4">
         <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
           <span className="text-accent-purple">✦</span> {t.pro.title}
         </div>
@@ -134,8 +134,8 @@ export default function Sidebar() {
       </div>
 
       {/* User profile */}
-      <div className="flex items-center gap-3 border-t border-white/[0.06] px-5 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.08] text-xs text-muted">
+      <div className="flex items-center gap-3 border-t border-white/6 px-5 py-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-xs text-muted">
           P
         </div>
         <div className="flex flex-col">

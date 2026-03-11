@@ -15,12 +15,12 @@ export default function GuessCard({ result }: GuessCardProps) {
       className={`rounded-2xl border p-5 ${
         result.isCorrect
           ? "border-match-exact/30 bg-match-exact/5"
-          : "border-white/[0.06] bg-[#12121e]"
+          : "border-white/6 bg-[#12121e]"
       }`}
     >
       {/* Header */}
       <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-muted">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/6 text-xs font-bold text-muted">
           #{result.attemptNumber}
         </span>
         <span className="font-semibold text-foreground">

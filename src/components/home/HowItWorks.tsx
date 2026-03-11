@@ -23,9 +23,9 @@ export default function HowItWorks() {
         {steps.map((step) => (
           <div
             key={step.step}
-            className="rounded-2xl border border-white/[0.06] bg-[#12121e] p-5"
+            className="rounded-2xl border border-white/6 bg-[#12121e] p-5"
           >
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] text-muted">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-muted">
               {step.icon}
             </div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-accent-purple">

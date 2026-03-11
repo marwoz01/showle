@@ -26,7 +26,7 @@ export default function ComparisonCell({
 }: ComparisonCellProps) {
   return (
     <div
-      className={`flex min-w-[90px] flex-col items-center gap-1 rounded-xl border px-3 py-2.5 ${statusColors[status]}`}
+      className={`flex min-w-22.5 flex-col items-center gap-1 rounded-xl border px-3 py-2.5 ${statusColors[status]}`}
     >
       <span className="text-[10px] font-medium uppercase tracking-wider opacity-60">
         {label}

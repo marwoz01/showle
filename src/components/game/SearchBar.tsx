@@ -99,12 +99,12 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          className="w-full rounded-xl border border-white/[0.06] bg-[#12121e] py-3.5 pl-12 pr-4 text-sm text-foreground placeholder-muted outline-none transition-all focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/30 disabled:opacity-50"
+          className="w-full rounded-xl border border-white/6 bg-[#12121e] py-3.5 pl-12 pr-4 text-sm text-foreground placeholder-muted outline-none transition-all focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/30 disabled:opacity-50"
         />
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/[0.06] bg-[#16162a] py-1 shadow-xl shadow-black/40">
+        <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/6 bg-[#16162a] py-1 shadow-xl shadow-black/40">
           {results.map((movie, i) => (
             <button
               key={movie.id}
@@ -112,7 +112,7 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
               className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors ${
                 i === selectedIndex
                   ? "bg-accent-purple/15 text-foreground"
-                  : "text-muted hover:bg-white/[0.04] hover:text-foreground"
+                  : "text-muted hover:bg-white/4 hover:text-foreground"
               }`}
             >
               <span className="font-medium text-foreground">{movie.title}</span>

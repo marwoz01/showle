@@ -19,11 +19,11 @@ export default function Home() {
 
       {/* Filter / View row (decorative for now) */}
       <div className="flex items-center justify-end gap-3">
-        <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-muted transition-colors hover:bg-white/[0.06]">
+        <button className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2 text-sm text-muted transition-colors hover:bg-white/6">
           <FilterIcon />
           {t.home.filter}
         </button>
-        <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-muted transition-colors hover:bg-white/[0.06]">
+        <button className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2 text-sm text-muted transition-colors hover:bg-white/6">
           <GridIcon />
           {t.home.viewGrid}
           <ChevronIcon />
@@ -61,7 +61,7 @@ export default function Home() {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.06]" />
+      <div className="border-t border-white/6" />
 
       {/* How It Works */}
       <HowItWorks />

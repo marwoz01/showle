@@ -31,7 +31,7 @@ export default function PlayMoviePage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-[#12121e] px-3 py-2 text-sm">
+          <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-[#12121e] px-3 py-2 text-sm">
             <span className="text-muted">{t.game.attempt}</span>
             <span className="font-bold text-foreground">
               {attemptCount}/{MAX_ATTEMPTS}
@@ -81,7 +81,7 @@ export default function PlayMoviePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         <div className="space-y-4">
           {guesses.length === 0 && status === "playing" && (
-            <div className="rounded-2xl border border-dashed border-white/[0.08] p-8 text-center text-sm text-muted">
+            <div className="rounded-2xl border border-dashed border-white/8 p-8 text-center text-sm text-muted">
               {t.game.emptyState}
             </div>
           )}

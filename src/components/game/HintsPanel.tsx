@@ -17,7 +17,7 @@ export default function HintsPanel({
   const lockedCount = Math.max(0, totalHints - revealedHints.length);
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#12121e] p-5">
+    <div className="rounded-2xl border border-white/6 bg-[#12121e] p-5">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted">
         {t.hints.title}
       </h3>
@@ -36,7 +36,7 @@ export default function HintsPanel({
         {Array.from({ length: Math.min(lockedCount, MAX_ATTEMPTS - revealedHints.length) }, (_, i) => (
           <div
             key={`locked-${i}`}
-            className="flex items-center gap-3 rounded-lg bg-white/[0.02] px-3 py-2.5 text-sm"
+            className="flex items-center gap-3 rounded-lg bg-white/2 px-3 py-2.5 text-sm"
           >
             <span className="text-muted/40">🔒</span>
             <span className="text-muted/40">???</span>

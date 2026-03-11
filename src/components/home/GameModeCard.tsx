@@ -45,7 +45,7 @@ export default function GameModeCard({
   return (
     <Link
       href={href}
-      className="group flex flex-col justify-between rounded-2xl border border-white/[0.06] bg-[#12121e] p-6 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#16162a]"
+      className="group flex flex-col justify-between rounded-2xl border border-white/6 bg-[#12121e] p-6 transition-all duration-200 hover:border-white/12 hover:bg-[#16162a]"
     >
       <div>
         {/* Top row: icon + badge */}
