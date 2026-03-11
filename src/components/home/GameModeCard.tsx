@@ -1,0 +1,84 @@
+import Link from "next/link";
+
+interface GameModeCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  href: string;
+  actionLabel: string;
+  badge?: string;
+  accentColor: "green" | "purple" | "cyan";
+}
+
+const accentMap = {
+  green: {
+    iconBg: "bg-accent-green/15",
+    iconColor: "text-accent-green",
+    link: "text-accent-green",
+    badge: "bg-accent-green/15 text-accent-green",
+  },
+  purple: {
+    iconBg: "bg-accent-purple/15",
+    iconColor: "text-accent-purple",
+    link: "text-accent-purple",
+    badge: "bg-accent-purple/15 text-accent-purple",
+  },
+  cyan: {
+    iconBg: "bg-accent-cyan/15",
+    iconColor: "text-accent-cyan",
+    link: "text-accent-cyan",
+    badge: "bg-accent-cyan/15 text-accent-cyan",
+  },
+};
+
+export default function GameModeCard({
+  icon,
+  title,
+  description,
+  href,
+  actionLabel,
+  badge,
+  accentColor,
+}: GameModeCardProps) {
+  const accent = accentMap[accentColor];
+
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col justify-between rounded-2xl border border-white/[0.06] bg-[#12121e] p-6 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#16162a]"
+    >
+      <div>
+        {/* Top row: icon + badge */}
+        <div className="mb-5 flex items-start justify-between">
+          <div
+            className={`flex h-11 w-11 items-center justify-center rounded-xl ${accent.iconBg}`}
+          >
+            <span className={accent.iconColor}>{icon}</span>
+          </div>
+          {badge && (
+            <span
+              className={`rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${accent.badge}`}
+            >
+              {badge}
+            </span>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 className="mb-2 text-xl font-bold text-foreground">{title}</h3>
+
+        {/* Description */}
+        <p className="text-sm leading-relaxed text-muted">{description}</p>
+      </div>
+
+      {/* Action link */}
+      <div className="mt-6">
+        <span
+          className={`text-sm font-semibold ${accent.link} transition-all group-hover:underline`}
+        >
+          {actionLabel}
+        </span>
+      </div>
+    </Link>
+  );
+}

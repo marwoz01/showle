@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import Sidebar from "@/components/layout/Sidebar";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,7 +29,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
       >
-        {children}
+        <Sidebar />
+        <main className="ml-60 min-h-screen p-10">{children}</main>
       </body>
     </html>
   );
