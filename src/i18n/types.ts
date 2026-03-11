@@ -9,6 +9,7 @@ export interface Translations {
     referFriend: string;
     search: string;
     other: string;
+    login: string;
   };
   pro: {
     title: string;

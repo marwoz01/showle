@@ -12,6 +12,7 @@ const pl: Translations = {
     referFriend: "Poleć znajomemu",
     search: "Szukaj...",
     other: "Inne",
+    login: "Zaloguj się",
   },
 
   // Pro section

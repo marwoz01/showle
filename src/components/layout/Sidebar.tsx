@@ -48,17 +48,6 @@ export default function Sidebar() {
         </span>
       </div>
 
-      {/* Search */}
-      <div className="px-4 pb-4">
-        <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-sm text-muted">
-          <SearchIcon />
-          <span>{t.nav.search}</span>
-          <span className="ml-auto rounded border border-white/8 px-1.5 py-0.5 text-[10px] text-muted">
-            ⌘F
-          </span>
-        </div>
-      </div>
-
       {/* Main nav */}
       <nav className="flex flex-col gap-0.5 px-3">
         {NAV_ITEMS.map((item) => {
@@ -133,15 +122,12 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* User profile */}
-      <div className="flex items-center gap-3 border-t border-white/6 px-5 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-xs text-muted">
-          P
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-foreground">Player One</span>
-          <span className="text-[11px] text-muted">player@showle.app</span>
-        </div>
+      {/* Auth button */}
+      <div className="border-t border-white/6 px-4 py-4">
+        <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/6">
+          <UserIcon />
+          {t.nav.login}
+        </button>
       </div>
     </aside>
   );
@@ -149,11 +135,11 @@ export default function Sidebar() {
 
 /* ── Icons ── */
 
-function SearchIcon() {
+function UserIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }

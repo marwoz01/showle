@@ -17,19 +17,6 @@ export default function Home() {
         <p className="max-w-xl text-base text-muted">{t.home.subtitle}</p>
       </div>
 
-      {/* Filter / View row (decorative for now) */}
-      <div className="flex items-center justify-end gap-3">
-        <button className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2 text-sm text-muted transition-colors hover:bg-white/6">
-          <FilterIcon />
-          {t.home.filter}
-        </button>
-        <button className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2 text-sm text-muted transition-colors hover:bg-white/6">
-          <GridIcon />
-          {t.home.viewGrid}
-          <ChevronIcon />
-        </button>
-      </div>
-
       {/* Game mode cards */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         <GameModeCard
@@ -70,35 +57,6 @@ export default function Home() {
 }
 
 /* ── Icons ── */
-
-function FilterIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="8" y1="12" x2="16" y2="12" />
-      <line x1="11" y1="18" x2="13" y2="18" />
-    </svg>
-  );
-}
-
-function GridIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
-      <rect x="14" y="14" width="7" height="7" />
-    </svg>
-  );
-}
-
-function ChevronIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
 
 function FilmIcon() {
   return (

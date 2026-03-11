@@ -12,6 +12,7 @@ const en: Translations = {
     referFriend: "Refer a Friend",
     search: "Search...",
     other: "Other",
+    login: "Sign In",
   },
 
   // Pro section

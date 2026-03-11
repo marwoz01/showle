@@ -15,9 +15,12 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "SHOWLE — Guess the Screen",
+  title: "Showle",
   description:
     "Daily movie & series guessing game. Compare parameters, discover hints, guess the title!",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
