@@ -83,6 +83,7 @@ const en: Translations = {
     lostMessage: (title: string, year: number) =>
       `The answer was: ${title} (${year})`,
     correct: "Correct!",
+    nextIn: "Next in",
   },
 
   // Comparison labels
@@ -117,6 +118,21 @@ const en: Translations = {
     directorInitials: (initials: string) => `Director initials: ${initials}`,
     titleStartsWith: (letter: string) => `Title starts with: "${letter}"`,
     titleLength: (length: number) => `Title has ${length} characters`,
+  },
+
+  // Result screen
+  result: {
+    title: "Result",
+    youGuessed: "You guessed it!",
+    theAnswerWas: "The answer was",
+    attempts: "Attempts",
+    hintsUsed: "Hints used",
+    accuracy: "Accuracy",
+    share: "Share Result",
+    copied: "Copied!",
+    playAgain: "Play Again",
+    shareText: (title: string, attempts: number, max: number) =>
+      `Showle - Daily Movie\n\nI guessed "${title}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
   },
 
   // Language

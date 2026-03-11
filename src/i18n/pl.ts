@@ -83,6 +83,7 @@ const pl: Translations = {
     lostMessage: (title: string, year: number) =>
       `Prawidłowa odpowiedź: ${title} (${year})`,
     correct: "Trafione!",
+    nextIn: "Następny za",
   },
 
   // Comparison labels
@@ -117,6 +118,21 @@ const pl: Translations = {
     directorInitials: (initials: string) => `Inicjały reżysera: ${initials}`,
     titleStartsWith: (letter: string) => `Tytuł zaczyna się na: "${letter}"`,
     titleLength: (length: number) => `Tytuł ma ${length} znaków`,
+  },
+
+  // Result screen
+  result: {
+    title: "Wynik",
+    youGuessed: "Udało się!",
+    theAnswerWas: "Prawidłowa odpowiedź",
+    attempts: "Próby",
+    hintsUsed: "Użyte wskazówki",
+    accuracy: "Trafność",
+    share: "Udostępnij wynik",
+    copied: "Skopiowano!",
+    playAgain: "Zagraj ponownie",
+    shareText: (title: string, attempts: number, max: number) =>
+      `Showle - Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
   },
 
   // Language

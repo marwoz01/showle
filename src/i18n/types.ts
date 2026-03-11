@@ -60,6 +60,7 @@ export interface Translations {
     lost: string;
     lostMessage: (title: string, year: number) => string;
     correct: string;
+    nextIn: string;
   };
   comparison: {
     year: string;
@@ -88,6 +89,18 @@ export interface Translations {
     directorInitials: (initials: string) => string;
     titleStartsWith: (letter: string) => string;
     titleLength: (length: number) => string;
+  };
+  result: {
+    title: string;
+    youGuessed: string;
+    theAnswerWas: string;
+    attempts: string;
+    hintsUsed: string;
+    accuracy: string;
+    share: string;
+    copied: string;
+    playAgain: string;
+    shareText: (title: string, attempts: number, max: number) => string;
   };
   lang: {
     label: string;

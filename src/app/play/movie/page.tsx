@@ -1,17 +1,23 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
-import { DAILY_ANSWER } from "@/lib/mock-data";
+import { MOCK_MOVIES } from "@/lib/mock-data";
+import { getDailyMovie } from "@/lib/daily";
 import { MAX_ATTEMPTS } from "@/constants";
 import { useGame } from "@/hooks/useGame";
 import { useTranslation } from "@/i18n";
 import SearchBar from "@/components/game/SearchBar";
 import GuessCard from "@/components/game/GuessCard";
 import HintsPanel from "@/components/game/HintsPanel";
-import { ChevronLeft, Flag, CheckCircle } from "lucide-react";
+import ResultScreen from "@/components/game/ResultScreen";
+import CountdownTimer from "@/components/game/CountdownTimer";
+import { ChevronLeft, Flag } from "lucide-react";
 
 export default function PlayMoviePage() {
   const { t } = useTranslation();
+  const dailyAnswer = useMemo(() => getDailyMovie(), []);
+
   const {
     guesses,
     revealedHints,
@@ -20,7 +26,9 @@ export default function PlayMoviePage() {
     attemptCount,
     submitGuess,
     giveUp,
-  } = useGame(DAILY_ANSWER, t);
+  } = useGame(dailyAnswer, t, MOCK_MOVIES);
+
+  const isFinished = status === "won" || status === "lost";
 
   return (
     <div className="space-y-8">
@@ -40,6 +48,8 @@ export default function PlayMoviePage() {
         </div>
 
         <div className="flex items-center gap-4">
+          <CountdownTimer />
+
           <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-card px-3 py-2 text-sm">
             <span className="text-muted">{t.game.attempt}</span>
             <span className="font-bold text-foreground">
@@ -62,28 +72,14 @@ export default function PlayMoviePage() {
       {/* Search input */}
       {status === "playing" && <SearchBar onSelect={submitGuess} />}
 
-      {/* Win / Lose banner */}
-      {status === "won" && (
-        <div className="rounded-2xl border border-match-exact/30 bg-match-exact/5 p-6 text-center">
-          <h2 className="mb-1 inline-flex items-center gap-2 text-2xl font-bold text-match-exact">
-            {t.game.won}
-            <CheckCircle size={20} />
-          </h2>
-          <p className="text-sm text-muted">
-            {t.game.wonMessage(DAILY_ANSWER.title, attemptCount)}
-          </p>
-        </div>
-      )}
-
-      {status === "lost" && (
-        <div className="rounded-2xl border border-match-miss/30 bg-match-miss/5 p-6 text-center">
-          <h2 className="mb-1 text-2xl font-bold text-match-miss">
-            {t.game.lost}
-          </h2>
-          <p className="text-sm text-muted">
-            {t.game.lostMessage(DAILY_ANSWER.title, DAILY_ANSWER.year)}
-          </p>
-        </div>
+      {/* Result screen */}
+      {isFinished && (
+        <ResultScreen
+          answer={dailyAnswer}
+          status={status}
+          guesses={guesses}
+          hintsUsed={revealedHints.length}
+        />
       )}
 
       {/* Two-column layout: guesses + hints */}

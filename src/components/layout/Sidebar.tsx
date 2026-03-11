@@ -55,9 +55,14 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                  ? "bg-accent-purple/15 text-foreground"
+                  ? "text-foreground"
                   : "text-muted hover:bg-white/4 hover:text-foreground"
               }`}
+              style={
+                active
+                  ? { background: "linear-gradient(to right, rgba(124, 77, 255, 0.15), transparent)" }
+                  : undefined
+              }
             >
               <item.icon
                 className={`h-4.5 w-4.5 ${active ? "text-accent-purple" : ""}`}
