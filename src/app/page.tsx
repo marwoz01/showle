@@ -33,17 +33,20 @@ export default function Home() {
           title={t.modes.dailySeries}
           description={t.modes.dailySeriesDesc}
           href="/play/series"
-          actionLabel={t.modes.playChallenge}
-          badge={t.modes.new}
+          actionLabel={t.modes.comingSoon}
+          badge={t.modes.comingSoon}
           accentColor="purple"
+          disabled
         />
         <GameModeCard
           icon={<InfinityIcon />}
           title={t.modes.unlimited}
           description={t.modes.unlimitedDesc}
           href="/play/unlimited"
-          actionLabel={t.modes.startEndless}
+          actionLabel={t.modes.comingSoon}
+          badge={t.modes.comingSoon}
           accentColor="cyan"
+          disabled
         />
       </div>
 

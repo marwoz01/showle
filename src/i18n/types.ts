@@ -33,6 +33,7 @@ export interface Translations {
     startEndless: string;
     popular: string;
     new: string;
+    comingSoon: string;
   };
   howItWorks: {
     title: string;

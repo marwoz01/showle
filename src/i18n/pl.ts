@@ -46,6 +46,7 @@ const pl: Translations = {
     startEndless: "Zacznij grę",
     popular: "Popularne",
     new: "Nowość",
+    comingSoon: "Wkrótce",
   },
 
   // How it works

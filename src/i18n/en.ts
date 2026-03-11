@@ -46,6 +46,7 @@ const en: Translations = {
     startEndless: "Start Endless Run",
     popular: "Popular",
     new: "New",
+    comingSoon: "Coming Soon",
   },
 
   // How it works

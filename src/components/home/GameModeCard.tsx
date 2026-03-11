@@ -8,6 +8,7 @@ interface GameModeCardProps {
   actionLabel: string;
   badge?: string;
   accentColor: "green" | "purple" | "cyan";
+  disabled?: boolean;
 }
 
 const accentMap = {
@@ -39,14 +40,19 @@ export default function GameModeCard({
   actionLabel,
   badge,
   accentColor,
+  disabled = false,
 }: GameModeCardProps) {
   const accent = accentMap[accentColor];
-
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col justify-between rounded-2xl border border-white/6 bg-[#12121e] p-6 transition-all duration-200 hover:border-white/12 hover:bg-[#16162a]"
-    >
+  const cardClassName = `group flex flex-col justify-between rounded-2xl border border-white/6 bg-[#12121e] p-6 transition-all duration-200 ${
+    disabled
+      ? "cursor-not-allowed opacity-70"
+      : "hover:border-white/12 hover:bg-[#16162a]"
+  }`;
+  const actionClassName = `text-sm font-semibold transition-all ${
+    disabled ? "text-muted" : `${accent.link} group-hover:underline`
+  }`;
+  const content = (
+    <>
       <div>
         {/* Top row: icon + badge */}
         <div className="mb-5 flex items-start justify-between">
@@ -73,12 +79,24 @@ export default function GameModeCard({
 
       {/* Action link */}
       <div className="mt-6">
-        <span
-          className={`text-sm font-semibold ${accent.link} transition-all group-hover:underline`}
-        >
+        <span className={actionClassName}>
           {actionLabel}
         </span>
       </div>
+    </>
+  );
+
+  if (disabled) {
+    return (
+      <div aria-disabled="true" className={cardClassName}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link href={href} className={cardClassName}>
+      {content}
     </Link>
   );
 }
