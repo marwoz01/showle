@@ -35,7 +35,7 @@ export default function RootLayout({
       >
         <I18nProvider>
           <Sidebar />
-          <main className="ml-60 min-h-screen bg-linear-to-b from-background via-background to-[#0a0a18] p-10">{children}</main>
+          <main className="min-h-screen bg-linear-to-b from-background via-background to-[#0a0a18] p-4 pt-16 lg:ml-60 lg:p-10 lg:pt-10">{children}</main>
         </I18nProvider>
       </body>
     </html>

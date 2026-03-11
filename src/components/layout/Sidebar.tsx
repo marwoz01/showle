@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation, Locale } from "@/i18n";
@@ -9,6 +10,8 @@ import {
   Play,
   Sparkles,
   User,
+  Menu,
+  X,
 } from "lucide-react";
 
 interface NavItem {
@@ -25,6 +28,26 @@ const NAV_ITEMS: NavItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { t, locale, setLocale } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  // Close sidebar on route change
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setOpen(false);
+  }
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -33,16 +56,25 @@ export default function Sidebar() {
 
   const navLabel = (key: string) => t.nav[key as keyof typeof t.nav] || key;
 
-  return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-white/6 bg-background">
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 py-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/8">
-          <Clapperboard size={16} />
+      <div className="flex items-center justify-between px-5 py-6">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/8">
+            <Clapperboard size={16} />
+          </div>
+          <span className="font-display text-lg font-bold text-foreground">
+            Showle
+          </span>
         </div>
-        <span className="font-display text-lg font-bold text-foreground">
-          Showle
-        </span>
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setOpen(false)}
+          className="rounded-lg p-1.5 text-muted transition-colors hover:bg-white/4 hover:text-foreground lg:hidden"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* Main nav */}
@@ -117,6 +149,45 @@ export default function Sidebar() {
           {t.nav.login}
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="fixed left-0 right-0 top-0 z-50 flex items-center gap-3 border-b border-white/6 bg-background px-4 py-3 lg:hidden">
+        <button
+          onClick={() => setOpen(true)}
+          className="rounded-lg p-1.5 text-muted transition-colors hover:bg-white/4 hover:text-foreground"
+        >
+          <Menu size={22} />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/8">
+            <Clapperboard size={14} />
+          </div>
+          <span className="font-display text-base font-bold text-foreground">
+            Showle
+          </span>
+        </div>
+      </div>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Sidebar — desktop: always visible, mobile: slide in */}
+      <aside
+        className={`fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[85vw] flex-col border-r border-white/6 bg-background transition-transform duration-300 ease-in-out lg:w-60 lg:max-w-none lg:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
