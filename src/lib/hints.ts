@@ -9,19 +9,19 @@ export function generateHints(answer: MediaDetails, t: Translations): Hint[] {
       id: 1,
       type: "decade",
       content: t.hints.fromDecade(decade),
-      revealedAt: 1,
+      revealedAt: 2,
     },
     {
       id: 2,
       type: "genre",
       content: t.hints.genreIs(answer.genres[0]),
-      revealedAt: 2,
+      revealedAt: 4,
     },
     {
       id: 3,
       type: "director_initials",
       content: t.hints.directorInitials(getInitials(answer.director)),
-      revealedAt: 3,
+      revealedAt: 6,
     },
     {
       id: 4,
@@ -29,13 +29,13 @@ export function generateHints(answer: MediaDetails, t: Translations): Hint[] {
       content: answer.tagline
         ? t.hints.tagline(answer.tagline)
         : t.hints.overview(answer.overview.slice(0, 80)),
-      revealedAt: 4,
+      revealedAt: 8,
     },
     {
       id: 5,
       type: "title_reveal",
       content: t.hints.titleStartsWith(answer.title[0]),
-      revealedAt: 5,
+      revealedAt: 10,
     },
   ];
 }
