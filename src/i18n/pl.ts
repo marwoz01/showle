@@ -61,7 +61,7 @@ const pl: Translations = {
       "Wpisz nazwę filmu lub serialu. Porównamy go z odpowiedzią w 7 parametrach.",
     step3Title: "Czytaj wskazówki",
     step3Desc:
-      "Każda błędna próba odkrywa nową wskazówkę — inicjały reżysera, gatunek, kraj i więcej.",
+      "Każda błędna próba odkrywa nową wskazówkę - inicjały reżysera, gatunek, kraj i więcej.",
     step4Title: "Udostępnij wynik",
     step4Desc:
       "Udało się? Podziel się swoją siatką wyników ze znajomymi i porównaj serie.",

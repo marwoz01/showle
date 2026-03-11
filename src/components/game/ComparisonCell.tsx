@@ -13,11 +13,6 @@ const statusColors: Record<MatchStatus, string> = {
   miss: "bg-match-miss/15 border-match-miss/30 text-match-miss",
 };
 
-const directionArrow: Record<string, string> = {
-  up: "↑",
-  down: "↓",
-};
-
 export default function ComparisonCell({
   label,
   value,
@@ -33,10 +28,30 @@ export default function ComparisonCell({
       </span>
       <div className="flex items-center gap-1">
         <span className="text-xs font-bold">{value}</span>
-        {direction && (
-          <span className="text-sm leading-none">{directionArrow[direction]}</span>
-        )}
+        {direction && <DirectionIcon direction={direction} />}
       </div>
     </div>
+  );
+}
+
+function DirectionIcon({ direction }: { direction: Exclude<Direction, null> }) {
+  const rotation = direction === "up" ? "rotate-0" : "rotate-180";
+
+  return (
+    <svg
+      className={rotation}
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 19V5" />
+      <path d="m5 12 7-7 7 7" />
+    </svg>
   );
 }

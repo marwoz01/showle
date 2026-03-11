@@ -33,7 +33,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-purple/20">
-          <span className="text-sm">🎬</span>
+          <LogoMark />
         </div>
         <span className="font-display text-lg font-bold tracking-wider text-foreground">
           Showle
@@ -87,7 +87,10 @@ export default function Sidebar() {
       {/* Unlock Pro */}
       <div className="mx-3 mb-4 rounded-xl border border-white/6 bg-white/3 p-4">
         <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="text-accent-purple">✦</span> {t.pro.title}
+          <span className="text-accent-purple">
+            <SparklesIcon />
+          </span>
+          {t.pro.title}
         </div>
         <p className="mb-3 text-xs text-muted">
           {t.pro.description}
@@ -108,11 +111,60 @@ export default function Sidebar() {
   );
 }
 
-/* ── Icons ── */
+/* Icons */
+
+function LogoMark() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M7 4v16" />
+      <path d="M17 4v16" />
+      <path d="M3 12h18" />
+    </svg>
+  );
+}
+
+function SparklesIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" />
+      <path d="m19 14 .8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14Z" />
+    </svg>
+  );
+}
 
 function UserIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
@@ -121,7 +173,16 @@ function UserIcon() {
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={active ? "#7C4DFF" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={active ? "#7C4DFF" : "currentColor"}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
@@ -130,7 +191,16 @@ function HomeIcon({ active }: { active: boolean }) {
 
 function PlayIcon({ active }: { active: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={active ? "#7C4DFF" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={active ? "#7C4DFF" : "currentColor"}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="2" y="2" width="20" height="20" rx="2" />
       <path d="M10 8l6 4-6 4V8z" />
     </svg>

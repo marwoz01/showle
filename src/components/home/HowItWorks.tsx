@@ -6,10 +6,30 @@ export default function HowItWorks() {
   const { t } = useTranslation();
 
   const steps = [
-    { step: "01", title: t.howItWorks.step1Title, description: t.howItWorks.step1Desc, icon: <TargetIcon /> },
-    { step: "02", title: t.howItWorks.step2Title, description: t.howItWorks.step2Desc, icon: <SearchIcon /> },
-    { step: "03", title: t.howItWorks.step3Title, description: t.howItWorks.step3Desc, icon: <LightbulbIcon /> },
-    { step: "04", title: t.howItWorks.step4Title, description: t.howItWorks.step4Desc, icon: <TrophyIcon /> },
+    {
+      step: "01",
+      title: t.howItWorks.step1Title,
+      description: t.howItWorks.step1Desc,
+      icon: <TargetIcon />,
+    },
+    {
+      step: "02",
+      title: t.howItWorks.step2Title,
+      description: t.howItWorks.step2Desc,
+      icon: <SearchIcon />,
+    },
+    {
+      step: "03",
+      title: t.howItWorks.step3Title,
+      description: t.howItWorks.step3Desc,
+      icon: <LightbulbIcon />,
+    },
+    {
+      step: "04",
+      title: t.howItWorks.step4Title,
+      description: t.howItWorks.step4Desc,
+      icon: <TrophyIcon />,
+    },
   ];
 
   return (
@@ -44,11 +64,20 @@ export default function HowItWorks() {
   );
 }
 
-/* ── Icons ── */
+/* Icons */
 
 function TargetIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="12" r="6" />
       <circle cx="12" cy="12" r="2" />
@@ -58,7 +87,16 @@ function TargetIcon() {
 
 function SearchIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.3-4.3" />
     </svg>
@@ -67,7 +105,16 @@ function SearchIcon() {
 
 function LightbulbIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 18h6" />
       <path d="M10 22h4" />
       <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
@@ -77,7 +124,16 @@ function LightbulbIcon() {
 
 function TrophyIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
       <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
       <path d="M4 22h16" />

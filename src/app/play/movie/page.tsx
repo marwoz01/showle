@@ -11,8 +11,15 @@ import HintsPanel from "@/components/game/HintsPanel";
 
 export default function PlayMoviePage() {
   const { t } = useTranslation();
-  const { guesses, revealedHints, allHints, status, attemptCount, submitGuess, giveUp } =
-    useGame(DAILY_ANSWER, t);
+  const {
+    guesses,
+    revealedHints,
+    allHints,
+    status,
+    attemptCount,
+    submitGuess,
+    giveUp,
+  } = useGame(DAILY_ANSWER, t);
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -21,9 +28,10 @@ export default function PlayMoviePage() {
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="text-muted transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-2 text-muted transition-colors hover:text-foreground"
           >
-            ← {t.game.back}
+            <ArrowLeftIcon />
+            {t.game.back}
           </Link>
           <h1 className="text-2xl font-bold text-foreground">
             {t.game.dailyMovie}
@@ -41,24 +49,24 @@ export default function PlayMoviePage() {
           {status === "playing" && (
             <button
               onClick={giveUp}
-              className="rounded-lg border border-match-miss/30 px-3 py-2 text-sm text-match-miss transition-colors hover:bg-match-miss/10"
+              className="inline-flex items-center gap-2 rounded-lg border border-match-miss/30 px-3 py-2 text-sm text-match-miss transition-colors hover:bg-match-miss/10"
             >
-              🏳️ {t.game.giveUp}
+              <FlagIcon />
+              {t.game.giveUp}
             </button>
           )}
         </div>
       </div>
 
       {/* Search input */}
-      {status === "playing" && (
-        <SearchBar onSelect={submitGuess} />
-      )}
+      {status === "playing" && <SearchBar onSelect={submitGuess} />}
 
       {/* Win / Lose banner */}
       {status === "won" && (
         <div className="rounded-2xl border border-match-exact/30 bg-match-exact/5 p-6 text-center">
-          <h2 className="mb-1 text-2xl font-bold text-match-exact">
-            {t.game.won} 🎬
+          <h2 className="mb-1 inline-flex items-center gap-2 text-2xl font-bold text-match-exact">
+            {t.game.won}
+            <CheckCircleIcon />
           </h2>
           <p className="text-sm text-muted">
             {t.game.wonMessage(DAILY_ANSWER.title, attemptCount)}
@@ -98,5 +106,61 @@ export default function PlayMoviePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function FlagIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 21V5" />
+      <path d="M4 5h12l-1.5 4L16 13H4" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
   );
 }
