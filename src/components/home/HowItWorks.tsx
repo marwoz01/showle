@@ -1,44 +1,26 @@
-const STEPS = [
-  {
-    step: "01",
-    title: "Choose a Mode",
-    description:
-      "Pick Daily Movie, Daily Series, or play endlessly in Unlimited mode.",
-    icon: <TargetIcon />,
-  },
-  {
-    step: "02",
-    title: "Guess the Title",
-    description:
-      "Type a movie or series name. We'll compare it against the answer across 7 parameters.",
-    icon: <SearchIcon />,
-  },
-  {
-    step: "03",
-    title: "Read the Clues",
-    description:
-      "Each wrong guess reveals a new hint — director initials, genre, country, and more.",
-    icon: <LightbulbIcon />,
-  },
-  {
-    step: "04",
-    title: "Share Your Score",
-    description:
-      "Nailed it? Share your result grid with friends and compare streaks.",
-    icon: <TrophyIcon />,
-  },
-];
+"use client";
+
+import { useTranslation } from "@/i18n";
 
 export default function HowItWorks() {
+  const { t } = useTranslation();
+
+  const steps = [
+    { step: "01", title: t.howItWorks.step1Title, description: t.howItWorks.step1Desc, icon: <TargetIcon /> },
+    { step: "02", title: t.howItWorks.step2Title, description: t.howItWorks.step2Desc, icon: <SearchIcon /> },
+    { step: "03", title: t.howItWorks.step3Title, description: t.howItWorks.step3Desc, icon: <LightbulbIcon /> },
+    { step: "04", title: t.howItWorks.step4Title, description: t.howItWorks.step4Desc, icon: <TrophyIcon /> },
+  ];
+
   return (
     <section>
-      <h2 className="mb-2 text-2xl font-bold text-foreground">How It Works</h2>
-      <p className="mb-8 text-sm text-muted">
-        Three simple steps to prove your expertise.
-      </p>
+      <h2 className="mb-2 text-2xl font-bold text-foreground">
+        {t.howItWorks.title}
+      </h2>
+      <p className="mb-8 text-sm text-muted">{t.howItWorks.subtitle}</p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {STEPS.map((step) => (
+        {steps.map((step) => (
           <div
             key={step.step}
             className="rounded-2xl border border-white/[0.06] bg-[#12121e] p-5"
@@ -47,7 +29,7 @@ export default function HowItWorks() {
               {step.icon}
             </div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-accent-purple">
-              Step {step.step}
+              {step.step}
             </p>
             <h3 className="mb-2 text-base font-bold text-foreground">
               {step.title}

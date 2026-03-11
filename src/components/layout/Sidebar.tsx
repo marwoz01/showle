@@ -2,27 +2,39 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslation, Locale } from "@/i18n";
 
-const NAV_ITEMS = [
-  { label: "Home", icon: HomeIcon, href: "/" },
-  { label: "Play", icon: PlayIcon, href: "/play" },
-  { label: "Notifications", icon: BellIcon, href: "/notifications" },
-  { label: "Stats", icon: StatsIcon, href: "/stats" },
-  { label: "Settings", icon: SettingsIcon, href: "/settings" },
+type IconComponent = React.FC<{ active: boolean }>;
+
+interface NavItem {
+  key: string;
+  icon: IconComponent;
+  href: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { key: "home", icon: HomeIcon, href: "/" },
+  { key: "play", icon: PlayIcon, href: "/play" },
+  { key: "notifications", icon: BellIcon, href: "/notifications" },
+  { key: "stats", icon: StatsIcon, href: "/stats" },
+  { key: "settings", icon: SettingsIcon, href: "/settings" },
 ];
 
-const OTHER_ITEMS = [
-  { label: "Documentation", icon: DocIcon, href: "/docs" },
-  { label: "Refer a Friend", icon: ShareIcon, href: "/refer" },
+const OTHER_ITEMS: NavItem[] = [
+  { key: "documentation", icon: DocIcon, href: "/docs" },
+  { key: "referFriend", icon: ShareIcon, href: "/refer" },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { t, locale, setLocale } = useTranslation();
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
+
+  const navLabel = (key: string) => t.nav[key as keyof typeof t.nav] || key;
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-white/[0.06] bg-[#0c0c14]">
@@ -40,7 +52,7 @@ export default function Sidebar() {
       <div className="px-4 pb-4">
         <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-sm text-muted">
           <SearchIcon />
-          <span>Search...</span>
+          <span>{t.nav.search}</span>
           <span className="ml-auto rounded border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-muted">
             ⌘F
           </span>
@@ -62,7 +74,7 @@ export default function Sidebar() {
               }`}
             >
               <item.icon active={active} />
-              {item.label}
+              {navLabel(item.key)}
               {active && (
                 <div className="absolute left-0 h-8 w-[3px] rounded-r-full bg-accent-purple" />
               )}
@@ -74,7 +86,7 @@ export default function Sidebar() {
       {/* Other section */}
       <div className="mt-6 px-3">
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted/60">
-          Other
+          {t.nav.other}
         </p>
         {OTHER_ITEMS.map((item) => (
           <Link
@@ -83,7 +95,7 @@ export default function Sidebar() {
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/[0.04] hover:text-foreground"
           >
             <item.icon active={false} />
-            {item.label}
+            {navLabel(item.key)}
           </Link>
         ))}
       </div>
@@ -91,16 +103,33 @@ export default function Sidebar() {
       {/* Spacer */}
       <div className="flex-1" />
 
+      {/* Language toggle */}
+      <div className="mx-3 mb-3 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] p-1">
+        {(["pl", "en"] as Locale[]).map((lang) => (
+          <button
+            key={lang}
+            onClick={() => setLocale(lang)}
+            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+              locale === lang
+                ? "bg-accent-purple/20 text-foreground"
+                : "text-muted hover:text-foreground"
+            }`}
+          >
+            {t.lang[lang]}
+          </button>
+        ))}
+      </div>
+
       {/* Unlock Pro */}
       <div className="mx-3 mb-4 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
         <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="text-accent-purple">✦</span> Unlock Pro
+          <span className="text-accent-purple">✦</span> {t.pro.title}
         </div>
         <p className="mb-3 text-xs text-muted">
-          Get unlimited plays, detailed statistics, and early access.
+          {t.pro.description}
         </p>
         <button className="w-full rounded-lg bg-accent-purple py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90">
-          Upgrade to Pro
+          {t.pro.upgrade}
         </button>
       </div>
 

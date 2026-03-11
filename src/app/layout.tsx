@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { I18nProvider } from "@/i18n";
 import Sidebar from "@/components/layout/Sidebar";
 import "./globals.css";
 
@@ -25,12 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl">
+    <html lang="pl" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
       >
-        <Sidebar />
-        <main className="ml-60 min-h-screen p-10">{children}</main>
+        <I18nProvider>
+          <Sidebar />
+          <main className="ml-60 min-h-screen p-10">{children}</main>
+        </I18nProvider>
       </body>
     </html>
   );

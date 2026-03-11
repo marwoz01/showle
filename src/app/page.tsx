@@ -1,27 +1,31 @@
+"use client";
+
 import GameModeCard from "@/components/home/GameModeCard";
 import HowItWorks from "@/components/home/HowItWorks";
+import { useTranslation } from "@/i18n";
 
 export default function Home() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-12">
       {/* Page header */}
       <div>
-        <h1 className="mb-2 text-4xl font-bold text-foreground">Play</h1>
-        <p className="max-w-xl text-base text-muted">
-          Test your cinematic knowledge. Identify movies and series from obscure
-          frames, quotes, or posters.
-        </p>
+        <h1 className="mb-2 text-4xl font-bold text-foreground">
+          {t.home.title}
+        </h1>
+        <p className="max-w-xl text-base text-muted">{t.home.subtitle}</p>
       </div>
 
       {/* Filter / View row (decorative for now) */}
       <div className="flex items-center justify-end gap-3">
         <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-muted transition-colors hover:bg-white/[0.06]">
           <FilterIcon />
-          Filter
+          {t.home.filter}
         </button>
         <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-muted transition-colors hover:bg-white/[0.06]">
           <GridIcon />
-          View: Grid
+          {t.home.viewGrid}
           <ChevronIcon />
         </button>
       </div>
@@ -30,28 +34,28 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         <GameModeCard
           icon={<FilmIcon />}
-          title="Daily Movie"
-          description="Guess today's featured film from five progressively easier visual clues. Resets at midnight."
+          title={t.modes.dailyMovie}
+          description={t.modes.dailyMovieDesc}
           href="/play/movie"
-          actionLabel="Play Challenge"
-          badge="Popular"
+          actionLabel={t.modes.playChallenge}
+          badge={t.modes.popular}
           accentColor="green"
         />
         <GameModeCard
           icon={<TvIcon />}
-          title="Daily Series"
-          description="Identify the TV show episode of the day based on iconic quotes and blurred cast members."
+          title={t.modes.dailySeries}
+          description={t.modes.dailySeriesDesc}
           href="/play/series"
-          actionLabel="Play Challenge"
-          badge="New"
+          actionLabel={t.modes.playChallenge}
+          badge={t.modes.new}
           accentColor="purple"
         />
         <GameModeCard
           icon={<InfinityIcon />}
-          title="Unlimited"
-          description="Can't get enough? Play endlessly through our entire catalog of thousands of titles at your own pace."
+          title={t.modes.unlimited}
+          description={t.modes.unlimitedDesc}
           href="/play/unlimited"
-          actionLabel="Start Endless Run"
+          actionLabel={t.modes.startEndless}
           accentColor="cyan"
         />
       </div>
