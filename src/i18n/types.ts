@@ -61,6 +61,7 @@ export interface Translations {
     lostMessage: (title: string, year: number) => string;
     correct: string;
     nextIn: string;
+    loadError: string;
   };
   comparison: {
     year: string;
