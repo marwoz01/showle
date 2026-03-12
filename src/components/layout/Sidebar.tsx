@@ -30,6 +30,8 @@ export default function Sidebar() {
   const { t, locale, setLocale } = useTranslation();
   const [open, setOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
+  const [proClicked, setProClicked] = useState(false);
+  const [loginClicked, setLoginClicked] = useState(false);
 
   // Close sidebar on route change
   if (pathname !== prevPathname) {
@@ -137,16 +139,24 @@ export default function Sidebar() {
           {t.pro.title}
         </div>
         <p className="mb-3 text-xs text-muted">{t.pro.description}</p>
-        <button className="w-full rounded-lg bg-accent-purple py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90">
-          {t.pro.upgrade}
+        <button
+          onClick={() => setProClicked(true)}
+          className={`w-full rounded-lg py-2 text-xs font-semibold text-white transition-opacity ${proClicked ? "bg-white/10 cursor-default" : "bg-accent-purple hover:opacity-90"}`}
+          disabled={proClicked}
+        >
+          {proClicked ? t.pro.comingSoon : t.pro.upgrade}
         </button>
       </div>
 
       {/* Auth button */}
       <div className="border-t border-white/6 px-4 py-4">
-        <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/6">
+        <button
+          onClick={() => setLoginClicked(true)}
+          className={`flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 px-4 py-2.5 text-sm font-medium transition-colors ${loginClicked ? "bg-white/3 text-muted cursor-default" : "bg-white/3 text-foreground hover:bg-white/6"}`}
+          disabled={loginClicked}
+        >
           <User size={16} />
-          {t.nav.login}
+          {loginClicked ? t.pro.comingSoon : t.nav.login}
         </button>
       </div>
     </>

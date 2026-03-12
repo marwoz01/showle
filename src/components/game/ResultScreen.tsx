@@ -144,32 +144,47 @@ export default function ResultScreen({
         </h2>
       </div>
 
-      {/* Movie info */}
-      <div className="flex items-center gap-5 border-b border-white/6 px-6 py-5">
-        {/* Poster placeholder */}
-        <div className="flex h-24 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
-          <img
-            src={`https://image.tmdb.org/t/p/w154${answer.posterPath}`}
-            alt={answer.title}
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
+      {/* Movie info — 2 column layout */}
+      <div className="flex flex-col gap-5 border-b border-white/6 px-6 py-6 sm:flex-row sm:gap-6">
+        {/* Poster */}
+        <div className="flex shrink-0 justify-center sm:justify-start">
+          <div className="h-64 w-44 overflow-hidden rounded-xl bg-white/5 shadow-lg shadow-black/30">
+            <img
+              src={`https://image.tmdb.org/t/p/w342${answer.posterPath}`}
+              alt={answer.title}
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">
+        {/* Details */}
+        <div className="flex flex-col justify-center text-center sm:text-left">
+          <h3 className="text-2xl font-bold text-foreground">
             {answer.title}
           </h3>
-          <p className="mt-0.5 text-sm text-muted">
-            {answer.year} &middot; {answer.director}
+          <p className="mt-1 text-sm text-muted">
+            {answer.year} &middot; {answer.director} &middot; {answer.runtime} min
           </p>
-          <p className="mt-1 text-xs text-muted">
-            {answer.genres.join(", ")}
-          </p>
+          <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
+            {answer.genres.map((genre) => (
+              <span
+                key={genre}
+                className="rounded-full bg-white/6 px-2.5 py-0.5 text-xs font-medium text-muted"
+              >
+                {genre}
+              </span>
+            ))}
+          </div>
           {answer.tagline && (
-            <p className="mt-2 text-xs italic text-muted/70">
+            <p className="mt-3 text-sm italic text-muted/70">
               &ldquo;{answer.tagline}&rdquo;
+            </p>
+          )}
+          {answer.overview && (
+            <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
+              {answer.overview}
             </p>
           )}
         </div>

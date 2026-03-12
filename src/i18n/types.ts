@@ -15,6 +15,7 @@ export interface Translations {
     title: string;
     description: string;
     upgrade: string;
+    comingSoon: string;
   };
   home: {
     title: string;

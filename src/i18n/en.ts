@@ -18,8 +18,9 @@ const en: Translations = {
   // Pro section
   pro: {
     title: "Unlock Pro",
-    description: "Get unlimited plays, detailed statistics, and early access.",
+    description: "Remove ads, get unlimited plays, and detailed statistics.",
     upgrade: "Upgrade to Pro",
+    comingSoon: "Coming Soon",
   },
 
   // Home page

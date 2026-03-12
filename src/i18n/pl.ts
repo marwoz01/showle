@@ -18,8 +18,9 @@ const pl: Translations = {
   // Pro section
   pro: {
     title: "Odblokuj Pro",
-    description: "Nieograniczona gra, szczegółowe statystyki i wczesny dostęp.",
+    description: "Usuń reklamy, graj bez limitu i sprawdzaj szczegółowe statystyki.",
     upgrade: "Ulepsz do Pro",
+    comingSoon: "Wkrótce dostępne",
   },
 
   // Home page
