@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getDailyMovieFromTmdb } from "@/lib/tmdb";
+import { getDailyMovie } from "@/lib/daily";
 
-export const revalidate = 60; // revalidate every minute to pick up new daily movie promptly
+export const revalidate = 60;
 
 export async function GET() {
   try {
-    const movie = await getDailyMovieFromTmdb();
+    const movie = await getDailyMovie();
 
     if (!movie) {
       return NextResponse.json({ error: "No movie found" }, { status: 500 });
@@ -13,7 +13,7 @@ export async function GET() {
 
     return NextResponse.json(movie);
   } catch (error) {
-    console.error("TMDB daily error:", error);
+    console.error("Daily movie error:", error);
     return NextResponse.json({ error: "Failed to fetch daily movie" }, { status: 500 });
   }
 }

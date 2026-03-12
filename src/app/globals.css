@@ -17,8 +17,12 @@
   --font-display: var(--font-space-grotesk);
 }
 
-body {
+html {
   background: var(--color-background);
+}
+
+body {
+  background: transparent;
   color: var(--color-foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }

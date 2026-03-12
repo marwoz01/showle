@@ -12,6 +12,7 @@ export function compareMedia(
     compareCountry(guess.country, answer.country, t),
     compareDirector(guess.director, answer.director, t),
     compareRuntime(guess.runtime, answer.runtime, t),
+    compareBudget(guess.budget, answer.budget, t),
     comparePopularity(guess.popularity, answer.popularity, t),
     compareRating(guess.rating, answer.rating, t),
   ];
@@ -104,6 +105,31 @@ function comparePopularity(guess: number, answer: number, t: Translations): Comp
     label: t.comparison.popularity,
     guessValue: getPopularityLabel(guess, t),
     answerValue: getPopularityLabel(answer, t),
+    status,
+    direction: getDirection(guess, answer),
+  };
+}
+
+function compareBudget(guess: number, answer: number, t: Translations): ComparisonField {
+  if (guess === 0 || answer === 0) {
+    return {
+      label: t.comparison.budget,
+      guessValue: guess === 0 ? "?" : `$${guess}M`,
+      answerValue: answer === 0 ? "?" : `$${answer}M`,
+      status: guess === 0 && answer === 0 ? "exact" : "miss",
+    };
+  }
+
+  const diff = Math.abs(guess - answer);
+  const ratio = diff / Math.max(guess, answer);
+  let status: MatchStatus = "miss";
+  if (diff === 0) status = "exact";
+  else if (ratio <= 0.25) status = "partial";
+
+  return {
+    label: t.comparison.budget,
+    guessValue: `$${guess}M`,
+    answerValue: `$${answer}M`,
     status,
     direction: getDirection(guess, answer),
   };

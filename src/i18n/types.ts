@@ -69,6 +69,7 @@ export interface Translations {
     country: string;
     director: string;
     runtime: string;
+    budget: string;
     popularity: string;
     rating: string;
   };

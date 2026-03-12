@@ -25,6 +25,7 @@ interface TmdbMovieDetails {
   popularity: number;
   vote_average: number;
   runtime: number;
+  budget: number;
   genres: { id: number; name: string }[];
   production_countries: { iso_3166_1: string; name: string }[];
 }
@@ -88,6 +89,7 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
       country,
       director,
       runtime: movie.runtime ?? 0,
+      budget: movie.budget ? Math.round(movie.budget / 1_000_000) : 0,
       popularity: Math.round(movie.popularity),
       rating: Math.round(movie.vote_average * 10) / 10,
       posterPath: movie.poster_path ?? "",
@@ -99,32 +101,3 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
   }
 }
 
-/**
- * Get a deterministic daily movie from TMDB's top rated list.
- * Uses the date to pick a stable movie that changes daily.
- */
-export async function getDailyMovieFromTmdb(): Promise<MediaDetails | null> {
-  const dateStr = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
-
-  // Hash date to pick page (1-10) and index (0-19) from popular movies
-  let hash = 0;
-  for (let i = 0; i < dateStr.length; i++) {
-    hash = (hash * 31 + dateStr.charCodeAt(i)) | 0;
-  }
-  hash = Math.abs(hash);
-
-  const page = (hash % 10) + 1;
-  const data = await tmdbFetch<{ results: TmdbMovieListItem[] }>("/movie/popular", {
-    language: "en-US",
-    page: String(page),
-  });
-
-  if (data.results.length === 0) return null;
-
-  // Additional filter: only well-known movies (enough votes)
-  const known = data.results.filter((m) => m.vote_count >= 500);
-  if (known.length === 0) return getMovieDetails(data.results[0].id);
-
-  const index = hash % known.length;
-  return getMovieDetails(known[index].id);
-}

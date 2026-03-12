@@ -9,6 +9,7 @@ export interface MediaDetails {
   country: string;
   director: string;
   runtime: number; // minutes (movie) or seasons count (series)
+  budget: number; // in millions USD, 0 if unknown
   popularity: number;
   rating: number;
   posterPath: string;

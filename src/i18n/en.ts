@@ -94,6 +94,7 @@ const en: Translations = {
     country: "Country",
     director: "Director",
     runtime: "Runtime",
+    budget: "Budget",
     popularity: "Popularity",
     rating: "Rating",
   },

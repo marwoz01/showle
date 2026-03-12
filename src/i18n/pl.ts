@@ -94,6 +94,7 @@ const pl: Translations = {
     country: "Kraj",
     director: "Reżyser",
     runtime: "Czas",
+    budget: "Budżet",
     popularity: "Popularność",
     rating: "Ocena",
   },
