@@ -55,9 +55,9 @@ export async function searchMovies(query: string): Promise<MediaDetails[]> {
     page: "1",
   });
 
-  // Filter out obscure movies: require minimum popularity OR vote count, must have a release date
+  // Filter out obscure movies: require meaningful vote count and a release date
   const filtered = data.results.filter(
-    (m) => (m.popularity >= 3 || m.vote_count >= 10) && m.release_date
+    (m) => m.vote_count >= 50 && m.release_date
   );
 
   // Fetch full details for top 6 results (in parallel)
@@ -106,21 +106,25 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
 export async function getDailyMovieFromTmdb(): Promise<MediaDetails | null> {
   const dateStr = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
 
-  // Hash date to pick page (1-25) and index (0-19)
+  // Hash date to pick page (1-10) and index (0-19) from popular movies
   let hash = 0;
   for (let i = 0; i < dateStr.length; i++) {
     hash = (hash * 31 + dateStr.charCodeAt(i)) | 0;
   }
   hash = Math.abs(hash);
 
-  const page = (hash % 25) + 1;
-  const data = await tmdbFetch<{ results: TmdbMovieListItem[] }>("/movie/top_rated", {
+  const page = (hash % 10) + 1;
+  const data = await tmdbFetch<{ results: TmdbMovieListItem[] }>("/movie/popular", {
     language: "en-US",
     page: String(page),
   });
 
   if (data.results.length === 0) return null;
 
-  const index = hash % data.results.length;
-  return getMovieDetails(data.results[index].id);
+  // Additional filter: only well-known movies (enough votes)
+  const known = data.results.filter((m) => m.vote_count >= 500);
+  if (known.length === 0) return getMovieDetails(data.results[0].id);
+
+  const index = hash % known.length;
+  return getMovieDetails(known[index].id);
 }
