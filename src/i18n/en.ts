@@ -84,6 +84,7 @@ const en: Translations = {
       `The answer was: ${title} (${year})`,
     correct: "Correct!",
     nextIn: "Next in",
+    loadError: "Failed to load the movie. Please try again later.",
   },
 
   // Comparison labels

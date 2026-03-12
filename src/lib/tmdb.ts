@@ -104,8 +104,7 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
  * Uses the date to pick a stable movie that changes daily.
  */
 export async function getDailyMovieFromTmdb(): Promise<MediaDetails | null> {
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const dateStr = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
 
   // Hash date to pick page (1-25) and index (0-19)
   let hash = 0;

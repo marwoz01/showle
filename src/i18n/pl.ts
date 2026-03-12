@@ -84,6 +84,7 @@ const pl: Translations = {
       `Prawidłowa odpowiedź: ${title} (${year})`,
     correct: "Trafione!",
     nextIn: "Następny za",
+    loadError: "Nie udało się załadować filmu. Spróbuj ponownie później.",
   },
 
   // Comparison labels

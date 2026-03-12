@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDailyMovieFromTmdb } from "@/lib/tmdb";
 
-export const revalidate = 3600; // revalidate every hour
+export const revalidate = 60; // revalidate every minute to pick up new daily movie promptly
 
 export async function GET() {
   try {

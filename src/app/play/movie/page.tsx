@@ -46,7 +46,7 @@ export default function PlayMoviePage() {
   if (error || !dailyAnswer) {
     return (
       <div className="flex min-h-96 flex-col items-center justify-center gap-4">
-        <p className="text-muted">{t.game.back}</p>
+        <p className="text-muted">{t.game.loadError}</p>
         <Link href="/" className="text-accent-purple hover:underline">
           {t.game.back}
         </Link>

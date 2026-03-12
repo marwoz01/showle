@@ -12,21 +12,21 @@ export function getDailyMovie(): MediaDetails {
 }
 
 /**
- * Returns today's date key in YYYY-MM-DD format (UTC).
+ * Returns today's date key in YYYY-MM-DD format (Europe/Warsaw timezone).
  */
 export function getTodayKey(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
 }
 
 /**
- * Returns milliseconds until next midnight (local time).
+ * Returns milliseconds until next midnight in Europe/Warsaw timezone.
  */
 export function getTimeUntilReset(): number {
   const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setHours(24, 0, 0, 0);
-  return tomorrow.getTime() - now.getTime();
+  const warsawNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
+  const midnight = new Date(warsawNow);
+  midnight.setHours(24, 0, 0, 0);
+  return midnight.getTime() - warsawNow.getTime();
 }
 
 /**

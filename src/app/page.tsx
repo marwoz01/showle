@@ -9,7 +9,7 @@ export default function Home() {
   const { t } = useTranslation();
 
   return (
-    <div className="relative space-y-12">
+    <div className="relative space-y-12 overflow-hidden">
       {/* Background ambient glow */}
       <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl" />
       <div className="pointer-events-none absolute -top-20 left-1/3 h-64 w-100 -translate-x-1/2 rounded-full bg-accent-cyan/5 blur-3xl" />
