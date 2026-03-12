@@ -89,7 +89,7 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
           </h1>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <CountdownTimer />
 
           <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-card px-3 py-2 text-sm">
@@ -102,7 +102,7 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
           {status === "playing" && (
             <button
               onClick={giveUp}
-              className="inline-flex items-center gap-2 rounded-lg border border-match-miss/30 px-3 py-2 text-sm text-match-miss transition-colors hover:bg-match-miss/10"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-match-miss/30 px-3 py-2 text-sm text-match-miss transition-colors hover:bg-match-miss/10 sm:w-auto sm:justify-start"
             >
               <Flag size={16} />
               {t.game.giveUp}
