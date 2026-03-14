@@ -14,56 +14,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    // Save game result
-    const gameResult = await tx.gameResult.upsert({
-      where: {
-        userId_dateKey_mode: {
-          userId: session.user!.id!,
-          dateKey,
-          mode,
-        },
-      },
-      update: { status, guessIds, attemptCount, hintsUsed },
-      create: {
-        userId: session.user!.id!,
-        dateKey,
-        mode,
-        status,
-        guessIds,
-        attemptCount,
-        hintsUsed,
-      },
-    });
+  const userId = session.user.id;
 
-    // Update user stats
-    const stats = await tx.userStats.findUnique({
-      where: { userId: session.user!.id! },
-    });
-
-    const won = status === "won";
-    const gamesPlayed = (stats?.gamesPlayed || 0) + 1;
-    const gamesWon = (stats?.gamesWon || 0) + (won ? 1 : 0);
-    const currentStreak = won ? (stats?.currentStreak || 0) + 1 : 0;
-    const maxStreak = Math.max(currentStreak, stats?.maxStreak || 0);
-    const totalGuesses = (stats?.averageGuesses || 0) * (stats?.gamesPlayed || 0) + attemptCount;
-    const averageGuesses = totalGuesses / gamesPlayed;
-
-    await tx.userStats.upsert({
-      where: { userId: session.user!.id! },
-      update: { gamesPlayed, gamesWon, currentStreak, maxStreak, averageGuesses },
-      create: {
-        userId: session.user!.id!,
-        gamesPlayed,
-        gamesWon,
-        currentStreak,
-        maxStreak,
-        averageGuesses,
-      },
-    });
-
-    return gameResult;
+  // Save game result
+  const gameResult = await prisma.gameResult.upsert({
+    where: {
+      userId_dateKey_mode: { userId, dateKey, mode },
+    },
+    update: { status, guessIds, attemptCount, hintsUsed },
+    create: { userId, dateKey, mode, status, guessIds, attemptCount, hintsUsed },
   });
 
-  return NextResponse.json(result);
+  // Update user stats
+  const stats = await prisma.userStats.findUnique({
+    where: { userId },
+  });
+
+  const won = status === "won";
+  const gamesPlayed = (stats?.gamesPlayed || 0) + 1;
+  const gamesWon = (stats?.gamesWon || 0) + (won ? 1 : 0);
+  const currentStreak = won ? (stats?.currentStreak || 0) + 1 : 0;
+  const maxStreak = Math.max(currentStreak, stats?.maxStreak || 0);
+  const totalGuesses = (stats?.averageGuesses || 0) * (stats?.gamesPlayed || 0) + attemptCount;
+  const averageGuesses = totalGuesses / gamesPlayed;
+
+  await prisma.userStats.upsert({
+    where: { userId },
+    update: { gamesPlayed, gamesWon, currentStreak, maxStreak, averageGuesses },
+    create: { userId, gamesPlayed, gamesWon, currentStreak, maxStreak, averageGuesses },
+  });
+
+  return NextResponse.json(gameResult);
 }
