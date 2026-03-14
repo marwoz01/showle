@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   LogOut,
+  Flame,
 } from "lucide-react";
 
 interface NavItem {
@@ -36,6 +37,21 @@ export default function Sidebar() {
   const [prevPathname, setPrevPathname] = useState(pathname);
   const { data: session } = useSession();
   const [proClicked, setProClicked] = useState(false);
+  const [streak, setStreak] = useState<number | null>(null);
+  const [prevSession, setPrevSession] = useState(session);
+
+  if (session !== prevSession) {
+    setPrevSession(session);
+    if (!session?.user) setStreak(null);
+  }
+
+  useEffect(() => {
+    if (!session?.user) return;
+    fetch("/api/user/stats")
+      .then((res) => res.json())
+      .then((data) => setStreak(data.currentStreak ?? 0))
+      .catch(() => {});
+  }, [session]);
 
   // Close sidebar on route change
   if (pathname !== prevPathname) {
@@ -165,6 +181,12 @@ export default function Sidebar() {
                   {session.user.name || session.user.email}
                 </p>
               </div>
+              {streak !== null && streak > 0 && (
+                <div className="flex items-center gap-1 rounded-full bg-orange-500/15 px-2 py-1 text-xs font-semibold text-orange-400">
+                  <Flame size={12} />
+                  {streak}
+                </div>
+              )}
             </div>
             <button
               onClick={() => signOut()}
