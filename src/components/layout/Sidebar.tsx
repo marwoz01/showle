@@ -3,15 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { useTranslation, Locale } from "@/i18n";
 import {
   Clapperboard,
   Home,
   Play,
+  BarChart3,
   Sparkles,
   User,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 
 interface NavItem {
@@ -23,6 +26,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { key: "home", icon: Home, href: "/" },
   { key: "play", icon: Play, href: "/play/movie" },
+  { key: "stats", icon: BarChart3, href: "/stats" },
 ];
 
 export default function Sidebar() {
@@ -30,8 +34,8 @@ export default function Sidebar() {
   const { t, locale, setLocale } = useTranslation();
   const [open, setOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
+  const { data: session } = useSession();
   const [proClicked, setProClicked] = useState(false);
-  const [loginClicked, setLoginClicked] = useState(false);
 
   // Close sidebar on route change
   if (pathname !== prevPathname) {
@@ -150,14 +154,35 @@ export default function Sidebar() {
 
       {/* Auth button */}
       <div className="border-t border-white/6 px-4 py-4">
-        <button
-          onClick={() => setLoginClicked(true)}
-          className={`flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 px-4 py-2.5 text-sm font-medium transition-colors ${loginClicked ? "bg-white/3 text-muted cursor-default" : "bg-white/3 text-foreground hover:bg-white/6"}`}
-          disabled={loginClicked}
-        >
-          <User size={16} />
-          {loginClicked ? t.pro.comingSoon : t.nav.login}
-        </button>
+        {session?.user ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-purple/20 text-accent-purple">
+                <User size={16} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">
+                  {session.user.name || session.user.email}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => signOut()}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground"
+            >
+              <LogOut size={16} />
+              {t.auth.signOut}
+            </button>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/6"
+          >
+            <User size={16} />
+            {t.nav.login}
+          </Link>
+        )}
       </div>
     </>
   );

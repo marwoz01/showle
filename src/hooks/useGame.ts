@@ -42,6 +42,34 @@ function saveState(guessIds: number[], status: GameStatus) {
   }
 }
 
+async function syncToServer(
+  status: GameStatus,
+  guessIds: number[],
+  hintsUsed: number,
+  isComplete: boolean
+) {
+  const dateKey = getTodayKey();
+  const endpoint = isComplete ? "/api/game/complete" : "/api/game/state";
+  const method = isComplete ? "POST" : "PUT";
+
+  try {
+    await fetch(endpoint, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dateKey,
+        mode: "daily-movie",
+        status,
+        guessIds,
+        attemptCount: guessIds.length,
+        hintsUsed,
+      }),
+    });
+  } catch {
+    // Silently fail — localStorage is the primary store
+  }
+}
+
 interface UseGameReturn {
   guesses: GuessResult[];
   revealedHints: Hint[];
@@ -52,7 +80,11 @@ interface UseGameReturn {
   giveUp: () => void;
 }
 
-export function useGame(answer: MediaDetails, t: Translations): UseGameReturn {
+export function useGame(
+  answer: MediaDetails,
+  t: Translations,
+  userId?: string
+): UseGameReturn {
   const [initialized, setInitialized] = useState(false);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [status, setStatus] = useState<GameStatus>("playing");
@@ -70,7 +102,6 @@ export function useGame(answer: MediaDetails, t: Translations): UseGameReturn {
       const saved = loadSavedState();
       if (saved && saved.guessIds.length > 0) {
         try {
-          // Fetch details for each saved guess from API
           const movies = await Promise.all(
             saved.guessIds.map(async (id) => {
               const res = await fetch(`/api/movies/details?id=${id}`);
@@ -92,7 +123,6 @@ export function useGame(answer: MediaDetails, t: Translations): UseGameReturn {
               });
             }
           }
-          // Display newest first
           setGuesses(restoredGuesses.reverse());
           setStatus(saved.status);
         } catch {
@@ -105,7 +135,7 @@ export function useGame(answer: MediaDetails, t: Translations): UseGameReturn {
     restore();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Persist state changes
+  // Persist state changes to localStorage
   useEffect(() => {
     if (!initialized) return;
     const ids = guesses
@@ -134,20 +164,42 @@ export function useGame(answer: MediaDetails, t: Translations): UseGameReturn {
       const newGuesses = [result, ...guesses];
       setGuesses(newGuesses);
 
-      if (isCorrect) {
-        setStatus("won");
-      } else if (newAttempt >= MAX_ATTEMPTS) {
-        setStatus("lost");
+      const newStatus = isCorrect
+        ? "won"
+        : newAttempt >= MAX_ATTEMPTS
+          ? "lost"
+          : "playing";
+
+      if (isCorrect) setStatus("won");
+      else if (newAttempt >= MAX_ATTEMPTS) setStatus("lost");
+
+      // Sync to server for logged-in users
+      if (userId) {
+        const ids = newGuesses
+          .slice()
+          .reverse()
+          .map((g) => g.guess.id);
+        const hintsCount = getRevealedHints(allHints, newAttempt).length;
+        const isComplete = newStatus === "won" || newStatus === "lost";
+        syncToServer(newStatus, ids, hintsCount, isComplete);
       }
     },
-    [status, guesses, answer, t, attemptCount]
+    [status, guesses, answer, t, attemptCount, userId, allHints]
   );
 
   const giveUp = useCallback(() => {
     if (status === "playing") {
       setStatus("lost");
+
+      if (userId) {
+        const ids = guesses
+          .slice()
+          .reverse()
+          .map((g) => g.guess.id);
+        syncToServer("lost", ids, revealedHints.length, true);
+      }
     }
-  }, [status]);
+  }, [status, userId, guesses, revealedHints]);
 
   return {
     guesses,

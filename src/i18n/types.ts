@@ -105,6 +105,22 @@ export interface Translations {
     playAgain: string;
     shareText: (title: string, attempts: number, max: number) => string;
   };
+  auth: {
+    signIn: string;
+    signUp: string;
+    signOut: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    name: string;
+    namePlaceholder: string;
+    noAccount: string;
+    hasAccount: string;
+    passwordMin: string;
+    passwordMismatch: string;
+    invalidCredentials: string;
+    emailInUse: string;
+  };
   lang: {
     label: string;
     pl: string;

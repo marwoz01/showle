@@ -138,6 +138,24 @@ const pl: Translations = {
       `Showle - Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
   },
 
+  // Auth
+  auth: {
+    signIn: "Zaloguj się",
+    signUp: "Zarejestruj się",
+    signOut: "Wyloguj się",
+    email: "Email",
+    password: "Hasło",
+    confirmPassword: "Potwierdź hasło",
+    name: "Nazwa użytkownika",
+    namePlaceholder: "Jan Kowalski",
+    noAccount: "Nie masz konta?",
+    hasAccount: "Masz już konto?",
+    passwordMin: "Hasło musi mieć minimum 8 znaków.",
+    passwordMismatch: "Hasła nie są identyczne.",
+    invalidCredentials: "Nieprawidłowy email lub hasło.",
+    emailInUse: "Ten email jest już zajęty.",
+  },
+
   // Language
   lang: {
     label: "Język",

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { I18nProvider } from "@/i18n";
+import AuthProvider from "@/components/providers/AuthProvider";
 import Sidebar from "@/components/layout/Sidebar";
 import "./globals.css";
 
@@ -33,10 +34,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
       >
-        <I18nProvider>
-          <Sidebar />
-          <main className="min-h-screen overflow-x-hidden p-4 pt-16 lg:ml-60 lg:p-10">{children}</main>
-        </I18nProvider>
+        <AuthProvider>
+          <I18nProvider>
+            <Sidebar />
+            <main className="min-h-screen overflow-x-hidden p-4 pt-16 lg:ml-60 lg:p-10">{children}</main>
+          </I18nProvider>
+        </AuthProvider>
       </body>
     </html>
   );
