@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
@@ -31,14 +30,12 @@ export async function POST(request: NextRequest) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const newUser = await tx.user.create({
-        data: { email, passwordHash, name: name || null },
-      });
-      await tx.userStats.create({
-        data: { userId: newUser.id },
-      });
-      return newUser;
+    const user = await prisma.user.create({
+      data: { email, passwordHash, name: name || null },
+    });
+
+    await prisma.userStats.create({
+      data: { userId: user.id },
     });
 
     return NextResponse.json(
