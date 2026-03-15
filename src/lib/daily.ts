@@ -69,8 +69,8 @@ function getDailyIndex(dateStr: string): number {
  * Get today's daily movie from the pre-built eligible pool.
  * Fetches full details from TMDB at runtime.
  */
-export async function getDailyMovie(): Promise<MediaDetails | null> {
-  const today = getTodayKey();
+export async function getDailyMovie(dateKey?: string): Promise<MediaDetails | null> {
+  const today = dateKey || getTodayKey();
   const index = getDailyIndex(today);
   const movie = eligibleMovies[index];
   return getMovieDetails(movie.id);

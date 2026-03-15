@@ -23,7 +23,9 @@ export default function PlayMoviePage() {
   useEffect(() => {
     async function fetchDaily() {
       try {
-        const res = await fetch("/api/movies/daily");
+        // Send client dateKey to ensure we get today's movie (avoids stale cache)
+        const dateKey = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
+        const res = await fetch(`/api/movies/daily?dateKey=${dateKey}`);
         if (!res.ok) throw new Error("Failed");
         const movie: MediaDetails = await res.json();
         setDailyAnswer(movie);
