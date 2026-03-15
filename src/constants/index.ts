@@ -7,7 +7,7 @@ export const GAME_MODES = [
     description: "Odgadnij film dnia",
     icon: "🎬",
     href: "/play/movie",
-    accentColor: "accent-green",
+    accentColor: "accent-purple",
   },
   {
     id: "daily-series" as const,
@@ -23,7 +23,7 @@ export const GAME_MODES = [
     description: "Graj bez limitu",
     icon: "∞",
     href: "/play/unlimited",
-    accentColor: "accent-cyan",
+    accentColor: "accent-purple",
   },
 ] as const;
 

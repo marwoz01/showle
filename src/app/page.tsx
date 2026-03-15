@@ -9,10 +9,10 @@ export default function Home() {
   const { t } = useTranslation();
 
   return (
-    <div className="relative space-y-12">
+    <div className="relative space-y-12 overflow-hidden">
       {/* Background ambient glow */}
       <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl" />
-      <div className="pointer-events-none absolute -top-20 left-1/3 h-64 w-100 -translate-x-1/2 rounded-full bg-accent-cyan/5 blur-3xl" />
+      <div className="pointer-events-none absolute -top-20 left-1/3 h-64 w-100 -translate-x-1/2 rounded-full bg-accent-purple/5 blur-3xl" />
 
       {/* Page header */}
       <div className="relative">
@@ -31,7 +31,6 @@ export default function Home() {
           href="/play/movie"
           actionLabel={t.modes.playChallenge}
           badge={t.modes.popular}
-          accentColor="green"
         />
         <GameModeCard
           icon={<Tv size={22} />}
@@ -40,7 +39,6 @@ export default function Home() {
           href="/play/series"
           actionLabel={t.modes.comingSoon}
           badge={t.modes.comingSoon}
-          accentColor="purple"
           disabled
         />
         <GameModeCard
@@ -50,7 +48,6 @@ export default function Home() {
           href="/play/unlimited"
           actionLabel={t.modes.comingSoon}
           badge={t.modes.comingSoon}
-          accentColor="cyan"
           disabled
         />
       </div>
