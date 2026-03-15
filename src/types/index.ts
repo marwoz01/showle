@@ -39,6 +39,7 @@ export interface Hint {
   id: number;
   type:
     | "director_letter"
+    | "director"
     | "genre"
     | "decade"
     | "country"

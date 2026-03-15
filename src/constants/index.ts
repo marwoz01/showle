@@ -1,4 +1,4 @@
-export const MAX_ATTEMPTS = 10;
+export const MAX_ATTEMPTS = 7;
 
 export const GAME_MODES = [
   {

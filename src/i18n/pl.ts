@@ -113,7 +113,9 @@ const pl: Translations = {
   hints: {
     title: "Wskazówki",
     directorStartsWith: (letter: string) => `Reżyser zaczyna się na: ${letter}`,
+    directorIs: (name: string) => `Reżyser: ${name}`,
     genreIs: (genre: string) => `Jeden z gatunków: ${genre}`,
+    genresAre: (genres: string) => `Gatunki: ${genres}`,
     fromDecade: (decade: number) => `Film pochodzi z lat ${decade}.`,
     countryIs: (country: string) => `Kraj produkcji: ${country}`,
     tagline: (tagline: string) => `Tagline: "${tagline}"`,

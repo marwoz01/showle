@@ -84,7 +84,9 @@ export interface Translations {
   hints: {
     title: string;
     directorStartsWith: (letter: string) => string;
+    directorIs: (name: string) => string;
     genreIs: (genre: string) => string;
+    genresAre: (genres: string) => string;
     fromDecade: (decade: number) => string;
     countryIs: (country: string) => string;
     tagline: (tagline: string) => string;
