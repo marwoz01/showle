@@ -52,6 +52,16 @@ body {
   50% { transform: translate(-40px, -50px) scale(1.2); opacity: 0.7; }
 }
 
+@keyframes flame-flicker {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  20% { transform: scale(1.15) rotate(-3deg); }
+  40% { transform: scale(0.95) rotate(2deg); }
+  60% { transform: scale(1.1) rotate(-2deg); }
+  80% { transform: scale(1.05) rotate(1deg); }
+}
+
+.animate-flame { animation: flame-flicker 1.5s ease-in-out infinite; }
+
 .animate-blob-1 { animation: blob-1 7s ease-in-out infinite; }
 .animate-blob-2 { animation: blob-2 9s ease-in-out infinite; }
 .animate-blob-3 { animation: blob-3 11s ease-in-out infinite; }

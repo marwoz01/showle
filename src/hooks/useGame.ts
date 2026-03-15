@@ -181,7 +181,13 @@ export function useGame(
           .map((g) => g.guess.id);
         const hintsCount = getRevealedHints(allHints, newAttempt).length;
         const isComplete = newStatus === "won" || newStatus === "lost";
-        syncToServer(newStatus, ids, hintsCount, isComplete);
+        syncToServer(newStatus, ids, hintsCount, isComplete).then(() => {
+          if (isComplete) {
+            window.dispatchEvent(new Event("game-completed"));
+          }
+        });
+      } else if (newStatus === "won" || newStatus === "lost") {
+        window.dispatchEvent(new Event("game-completed"));
       }
     },
     [status, guesses, answer, t, attemptCount, userId, allHints]
@@ -196,7 +202,11 @@ export function useGame(
           .slice()
           .reverse()
           .map((g) => g.guess.id);
-        syncToServer("lost", ids, revealedHints.length, true);
+        syncToServer("lost", ids, revealedHints.length, true).then(() => {
+          window.dispatchEvent(new Event("game-completed"));
+        });
+      } else {
+        window.dispatchEvent(new Event("game-completed"));
       }
     }
   }, [status, userId, guesses, revealedHints]);
