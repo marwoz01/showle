@@ -16,12 +16,37 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://showle.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Showle",
+  title: {
+    default: "Showle — Daily Movie Guessing Game",
+    template: "%s | Showle",
+  },
   description:
-    "Daily movie & series guessing game. Compare parameters, discover hints, guess the title!",
+    "Guess the daily movie by comparing year, genre, director, budget and more. A new challenge every day!",
+  metadataBase: new URL(siteUrl),
   icons: {
     icon: "/favicon.svg",
+  },
+  openGraph: {
+    title: "Showle — Daily Movie Guessing Game",
+    description:
+      "Guess the daily movie by comparing year, genre, director, budget and more. A new challenge every day!",
+    url: siteUrl,
+    siteName: "Showle",
+    locale: "pl_PL",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Showle — Daily Movie Guessing Game",
+    description:
+      "Guess the daily movie by comparing year, genre, director, budget and more.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
