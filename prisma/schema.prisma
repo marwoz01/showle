@@ -6,36 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  sessions    Session[]
-  gameResults GameResult[]
-  stats       UserStats?
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 model GameResult {
   id           String   @id @default(cuid())
   userId       String
@@ -47,9 +17,8 @@ model GameResult {
   hintsUsed    Int
   completedAt  DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([userId, dateKey, mode])
+  @@index([userId])
 }
 
 model UserStats {
@@ -60,6 +29,4 @@ model UserStats {
   currentStreak  Int    @default(0)
   maxStreak      Int    @default(0)
   averageGuesses Float  @default(0)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

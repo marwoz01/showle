@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@clerk/nextjs";
 import { MAX_ATTEMPTS } from "@/constants";
 import { useGame } from "@/hooks/useGame";
 import { useTranslation } from "@/i18n";
@@ -62,7 +62,7 @@ export default function PlayMoviePage() {
 
 function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
   const { t } = useTranslation();
-  const { data: session } = useSession();
+  const { userId } = useAuth();
 
   const {
     guesses,
@@ -72,7 +72,7 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
     attemptCount,
     submitGuess,
     giveUp,
-  } = useGame(dailyAnswer, t, session?.user?.id);
+  } = useGame(dailyAnswer, t, userId ?? undefined);
 
   const isFinished = status === "won" || status === "lost";
 

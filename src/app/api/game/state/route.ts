@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const result = await prisma.gameResult.findUnique({
     where: {
       userId_dateKey_mode: {
-        userId: session.user.id,
+        userId,
         dateKey,
         mode,
       },
@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -48,14 +48,14 @@ export async function PUT(request: NextRequest) {
   const result = await prisma.gameResult.upsert({
     where: {
       userId_dateKey_mode: {
-        userId: session.user.id,
+        userId,
         dateKey,
         mode,
       },
     },
     update: { status, guessIds, attemptCount, hintsUsed },
     create: {
-      userId: session.user.id,
+      userId,
       dateKey,
       mode,
       status,

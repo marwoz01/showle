@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { useTranslation, Locale } from "@/i18n";
 import {
   Clapperboard,
@@ -35,20 +35,21 @@ export default function Sidebar() {
   const { t, locale, setLocale } = useTranslation();
   const [open, setOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
-  const { data: session } = useSession();
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
   const [proClicked, setProClicked] = useState(false);
   const [streak, setStreak] = useState<number | null>(null);
-  const [prevSession, setPrevSession] = useState(session);
+  const [prevSignedIn, setPrevSignedIn] = useState(isSignedIn);
   const [streakKey, setStreakKey] = useState(0);
 
-  if (session !== prevSession) {
-    setPrevSession(session);
-    if (!session?.user) setStreak(null);
+  if (isSignedIn !== prevSignedIn) {
+    setPrevSignedIn(isSignedIn);
+    if (!isSignedIn) setStreak(null);
   }
 
   // Fetch streak on login, route change, and window focus
   useEffect(() => {
-    if (!session?.user) return;
+    if (!isSignedIn) return;
 
     const fetchStreak = () => {
       fetch("/api/user/stats")
@@ -66,7 +67,7 @@ export default function Sidebar() {
       window.removeEventListener("focus", refresh);
       window.removeEventListener("game-completed", refresh);
     };
-  }, [session, pathname, streakKey]);
+  }, [isSignedIn, pathname, streakKey]);
 
   // Close sidebar on route change
   if (pathname !== prevPathname) {
@@ -185,7 +186,7 @@ export default function Sidebar() {
 
       {/* Auth button */}
       <div className="border-t border-white/6 px-4 py-4">
-        {session?.user ? (
+        {isSignedIn && user ? (
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-purple/20 text-accent-purple">
@@ -193,7 +194,7 @@ export default function Sidebar() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">
-                  {session.user.name || session.user.email}
+                  {user.fullName || user.primaryEmailAddress?.emailAddress}
                 </p>
               </div>
               {streak !== null && streak > 0 && (
@@ -213,7 +214,7 @@ export default function Sidebar() {
           </div>
         ) : (
           <Link
-            href="/login"
+            href="/sign-in"
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/6"
           >
             <User size={16} />

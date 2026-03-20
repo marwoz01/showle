@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
 import {
   ChevronLeft,
@@ -23,13 +23,13 @@ interface Stats {
 
 export default function StatsPage() {
   const { t } = useTranslation();
-  const { data: session, status: authStatus } = useSession();
+  const { isSignedIn, isLoaded } = useUser();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (authStatus === "loading") return;
-    if (!session) {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
       setLoading(false);
       return;
     }
@@ -39,9 +39,9 @@ export default function StatsPage() {
       .then(setStats)
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [session, authStatus]);
+  }, [isSignedIn, isLoaded]);
 
-  if (authStatus === "loading" || loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="flex min-h-96 items-center justify-center">
         <Loader2 size={32} className="animate-spin text-muted" />
@@ -49,13 +49,13 @@ export default function StatsPage() {
     );
   }
 
-  if (!session) {
+  if (!isSignedIn) {
     return (
       <div className="flex min-h-96 flex-col items-center justify-center gap-4">
         <BarChart3 size={48} className="text-muted" />
         <p className="text-muted">{t.auth.signIn}</p>
         <Link
-          href="/login"
+          href="/sign-in"
           className="rounded-lg bg-accent-purple px-6 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
           {t.nav.login}
