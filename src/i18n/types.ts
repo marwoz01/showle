@@ -10,6 +10,7 @@ export interface Translations {
     search: string;
     other: string;
     login: string;
+    recommend: string;
   };
   pro: {
     title: string;
@@ -122,6 +123,37 @@ export interface Translations {
     passwordMismatch: string;
     invalidCredentials: string;
     emailInUse: string;
+  };
+  recommend: {
+    title: string;
+    subtitle: string;
+    modeTitle: string;
+    modeDesc: string;
+    genresLabel: string;
+    selectGenre: string;
+    yearLabel: string;
+    popularityLabel: string;
+    popularityPopular: string;
+    popularityMedium: string;
+    popularityNiche: string;
+    submit: string;
+    loading: string;
+    noResults: string;
+    error: string;
+    tryAgain: string;
+    changePreferences: string;
+    justification: string;
+    director: string;
+    rating: string;
+    getRecommendations: string;
+    topPick: string;
+    whyRecommend: string;
+    ctaSubtext: string;
+    popularityPopularDesc: string;
+    popularityMediumDesc: string;
+    popularityNicheDesc: string;
+    yearPresets: string;
+    yearAny: string;
   };
   lang: {
     label: string;

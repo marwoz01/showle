@@ -13,6 +13,7 @@ const en: Translations = {
     search: "Search...",
     other: "Other",
     login: "Sign In",
+    recommend: "Recommendations",
   },
 
   // Pro section
@@ -27,7 +28,7 @@ const en: Translations = {
   home: {
     title: "Play",
     subtitle:
-      "Test your cinematic knowledge. Identify movies and series from parameter comparisons and hints.",
+      "Guess the daily movie or discover your perfect pick for tonight — all in one place.",
     filter: "Filter",
     viewGrid: "View: Grid",
   },
@@ -156,6 +157,39 @@ const en: Translations = {
     passwordMismatch: "Passwords do not match.",
     invalidCredentials: "Invalid email or password.",
     emailInUse: "This email is already in use.",
+  },
+
+  // Recommendations
+  recommend: {
+    title: "What to Watch Tonight?",
+    subtitle: "Popcorn ready, blanket on — tell us what you're in the mood for and we'll handle the rest.",
+    modeTitle: "What to Watch?",
+    modeDesc: "Got the snacks but no movie? Tell us what you like and we'll pick something perfect for tonight.",
+    genresLabel: "What are you into?",
+    selectGenre: "Select at least 1 genre",
+    yearLabel: "Release year",
+    popularityLabel: "How well-known?",
+    popularityPopular: "Big hits",
+    popularityMedium: "Under the radar",
+    popularityNiche: "Hidden gems",
+    submit: "Find my movies",
+    loading: "Don't eat all the popcorn yet... your picks are almost ready!",
+    noResults: "Hmm, nothing fits. Try tweaking your preferences — something great might pop up!",
+    error: "Something went wrong. Give it another try in a moment.",
+    tryAgain: "Show me different movies",
+    changePreferences: "Change Preferences",
+    justification: "Why this movie?",
+    director: "Director",
+    rating: "Rating",
+    getRecommendations: "Find my movies",
+    topPick: "Top Pick",
+    whyRecommend: "Why we recommend this",
+    ctaSubtext: "You'll get 5 personalized recommendations",
+    popularityPopularDesc: "Well-known blockbusters",
+    popularityMediumDesc: "Appreciated by cinephiles",
+    popularityNicheDesc: "Hidden gems to discover",
+    yearPresets: "Quick pick",
+    yearAny: "Any",
   },
 
   // Language

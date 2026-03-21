@@ -3,7 +3,7 @@
 import GameModeCard from "@/components/home/GameModeCard";
 import HowItWorks from "@/components/home/HowItWorks";
 import { useTranslation } from "@/i18n";
-import { Clapperboard, Tv, Infinity } from "lucide-react";
+import { Clapperboard, Sparkles } from "lucide-react";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -23,7 +23,7 @@ export default function Home() {
       </div>
 
       {/* Game mode cards */}
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <GameModeCard
           icon={<Clapperboard size={22} />}
           title={t.modes.dailyMovie}
@@ -32,24 +32,16 @@ export default function Home() {
           actionLabel={t.modes.playChallenge}
           badge={t.modes.popular}
         />
-        <GameModeCard
-          icon={<Tv size={22} />}
-          title={t.modes.dailySeries}
-          description={t.modes.dailySeriesDesc}
-          href="/play/series"
-          actionLabel={t.modes.comingSoon}
-          badge={t.modes.comingSoon}
-          disabled
-        />
-        <GameModeCard
-          icon={<Infinity size={22} />}
-          title={t.modes.unlimited}
-          description={t.modes.unlimitedDesc}
-          href="/play/unlimited"
-          actionLabel={t.modes.comingSoon}
-          badge={t.modes.comingSoon}
-          disabled
-        />
+        <div className="md:col-span-2 [&>a]:h-full">
+          <GameModeCard
+            icon={<Sparkles size={22} />}
+            title={t.recommend.modeTitle}
+            description={t.recommend.modeDesc}
+            href="/recommend"
+            actionLabel={t.recommend.getRecommendations}
+            badge={t.modes.new}
+          />
+        </div>
       </div>
 
       {/* Divider */}

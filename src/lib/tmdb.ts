@@ -68,6 +68,47 @@ export async function searchMovies(query: string): Promise<MediaDetails[]> {
 }
 
 /**
+ * Search TMDB for a movie by title and optional year. Returns the best match.
+ */
+export async function searchMovieByTitleAndYear(
+  title: string,
+  year?: number
+): Promise<MediaDetails | null> {
+  try {
+    const params: Record<string, string> = {
+      query: title,
+      language: "en-US",
+      page: "1",
+    };
+    if (year) params.year = String(year);
+
+    const data = await tmdbFetch<{ results: TmdbMovieListItem[] }>(
+      "/search/movie",
+      params
+    );
+
+    if (data.results.length === 0) return null;
+
+    const sorted = [...data.results]
+      .filter((m) => m.vote_count >= 10 && m.release_date)
+      .sort((a, b) => {
+        if (year) {
+          const aYear = parseInt(a.release_date.slice(0, 4));
+          const bYear = parseInt(b.release_date.slice(0, 4));
+          if (aYear === year && bYear !== year) return -1;
+          if (bYear === year && aYear !== year) return 1;
+        }
+        return b.vote_count - a.vote_count;
+      });
+
+    if (sorted.length === 0) return null;
+    return getMovieDetails(sorted[0].id);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Get full movie details by ID, mapped to MediaDetails.
  */
 export async function getMovieDetails(id: number): Promise<MediaDetails | null> {

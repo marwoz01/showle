@@ -10,17 +10,17 @@ Build an engaging, polished daily game that movie fans return to every day. Mone
 
 ## Tech Stack
 
-| Layer          | Technology                                      |
-| -------------- | ----------------------------------------------- |
-| Framework      | Next.js 16 (App Router, Turbopack)              |
-| Language       | TypeScript (strict mode)                        |
-| UI             | React 19, Tailwind CSS v4, Lucide icons         |
-| Auth           | Clerk (`@clerk/nextjs`)                         |
-| Database       | PostgreSQL on Neon (serverless) via Prisma 7     |
-| External API   | TMDB (The Movie Database) for movie data        |
-| i18n           | Custom context-based solution (PL + EN)         |
-| Deployment     | Vercel                                          |
-| Fonts          | Inter (body), Space Grotesk (display)           |
+| Layer        | Technology                                   |
+| ------------ | -------------------------------------------- |
+| Framework    | Next.js 16 (App Router, Turbopack)           |
+| Language     | TypeScript (strict mode)                     |
+| UI           | React 19, Tailwind CSS v4, Lucide icons      |
+| Auth         | Clerk (`@clerk/nextjs`)                      |
+| Database     | PostgreSQL on Neon (serverless) via Prisma 7 |
+| External API | TMDB (The Movie Database) for movie data     |
+| i18n         | Custom context-based solution (PL + EN)      |
+| Deployment   | Vercel                                       |
+| Fonts        | Inter (body), Space Grotesk (display)        |
 
 ## How to Run
 

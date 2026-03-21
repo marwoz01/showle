@@ -13,12 +13,14 @@ const pl: Translations = {
     search: "Szukaj...",
     other: "Inne",
     login: "Zaloguj się",
+    recommend: "Rekomendacje",
   },
 
   // Pro section
   pro: {
     title: "Odblokuj Pro",
-    description: "Usuń reklamy, graj bez limitu i sprawdzaj szczegółowe statystyki.",
+    description:
+      "Usuń reklamy, graj bez limitu i sprawdzaj szczegółowe statystyki.",
     upgrade: "Ulepsz do Pro",
     comingSoon: "Wkrótce dostępne",
   },
@@ -27,7 +29,7 @@ const pl: Translations = {
   home: {
     title: "Graj",
     subtitle:
-      "Sprawdź swoją wiedzę filmową. Rozpoznawaj filmy i seriale na podstawie porównań parametrów i wskazówek.",
+      "Zgaduj film dnia albo odkryj idealny tytuł na wieczór — wszystko w jednym miejscu.",
     filter: "Filtruj",
     viewGrid: "Widok: Siatka",
   },
@@ -156,6 +158,42 @@ const pl: Translations = {
     passwordMismatch: "Hasła nie są identyczne.",
     invalidCredentials: "Nieprawidłowy email lub hasło.",
     emailInUse: "Ten email jest już zajęty.",
+  },
+
+  // Recommendations
+  recommend: {
+    title: "Co dziś obejrzeć?",
+    subtitle: "Powiedz, na co masz ochotę, resztą zajmiemy się my.",
+    modeTitle: "Co obejrzeć?",
+    modeDesc:
+      "Nie wiesz, co obejrzeć? Dobierzemy film idealnie pasujący do Twojego nastroju.",
+    genresLabel: "Na co masz dziś ochotę?",
+    selectGenre: "Wybierz przynajmniej 1 gatunek",
+    yearLabel: "Rok premiery",
+    popularityLabel: "Jak popularne?",
+    popularityPopular: "Hity",
+    popularityMedium: "Średnio znane",
+    popularityNiche: "Ukryte perełki",
+    submit: "Dobierz film",
+    loading:
+      "Nie zjadaj jeszcze całego popcornu... zaraz pojawią się dobrane filmy!",
+    noResults:
+      "Hmm, nic nie pasuje. Spróbuj zmienić preferencje — może trafi się coś fajnego!",
+    error: "Coś poszło nie tak. Spróbuj ponownie za chwilę.",
+    tryAgain: "Pokaż inne filmy",
+    changePreferences: "Zmień preferencje",
+    justification: "Dlaczego ten film?",
+    director: "Reżyser",
+    rating: "Ocena",
+    getRecommendations: "Dobierz film",
+    topPick: "Top Pick",
+    whyRecommend: "Dlaczego polecamy",
+    ctaSubtext: "Dobierzemy 5 filmów idealnie dopasowanych do Twoich preferencji",
+    popularityPopularDesc: "Znane szerokiej publiczności",
+    popularityMediumDesc: "Cenione przez koneserów",
+    popularityNicheDesc: "Mało znane perełki do odkrycia",
+    yearPresets: "Szybki wybór",
+    yearAny: "Dowolny",
   },
 
   // Language
