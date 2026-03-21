@@ -28,28 +28,28 @@ export default function RecommendationCard({
   if (variant === "top") {
     return (
       <div
-        className="group relative flex overflow-hidden rounded-2xl border border-white/6 bg-card transition-all hover:bg-card-hover"
+        className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/6 bg-card transition-all hover:bg-card-hover sm:flex-row"
         style={{ animation: "fadeSlideUp 0.4s ease-out both" }}
       >
-        {/* Poster — left column */}
-        <div className="shrink-0 p-4 pr-0">
-          <div className="relative w-40 overflow-hidden rounded-xl sm:w-48">
+        {/* Poster */}
+        <div className="shrink-0 p-4 pb-0 sm:pb-4 sm:pr-0">
+          <div className="relative overflow-hidden rounded-xl">
             {movie.posterPath ? (
               <img
                 src={`https://image.tmdb.org/t/p/w342${movie.posterPath}`}
                 alt={movie.title}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:w-48"
               />
             ) : (
-              <div className="flex aspect-3/4 items-center justify-center bg-white/5 p-4 text-center text-sm text-muted">
+              <div className="flex aspect-3/4 items-center justify-center bg-white/5 p-4 text-center text-sm text-muted sm:w-48">
                 {movie.title}
               </div>
             )}
           </div>
         </div>
 
-        {/* Info — right column */}
-        <div className="flex flex-1 flex-col p-5 sm:p-6">
+        {/* Info */}
+        <div className="flex flex-1 flex-col p-4 sm:p-6">
           {/* Top Pick badge + meta */}
           <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
             <span className="font-bold uppercase tracking-wider text-accent-purple">

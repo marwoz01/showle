@@ -9,10 +9,10 @@ export default function Home() {
   const { t } = useTranslation();
 
   return (
-    <div className="relative space-y-12 overflow-hidden">
-      {/* Background ambient glow */}
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl" />
-      <div className="pointer-events-none absolute -top-20 left-1/3 h-64 w-100 -translate-x-1/2 rounded-full bg-accent-purple/5 blur-3xl" />
+    <div className="relative space-y-12 overflow-x-hidden">
+      {/* Background ambient glow — hidden on mobile */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
+      <div className="pointer-events-none absolute -top-20 left-1/3 hidden h-64 w-100 -translate-x-1/2 rounded-full bg-accent-purple/5 blur-3xl sm:block" />
 
       {/* Page header */}
       <div className="relative">

@@ -84,9 +84,9 @@ export default function RecommendPage() {
   }
 
   return (
-    <div ref={topRef} className="relative space-y-8 overflow-hidden">
-      {/* Background ambient glow */}
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl" />
+    <div ref={topRef} className="relative space-y-8 overflow-x-hidden">
+      {/* Background ambient glow — hidden on mobile */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
 
       {/* Header */}
       <div className="relative">
@@ -179,17 +179,17 @@ export default function RecommendPage() {
             )}
 
             {/* Action buttons */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <button
                 onClick={handleTryAgain}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-purple px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-purple px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:w-auto"
               >
                 <RefreshCw size={16} />
                 {t.recommend.tryAgain}
               </button>
               <button
                 onClick={handleChangePreferences}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-white/6"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-white/6 sm:w-auto"
               >
                 <ArrowRight size={16} className="rotate-180" />
                 {t.recommend.changePreferences}
