@@ -118,8 +118,8 @@ export default function RecommendationCard({
       }}
     >
       {/* Poster */}
-      <div className="p-3 pb-0">
-        <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg">
+      <div className="p-2.5 pb-0">
+        <div className="relative aspect-4/5 w-full overflow-hidden rounded-lg">
           {movie.posterPath ? (
             <img
               src={`https://image.tmdb.org/t/p/w185${movie.posterPath}`}
@@ -135,14 +135,14 @@ export default function RecommendationCard({
       </div>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col p-3">
+      <div className="flex flex-1 flex-col p-2.5">
         {/* Title */}
-        <h3 className="mb-0.5 text-xs font-bold leading-tight text-foreground">
+        <h3 className="mb-0.5 text-sm font-bold leading-tight text-foreground">
           {movie.title}
         </h3>
 
         {/* Meta */}
-        <div className="mb-1.5 flex items-center gap-1 text-[10px] text-muted">
+        <div className="mb-1 flex items-center gap-1 text-[10px] text-muted">
           <span>{movie.year}</span>
           {movie.runtime > 0 && (
             <>
@@ -153,7 +153,7 @@ export default function RecommendationCard({
         </div>
 
         {/* Rating + genres */}
-        <div className="mb-1.5 flex flex-wrap items-center gap-1">
+        <div className="mb-1 flex flex-wrap items-center gap-1">
           <div className="flex items-center gap-0.5 rounded bg-yellow-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-yellow-400">
             <Star size={9} fill="currentColor" />
             {movie.rating}
@@ -168,21 +168,11 @@ export default function RecommendationCard({
           ))}
         </div>
 
-        {/* Director */}
-        {movie.director && (
-          <p className="mb-1.5 text-[10px] text-muted">
-            {movie.director}
-          </p>
-        )}
-
         {/* Justification tag */}
-        <div className="mt-auto rounded-md bg-accent-purple/10 px-2 py-1.5">
+        <div className="mt-auto rounded-md bg-accent-purple/10 px-1.5 py-1">
           <div className="flex items-start gap-1">
-            <Zap
-              size={9}
-              className="mt-0.5 shrink-0 text-accent-purple"
-            />
-            <p className="line-clamp-3 text-[10px] leading-relaxed text-accent-purple">
+            <Zap size={8} className="mt-0.5 shrink-0 text-accent-purple" />
+            <p className="line-clamp-4 text-[10px] leading-snug text-accent-purple">
               {justification}
             </p>
           </div>

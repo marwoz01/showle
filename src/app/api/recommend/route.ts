@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     const recommendations: { movie: MediaDetails; justification: string }[] = [];
 
     for (const rec of parsed.recommendations) {
-      if (recommendations.length >= 5) break;
+      if (recommendations.length >= 6) break;
 
       // 3-level fallback: title_en+year → title_en → title+year
       let movie = await searchMovieByTitleAndYear(rec.title_en, rec.year);

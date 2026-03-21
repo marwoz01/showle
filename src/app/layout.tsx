@@ -103,7 +103,10 @@ export default function RootLayout({
         >
           <I18nProvider>
             <Sidebar />
-            <main className="min-h-screen overflow-x-hidden p-4 pt-18 lg:ml-60 lg:p-10">{children}</main>
+            <main className="relative min-h-screen overflow-x-hidden p-4 pt-18 lg:ml-60 lg:p-10">
+              <div className="pointer-events-none absolute left-1/2 top-0 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
+              {children}
+            </main>
           </I18nProvider>
         </body>
       </html>

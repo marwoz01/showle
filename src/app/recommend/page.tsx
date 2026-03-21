@@ -85,9 +85,6 @@ export default function RecommendPage() {
 
   return (
     <div ref={topRef} className="relative space-y-8 overflow-x-hidden">
-      {/* Background ambient glow — hidden on mobile */}
-      <div className="pointer-events-none absolute -top-32 left-1/2 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
-
       {/* Header */}
       <div className="relative">
         <div className="mb-4 flex items-center gap-3">
@@ -166,7 +163,7 @@ export default function RecommendPage() {
 
             {/* Remaining results — vertical cards */}
             {results.length > 1 && (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {results.slice(1).map((rec, i) => (
                   <RecommendationCard
                     key={rec.movie.id}

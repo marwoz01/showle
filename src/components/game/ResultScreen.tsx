@@ -81,7 +81,7 @@ export default function ResultScreen({
       )
       .join("\n");
 
-    const text = `${t.result.shareText(answer.title, attempts, MAX_ATTEMPTS)}\n\n${emojiGrid}`;
+    const text = t.result.shareText(answer.title, attempts, MAX_ATTEMPTS);
 
     try {
       await navigator.clipboard.writeText(text);
