@@ -70,6 +70,7 @@ export interface Translations {
     genre: string;
     country: string;
     director: string;
+    leadActor: string;
     runtime: string;
     budget: string;
     popularity: string;

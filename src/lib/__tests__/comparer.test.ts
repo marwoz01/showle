@@ -12,6 +12,7 @@ function makeMovie(overrides: Partial<MediaDetails> = {}): MediaDetails {
     genres: ["Action"],
     country: "United States",
     director: "John Doe",
+    leadActor: "Actor One",
     runtime: 120,
     budget: 100,
     popularity: 50,
@@ -27,7 +28,7 @@ describe("compareMedia", () => {
     const movie = makeMovie();
     const result = compareMedia(movie, movie, en);
 
-    expect(result).toHaveLength(8);
+    expect(result).toHaveLength(9);
     result.forEach((field) => {
       expect(field.status).toBe("exact");
     });
@@ -39,6 +40,7 @@ describe("compareMedia", () => {
       genres: ["Horror"],
       country: "France",
       director: "Jane Smith",
+      leadActor: "Actor Two",
       runtime: 200,
       budget: 5,
       popularity: 5,
@@ -168,79 +170,79 @@ describe("director comparison", () => {
 describe("runtime comparison", () => {
   it("exact when same runtime", () => {
     const result = compareMedia(makeMovie({ runtime: 120 }), makeMovie({ runtime: 120 }), en);
-    expect(result[4].status).toBe("exact");
+    expect(result[5].status).toBe("exact");
   });
 
   it("partial when within 15 minutes", () => {
     const result = compareMedia(makeMovie({ runtime: 110 }), makeMovie({ runtime: 120 }), en);
-    expect(result[4].status).toBe("partial");
-    expect(result[4].direction).toBe("up");
+    expect(result[5].status).toBe("partial");
+    expect(result[5].direction).toBe("up");
   });
 
   it("miss when more than 15 minutes apart", () => {
     const result = compareMedia(makeMovie({ runtime: 90 }), makeMovie({ runtime: 120 }), en);
-    expect(result[4].status).toBe("miss");
+    expect(result[5].status).toBe("miss");
   });
 });
 
 describe("budget comparison", () => {
   it("exact when same budget", () => {
     const result = compareMedia(makeMovie({ budget: 100 }), makeMovie({ budget: 100 }), en);
-    expect(result[5].status).toBe("exact");
+    expect(result[6].status).toBe("exact");
   });
 
   it("partial when within 25% ratio", () => {
     const result = compareMedia(makeMovie({ budget: 80 }), makeMovie({ budget: 100 }), en);
-    expect(result[5].status).toBe("partial");
+    expect(result[6].status).toBe("partial");
   });
 
   it("miss when over 25% ratio", () => {
     const result = compareMedia(makeMovie({ budget: 10 }), makeMovie({ budget: 100 }), en);
-    expect(result[5].status).toBe("miss");
+    expect(result[6].status).toBe("miss");
   });
 
   it("exact when both budgets unknown (0)", () => {
     const result = compareMedia(makeMovie({ budget: 0 }), makeMovie({ budget: 0 }), en);
-    expect(result[5].status).toBe("exact");
-    expect(result[5].guessValue).toBe("?");
+    expect(result[6].status).toBe("exact");
+    expect(result[6].guessValue).toBe("?");
   });
 
   it("miss when one budget unknown", () => {
     const result = compareMedia(makeMovie({ budget: 0 }), makeMovie({ budget: 100 }), en);
-    expect(result[5].status).toBe("miss");
+    expect(result[6].status).toBe("miss");
   });
 });
 
 describe("popularity comparison", () => {
   it("exact when same bucket", () => {
     const result = compareMedia(makeMovie({ popularity: 25 }), makeMovie({ popularity: 40 }), en);
-    expect(result[6].status).toBe("exact");
+    expect(result[7].status).toBe("exact");
   });
 
   it("partial when adjacent buckets", () => {
     const result = compareMedia(makeMovie({ popularity: 10 }), makeMovie({ popularity: 30 }), en);
-    expect(result[6].status).toBe("partial");
+    expect(result[7].status).toBe("partial");
   });
 
   it("miss when distant buckets", () => {
     const result = compareMedia(makeMovie({ popularity: 5 }), makeMovie({ popularity: 150 }), en);
-    expect(result[6].status).toBe("miss");
+    expect(result[7].status).toBe("miss");
   });
 });
 
 describe("rating comparison", () => {
   it("exact when within 0.3", () => {
     const result = compareMedia(makeMovie({ rating: 7.0 }), makeMovie({ rating: 7.2 }), en);
-    expect(result[7].status).toBe("exact");
+    expect(result[8].status).toBe("exact");
   });
 
   it("partial when within 1.0", () => {
     const result = compareMedia(makeMovie({ rating: 6.5 }), makeMovie({ rating: 7.0 }), en);
-    expect(result[7].status).toBe("partial");
+    expect(result[8].status).toBe("partial");
   });
 
   it("miss when over 1.0 apart", () => {
     const result = compareMedia(makeMovie({ rating: 4.0 }), makeMovie({ rating: 7.0 }), en);
-    expect(result[7].status).toBe("miss");
+    expect(result[8].status).toBe("miss");
   });
 });

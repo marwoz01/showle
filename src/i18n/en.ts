@@ -54,16 +54,16 @@ const en: Translations = {
   // How it works
   howItWorks: {
     title: "How It Works",
-    subtitle: "Three simple steps to prove your expertise.",
-    step1Title: "Choose a Mode",
+    subtitle: "Guess the daily movie or discover something new — in a few simple steps.",
+    step1Title: "Guess the daily movie",
     step1Desc:
-      "Pick Daily Movie, Daily Series, or play endlessly in Unlimited mode.",
-    step2Title: "Guess the Title",
+      "A new movie to guess every day. Type a title and we'll compare it against the answer across 7 parameters.",
+    step2Title: "Read the Clues",
     step2Desc:
-      "Type a movie or series name. We'll compare it against the answer across 7 parameters.",
-    step3Title: "Read the Clues",
-    step3Desc:
       "Each wrong guess reveals a new hint — director initials, genre, country, and more.",
+    step3Title: "Discover movies",
+    step3Desc:
+      "Pick your genres and preferences, and we'll find 5 movies perfectly matched for your evening.",
     step4Title: "Share Your Score",
     step4Desc:
       "Nailed it? Share your result grid with friends and compare streaks.",
@@ -95,6 +95,7 @@ const en: Translations = {
     genre: "Genre",
     country: "Country",
     director: "Director",
+    leadActor: "Lead Actor",
     runtime: "Runtime",
     budget: "Budget",
     popularity: "Popularity",

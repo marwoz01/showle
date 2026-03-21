@@ -196,12 +196,13 @@ export default function ResultScreen({
 
           {/* Emoji grid + share */}
           <div className="mt-auto flex items-center gap-4 border-t border-white/6 px-6 py-4">
-            <div className="flex flex-wrap gap-1">
-              {guesses
-                .slice()
-                .reverse()
-                .map((g, i) => (
-                  <div key={i} className="flex gap-0.5">
+            <div className="flex flex-wrap items-center gap-3">
+              {guesses.map((g, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-medium text-muted">
+                    #{i + 1}
+                  </span>
+                  <div className="flex gap-0.5">
                     {g.comparison.map((c, j) => (
                       <div
                         key={j}
@@ -215,7 +216,8 @@ export default function ResultScreen({
                       />
                     ))}
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
             <button
               onClick={handleShare}

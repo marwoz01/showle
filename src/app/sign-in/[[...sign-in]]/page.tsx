@@ -4,10 +4,10 @@ import { Clapperboard } from "lucide-react";
 export default function SignInPage() {
   return (
     <div className="flex min-h-[85vh] items-center justify-center">
-      <div className="flex w-full max-w-4xl overflow-hidden rounded-2xl border border-white/6 bg-card shadow-2xl">
+      <div className="flex w-full max-w-4xl overflow-hidden rounded-2xl border border-[#2a2a32] bg-[#1e1e22] shadow-2xl">
         {/* Left decorative panel */}
         <div className="relative hidden w-5/12 overflow-hidden lg:block">
-          <div className="absolute inset-0 bg-[#0d0a18]" />
+          <div className="absolute inset-0 bg-[#12101e]" />
           <div className="animate-blob-1 absolute -left-10 top-1/4 h-80 w-80 rounded-full bg-accent-purple/40 blur-[80px]" />
           <div className="animate-blob-2 absolute -right-10 bottom-1/4 h-72 w-72 rounded-full bg-[#5b21b6]/50 blur-[70px]" />
           <div className="animate-blob-3 absolute left-1/3 top-1/2 h-64 w-64 rounded-full bg-accent-purple/20 blur-[60px]" />

@@ -11,6 +11,7 @@ export function compareMedia(
     compareGenres(guess.genres, answer.genres, t),
     compareCountry(guess.country, answer.country, t),
     compareDirector(guess.director, answer.director, t),
+    compareLeadActor(guess.leadActor, answer.leadActor, t),
     compareRuntime(guess.runtime, answer.runtime, t),
     compareBudget(guess.budget, answer.budget, t),
     comparePopularity(guess.popularity, answer.popularity, t),
@@ -71,6 +72,18 @@ function compareDirector(guess: string, answer: string, t: Translations): Compar
 
   return {
     label: t.comparison.director,
+    guessValue: guess,
+    answerValue: answer,
+    status,
+  };
+}
+
+function compareLeadActor(guess: string, answer: string, t: Translations): ComparisonField {
+  const status: MatchStatus =
+    guess.toLowerCase() === answer.toLowerCase() ? "exact" : "miss";
+
+  return {
+    label: t.comparison.leadActor,
     guessValue: guess,
     answerValue: answer,
     status,

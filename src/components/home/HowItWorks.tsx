@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/i18n";
-import { Target, Search, Lightbulb, Trophy } from "lucide-react";
+import { Clapperboard, Lightbulb, Sparkles, Trophy } from "lucide-react";
 
 export default function HowItWorks() {
   const { t } = useTranslation();
@@ -11,19 +11,19 @@ export default function HowItWorks() {
       step: "01",
       title: t.howItWorks.step1Title,
       description: t.howItWorks.step1Desc,
-      icon: <Target size={20} />,
+      icon: <Clapperboard size={20} />,
     },
     {
       step: "02",
       title: t.howItWorks.step2Title,
       description: t.howItWorks.step2Desc,
-      icon: <Search size={20} />,
+      icon: <Lightbulb size={20} />,
     },
     {
       step: "03",
       title: t.howItWorks.step3Title,
       description: t.howItWorks.step3Desc,
-      icon: <Lightbulb size={20} />,
+      icon: <Sparkles size={20} />,
     },
     {
       step: "04",

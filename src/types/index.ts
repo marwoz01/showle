@@ -8,6 +8,7 @@ export interface MediaDetails {
   genres: string[];
   country: string;
   director: string;
+  leadActor: string;
   runtime: number; // minutes (movie) or seasons count (series)
   budget: number; // in millions USD, 0 if unknown
   popularity: number;

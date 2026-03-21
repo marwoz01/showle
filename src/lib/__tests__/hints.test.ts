@@ -12,6 +12,7 @@ function makeMovie(overrides: Partial<MediaDetails> = {}): MediaDetails {
     genres: ["Action", "Sci-Fi"],
     country: "United States",
     director: "Christopher Nolan",
+    leadActor: "Leonardo DiCaprio",
     runtime: 148,
     budget: 160,
     popularity: 100,

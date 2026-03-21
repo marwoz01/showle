@@ -31,6 +31,7 @@ interface TmdbMovieDetails {
 }
 
 interface TmdbCredits {
+  cast: { name: string; order: number }[];
   crew: { job: string; name: string }[];
 }
 
@@ -119,6 +120,7 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
     ]);
 
     const director = credits.crew.find((c) => c.job === "Director")?.name ?? "Unknown";
+    const leadActor = credits.cast?.[0]?.name ?? "Unknown";
     const country = movie.production_countries[0]?.name ?? "Unknown";
 
     return {
@@ -129,6 +131,7 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
       genres: movie.genres.map((g) => g.name),
       country,
       director,
+      leadActor,
       runtime: movie.runtime ?? 0,
       budget: movie.budget ? Math.round(movie.budget / 1_000_000) : 0,
       popularity: Math.round(movie.popularity),

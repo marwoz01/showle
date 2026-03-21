@@ -29,7 +29,7 @@ const pl: Translations = {
   home: {
     title: "Graj",
     subtitle:
-      "Zgaduj film dnia albo odkryj idealny tytuł na wieczór — wszystko w jednym miejscu.",
+      "Zgaduj film dnia albo odkryj idealny tytuł na wieczór, wszystko w jednym miejscu!",
     filter: "Filtruj",
     viewGrid: "Widok: Siatka",
   },
@@ -55,16 +55,17 @@ const pl: Translations = {
   // How it works
   howItWorks: {
     title: "Jak to działa",
-    subtitle: "Trzy proste kroki, by udowodnić swoją wiedzę.",
-    step1Title: "Wybierz tryb",
+    subtitle:
+      "Zgaduj film dnia lub odkryj coś nowego w kilku prostych krokach.",
+    step1Title: "Zgaduj film dnia",
     step1Desc:
-      "Wybierz Film dnia, Serial dnia lub graj bez końca w trybie Bez limitu.",
-    step2Title: "Zgaduj tytuł",
+      "Codziennie nowy film do odgadnięcia. Wpisz tytuł, a porównamy go z odpowiedzią w 7 parametrach.",
+    step2Title: "Czytaj wskazówki",
     step2Desc:
-      "Wpisz nazwę filmu lub serialu. Porównamy go z odpowiedzią w 7 parametrach.",
-    step3Title: "Czytaj wskazówki",
+      "Każda błędna próba odkrywa nową wskazówkę — inicjały reżysera, gatunek, kraj i więcej.",
+    step3Title: "Odkrywaj filmy",
     step3Desc:
-      "Każda błędna próba odkrywa nową wskazówkę - inicjały reżysera, gatunek, kraj i więcej.",
+      "Wybierz gatunki i preferencje, a dobierzemy 5 filmów idealnie dopasowanych na wieczór.",
     step4Title: "Udostępnij wynik",
     step4Desc:
       "Udało się? Podziel się swoją siatką wyników ze znajomymi i porównaj serie.",
@@ -96,6 +97,7 @@ const pl: Translations = {
     genre: "Gatunek",
     country: "Kraj",
     director: "Reżyser",
+    leadActor: "Aktor",
     runtime: "Czas",
     budget: "Budżet",
     popularity: "Popularność",
@@ -188,7 +190,8 @@ const pl: Translations = {
     getRecommendations: "Dobierz film",
     topPick: "Top Pick",
     whyRecommend: "Dlaczego polecamy",
-    ctaSubtext: "Dobierzemy 5 filmów idealnie dopasowanych do Twoich preferencji",
+    ctaSubtext:
+      "Dobierzemy 5 filmów idealnie dopasowanych do Twoich preferencji",
     popularityPopularDesc: "Znane szerokiej publiczności",
     popularityMediumDesc: "Cenione przez koneserów",
     popularityNicheDesc: "Mało znane perełki do odkrycia",
