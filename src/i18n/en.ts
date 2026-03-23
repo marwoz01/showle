@@ -15,6 +15,9 @@ const en: Translations = {
     login: "Sign In",
     recommend: "Recommendations",
     collection: "Collection",
+    sectionMain: "Main",
+    sectionDiscover: "Discover",
+    sectionMore: "More",
   },
 
   // Pro section

@@ -12,6 +12,9 @@ export interface Translations {
     login: string;
     recommend: string;
     collection: string;
+    sectionMain: string;
+    sectionDiscover: string;
+    sectionMore: string;
   };
   pro: {
     title: string;

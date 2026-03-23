@@ -25,12 +25,32 @@ interface NavItem {
   href: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { key: "home", icon: Home, href: "/" },
-  { key: "play", icon: Play, href: "/play/movie" },
-  { key: "recommend", icon: Sparkles, href: "/recommend" },
-  { key: "collection", icon: Library, href: "/collection" },
-  { key: "stats", icon: BarChart3, href: "/stats" },
+interface NavSection {
+  labelKey: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    labelKey: "sectionMain",
+    items: [
+      { key: "home", icon: Home, href: "/" },
+      { key: "play", icon: Play, href: "/play/movie" },
+    ],
+  },
+  {
+    labelKey: "sectionDiscover",
+    items: [
+      { key: "recommend", icon: Sparkles, href: "/recommend" },
+      { key: "collection", icon: Library, href: "/collection" },
+    ],
+  },
+  {
+    labelKey: "sectionMore",
+    items: [
+      { key: "stats", icon: BarChart3, href: "/stats" },
+    ],
+  },
 ];
 
 export default function Sidebar() {
@@ -101,14 +121,14 @@ export default function Sidebar() {
     <>
       {/* Logo */}
       <div className="flex items-center justify-between px-5 py-6">
-        <div className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/8">
             <Clapperboard size={16} />
           </div>
           <span className="font-display text-lg font-bold text-foreground">
             Showle
           </span>
-        </div>
+        </Link>
         {/* Close button — mobile only */}
         <button
           onClick={() => setOpen(false)}
@@ -119,34 +139,43 @@ export default function Sidebar() {
       </div>
 
       {/* Main nav */}
-      <nav className="flex flex-col gap-0.5 px-3">
-        {NAV_ITEMS.map((item) => {
-          const active = isActive(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                active
-                  ? "text-foreground"
-                  : "text-muted hover:bg-white/4 hover:text-foreground"
-              }`}
-              style={
-                active
-                  ? { background: "linear-gradient(to right, rgba(124, 77, 255, 0.15), transparent)" }
-                  : undefined
-              }
-            >
-              <item.icon
-                className={`h-4.5 w-4.5 ${active ? "text-accent-purple" : ""}`}
-              />
-              {navLabel(item.key)}
-              {active && (
-                <div className="absolute left-0 h-8 w-0.75 rounded-r-full bg-accent-purple" />
-              )}
-            </Link>
-          );
-        })}
+      <nav className="flex flex-col gap-4 px-3">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.labelKey}>
+            <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted/50">
+              {navLabel(section.labelKey)}
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {section.items.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                      active
+                        ? "text-foreground"
+                        : "text-muted hover:bg-white/4 hover:text-foreground"
+                    }`}
+                    style={
+                      active
+                        ? { background: "linear-gradient(to right, rgba(124, 77, 255, 0.15), transparent)" }
+                        : undefined
+                    }
+                  >
+                    <item.icon
+                      className={`h-4.5 w-4.5 ${active ? "text-accent-purple" : ""}`}
+                    />
+                    {navLabel(item.key)}
+                    {active && (
+                      <div className="absolute left-0 h-8 w-0.75 rounded-r-full bg-accent-purple" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Spacer */}
@@ -238,14 +267,14 @@ export default function Sidebar() {
         >
           <Menu size={22} />
         </button>
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/8">
             <Clapperboard size={14} />
           </div>
           <span className="font-display text-base font-bold text-foreground">
             Showle
           </span>
-        </div>
+        </Link>
       </div>
 
       {/* Mobile overlay */}
