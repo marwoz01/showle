@@ -168,6 +168,8 @@ export interface Translations {
       rankings: string;
     };
     addMovie: string;
+    popularMovies: string;
+    addSelected: (count: number) => string;
     searchPlaceholder: string;
     markWatched: string;
     moveToWatchlist: string;

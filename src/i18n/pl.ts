@@ -212,6 +212,8 @@ const pl: Translations = {
       rankings: "Rankingi",
     },
     addMovie: "Dodaj film",
+    popularMovies: "Popularne filmy",
+    addSelected: (count: number) => `Dodaj zaznaczone (${count})`,
     searchPlaceholder: "Szukaj filmu...",
     markWatched: "Oznacz jako obejrzany",
     moveToWatchlist: "Przenieś do obejrzenia",

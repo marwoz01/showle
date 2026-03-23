@@ -22,7 +22,10 @@ interface RankingItemRowProps {
   onDelete: (itemId: string) => void;
 }
 
-export default function RankingItemRow({ item, onDelete }: RankingItemRowProps) {
+export default function RankingItemRow({
+  item,
+  onDelete,
+}: RankingItemRowProps) {
   const {
     attributes,
     listeners,
@@ -42,19 +45,19 @@ export default function RankingItemRow({ item, onDelete }: RankingItemRowProps) 
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-start gap-3 rounded-lg border border-white/6 bg-card px-3 py-3 transition-colors hover:bg-card-hover"
+      className="flex items-center gap-3 rounded-lg border border-white/6 bg-card px-3 py-2.5 transition-colors hover:bg-card-hover"
     >
       {/* Drag handle */}
       <button
         {...attributes}
         {...listeners}
-        className="mt-1 cursor-grab touch-none text-muted hover:text-foreground active:cursor-grabbing"
+        className="cursor-grab touch-none text-muted hover:text-foreground active:cursor-grabbing"
       >
         <GripVertical size={16} />
       </button>
 
       {/* Position */}
-      <span className="mt-1 w-6 text-center text-sm font-bold text-accent-purple">
+      <span className="w-7 text-center text-sm font-bold text-accent-purple">
         {item.position}
       </span>
 
@@ -63,12 +66,12 @@ export default function RankingItemRow({ item, onDelete }: RankingItemRowProps) 
         <Image
           src={`https://image.tmdb.org/t/p/w92${item.posterPath}`}
           alt={item.title}
-          width={40}
-          height={60}
-          className="shrink-0 rounded"
+          width={56}
+          height={84}
+          className="h-21 w-14 shrink-0 rounded object-cover"
         />
       ) : (
-        <div className="flex h-15 w-10 shrink-0 items-center justify-center rounded bg-white/5 text-[8px] text-muted">
+        <div className="flex h-21 w-14 shrink-0 items-center justify-center rounded bg-white/5 text-[8px] text-muted">
           ?
         </div>
       )}
@@ -96,19 +99,12 @@ export default function RankingItemRow({ item, onDelete }: RankingItemRowProps) 
             ))}
           </div>
         )}
-
-        {/* Overview */}
-        {item.overview && (
-          <p className="mt-1 line-clamp-1 text-[10px] leading-snug text-muted/60">
-            {item.overview}
-          </p>
-        )}
       </div>
 
       {/* Delete */}
       <button
         onClick={() => onDelete(item.id)}
-        className="mt-1 rounded-md p-1.5 text-muted transition-colors hover:bg-red-500/10 hover:text-red-400"
+        className="rounded-md p-1.5 text-muted transition-colors hover:bg-red-500/10 hover:text-red-400"
       >
         <Trash2 size={14} />
       </button>

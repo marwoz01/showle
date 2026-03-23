@@ -206,6 +206,8 @@ const en: Translations = {
       rankings: "Rankings",
     },
     addMovie: "Add movie",
+    popularMovies: "Popular movies",
+    addSelected: (count: number) => `Add selected (${count})`,
     searchPlaceholder: "Search for a movie...",
     markWatched: "Mark as watched",
     moveToWatchlist: "Move to watchlist",

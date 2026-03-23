@@ -69,6 +69,26 @@ export async function searchMovies(query: string): Promise<MediaDetails[]> {
 }
 
 /**
+ * Get popular movies from TMDB, paginated.
+ */
+export async function getPopularMovies(page: number = 1): Promise<{ results: MediaDetails[]; totalPages: number }> {
+  const data = await tmdbFetch<{ results: TmdbMovieListItem[]; total_pages: number }>("/movie/popular", {
+    language: "en-US",
+    page: String(page),
+  });
+
+  const filtered = data.results.filter(
+    (m) => m.vote_count >= 50 && m.release_date && m.poster_path
+  );
+
+  const details = await Promise.all(filtered.slice(0, 20).map((m) => getMovieDetails(m.id)));
+  return {
+    results: details.filter((d): d is MediaDetails => d !== null),
+    totalPages: Math.min(data.total_pages, 20),
+  };
+}
+
+/**
  * Search TMDB for a movie by title and optional year. Returns the best match.
  */
 export async function searchMovieByTitleAndYear(

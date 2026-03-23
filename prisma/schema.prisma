@@ -82,6 +82,6 @@ model RankedListItem {
   list       RankedList @relation(fields: [listId], references: [id], onDelete: Cascade)
 
   @@unique([listId, tmdbId])
-  @@unique([listId, position])
+  @@index([listId, position])
   @@index([listId])
 }
