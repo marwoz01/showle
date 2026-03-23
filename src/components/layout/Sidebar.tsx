@@ -11,6 +11,7 @@ import {
   Play,
   BarChart3,
   Sparkles,
+  Library,
   User,
   Menu,
   X,
@@ -28,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "home", icon: Home, href: "/" },
   { key: "play", icon: Play, href: "/play/movie" },
   { key: "recommend", icon: Sparkles, href: "/recommend" },
+  { key: "collection", icon: Library, href: "/collection" },
   { key: "stats", icon: BarChart3, href: "/stats" },
 ];
 

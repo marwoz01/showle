@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { MediaDetails } from "@/types";
 import { useTranslation } from "@/i18n";
 import { Star, Zap } from "lucide-react";
+import SaveMovieButton from "@/components/collection/SaveMovieButton";
 
 interface RecommendationCardProps {
   movie: MediaDetails;
@@ -35,9 +37,11 @@ export default function RecommendationCard({
         <div className="shrink-0 p-4 pb-0 sm:pb-4 sm:pr-0">
           <div className="relative overflow-hidden rounded-xl">
             {movie.posterPath ? (
-              <img
+              <Image
                 src={`https://image.tmdb.org/t/p/w342${movie.posterPath}`}
                 alt={movie.title}
+                width={342}
+                height={513}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:w-48"
               />
             ) : (
@@ -45,6 +49,9 @@ export default function RecommendationCard({
                 {movie.title}
               </div>
             )}
+            <div className="absolute right-2 top-2">
+              <SaveMovieButton movie={movie} />
+            </div>
           </div>
         </div>
 
@@ -121,16 +128,21 @@ export default function RecommendationCard({
       <div className="p-2.5 pb-0">
         <div className="relative aspect-4/5 w-full overflow-hidden rounded-lg">
           {movie.posterPath ? (
-            <img
+            <Image
               src={`https://image.tmdb.org/t/p/w185${movie.posterPath}`}
               alt={movie.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              fill
+              sizes="(max-width: 640px) 45vw, 185px"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-white/5 p-3 text-center text-xs text-muted">
               {movie.title}
             </div>
           )}
+          <div className="absolute right-1.5 top-1.5">
+            <SaveMovieButton movie={movie} />
+          </div>
         </div>
       </div>
 

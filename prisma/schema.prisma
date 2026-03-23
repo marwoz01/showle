@@ -30,3 +30,58 @@ model UserStats {
   maxStreak      Int    @default(0)
   averageGuesses Float  @default(0)
 }
+
+model SavedMovie {
+  id         String    @id @default(cuid())
+  userId     String
+  tmdbId     Int
+  title      String
+  year       Int
+  posterPath String
+  genres     String[]
+  director   String    @default("")
+  overview   String    @default("")
+  runtime    Int       @default(0)
+  tmdbRating Float     @default(0)
+  category   String // "watched" | "watchlist"
+  rating     Float?
+  review     String?
+  watchedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([userId, tmdbId])
+  @@index([userId, category])
+  @@index([userId, createdAt])
+}
+
+model RankedList {
+  id          String           @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  items       RankedListItem[]
+
+  @@index([userId])
+}
+
+model RankedListItem {
+  id         String     @id @default(cuid())
+  listId     String
+  tmdbId     Int
+  title      String
+  year       Int
+  posterPath String
+  genres     String[]
+  director   String     @default("")
+  overview   String     @default("")
+  position   Int
+
+  list       RankedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, tmdbId])
+  @@unique([listId, position])
+  @@index([listId])
+}

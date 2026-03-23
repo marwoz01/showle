@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import confetti from "canvas-confetti";
 import { MediaDetails, GuessResult, GameStatus } from "@/types";
 import { MAX_ATTEMPTS } from "@/constants";
@@ -14,6 +15,7 @@ import {
   Lightbulb,
   Target,
 } from "lucide-react";
+import SaveMovieButton from "@/components/collection/SaveMovieButton";
 
 interface ResultScreenProps {
   answer: MediaDetails;
@@ -153,13 +155,12 @@ export default function ResultScreen({
             {/* Poster */}
             <div className="flex shrink-0 justify-center sm:justify-start">
               <div className="h-72 w-48 overflow-hidden rounded-xl bg-white/5 shadow-lg shadow-black/30">
-                <img
+                <Image
                   src={`https://image.tmdb.org/t/p/w342${answer.posterPath}`}
                   alt={answer.title}
+                  width={342}
+                  height={513}
                   className="h-full w-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
                 />
               </div>
             </div>
@@ -219,9 +220,12 @@ export default function ResultScreen({
                 </div>
               ))}
             </div>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <SaveMovieButton movie={answer} variant="button" />
+            </div>
             <button
               onClick={handleShare}
-              className="ml-auto flex shrink-0 items-center gap-2 rounded-xl bg-accent-purple px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="flex shrink-0 items-center gap-2 rounded-xl bg-accent-purple px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               {copied ? (
                 <>

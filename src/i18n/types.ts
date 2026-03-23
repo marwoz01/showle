@@ -11,6 +11,7 @@ export interface Translations {
     other: string;
     login: string;
     recommend: string;
+    collection: string;
   };
   pro: {
     title: string;
@@ -155,6 +156,56 @@ export interface Translations {
     popularityNicheDesc: string;
     yearPresets: string;
     yearAny: string;
+  };
+  collection: {
+    title: string;
+    tabs: {
+      watched: string;
+      watchlist: string;
+      rankings: string;
+    };
+    addMovie: string;
+    searchPlaceholder: string;
+    markWatched: string;
+    moveToWatchlist: string;
+    removeMovie: string;
+    removeConfirm: string;
+    rating: string;
+    review: string;
+    reviewPlaceholder: string;
+    writeReview: string;
+    editReview: string;
+    saveReview: string;
+    noReview: string;
+    sortBy: string;
+    sortDate: string;
+    sortRating: string;
+    sortTitle: string;
+    sortYear: string;
+    emptyWatched: string;
+    emptyWatchlist: string;
+    emptyRankings: string;
+    createList: string;
+    listName: string;
+    listNamePlaceholder: string;
+    listDescription: string;
+    deleteList: string;
+    deleteListConfirm: string;
+    addToList: string;
+    addFromCollection: string;
+    addAllWatched: string;
+    addAllWatchlist: string;
+    addedCount: (added: number, skipped: number) => string;
+    position: string;
+    saved: string;
+    alreadySaved: string;
+    addToCollection: string;
+    chooseCategory: string;
+    watched: string;
+    watchlist: string;
+    movieCount: (count: number) => string;
+    confirmAction: string;
+    cancel: string;
   };
   lang: {
     label: string;
