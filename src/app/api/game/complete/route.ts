@@ -8,7 +8,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { dateKey, mode = "daily-movie", status, guessIds, attemptCount, hintsUsed } = await request.json();
+  const {
+    dateKey, mode = "daily-movie", status, guessIds, attemptCount, hintsUsed,
+    targetMovieId = 0, targetTitle = "", targetYear = 0, targetPoster = "",
+  } = await request.json();
 
   if (!dateKey || !status || !guessIds) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -20,8 +23,8 @@ export async function POST(request: NextRequest) {
       where: {
         userId_dateKey_mode: { userId, dateKey, mode },
       },
-      update: { status, guessIds, attemptCount, hintsUsed },
-      create: { userId, dateKey, mode, status, guessIds, attemptCount, hintsUsed },
+      update: { status, guessIds, attemptCount, hintsUsed, targetMovieId, targetTitle, targetYear, targetPoster },
+      create: { userId, dateKey, mode, status, guessIds, attemptCount, hintsUsed, targetMovieId, targetTitle, targetYear, targetPoster },
     });
 
     const stats = await tx.userStats.findUnique({

@@ -15,6 +15,7 @@ export interface Translations {
     sectionMain: string;
     sectionDiscover: string;
     sectionMore: string;
+    history: string;
   };
   pro: {
     title: string;
@@ -211,6 +212,29 @@ export interface Translations {
     movieCount: (count: number) => string;
     confirmAction: string;
     cancel: string;
+  };
+  history: {
+    title: string;
+    totalGames: string;
+    filterAll: string;
+    filterWon: string;
+    filterLost: string;
+    columnMovie: string;
+    columnResult: string;
+    columnAttempts: string;
+    columnHints: string;
+    columnDate: string;
+    resultWon: string;
+    resultLost: string;
+    review: string;
+    reviewTitle: string;
+    noGames: string;
+    loading: string;
+    previousPage: string;
+    nextPage: string;
+    pageOf: string;
+    attempts: string;
+    hintsUsed: string;
   };
   lang: {
     label: string;

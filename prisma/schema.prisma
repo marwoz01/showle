@@ -7,18 +7,23 @@ datasource db {
 }
 
 model GameResult {
-  id           String   @id @default(cuid())
-  userId       String
-  dateKey      String
-  mode         String   @default("daily-movie")
-  status       String
-  guessIds     Int[]
-  attemptCount Int
-  hintsUsed    Int
-  completedAt  DateTime @default(now())
+  id            String   @id @default(cuid())
+  userId        String
+  dateKey       String
+  mode          String   @default("daily-movie")
+  status        String
+  guessIds      Int[]
+  attemptCount  Int
+  hintsUsed     Int
+  completedAt   DateTime @default(now())
+  targetMovieId Int      @default(0)
+  targetTitle   String   @default("")
+  targetYear    Int      @default(0)
+  targetPoster  String   @default("")
 
   @@unique([userId, dateKey, mode])
   @@index([userId])
+  @@index([userId, completedAt])
 }
 
 model UserStats {

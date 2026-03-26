@@ -46,7 +46,8 @@ async function syncToServer(
   status: GameStatus,
   guessIds: number[],
   hintsUsed: number,
-  isComplete: boolean
+  isComplete: boolean,
+  answer?: MediaDetails
 ) {
   const dateKey = getTodayKey();
   const endpoint = isComplete ? "/api/game/complete" : "/api/game/state";
@@ -63,6 +64,10 @@ async function syncToServer(
         guessIds,
         attemptCount: guessIds.length,
         hintsUsed,
+        targetMovieId: answer?.id ?? 0,
+        targetTitle: answer?.title ?? "",
+        targetYear: answer?.year ?? 0,
+        targetPoster: answer?.posterPath ?? "",
       }),
     });
   } catch {
@@ -181,7 +186,7 @@ export function useGame(
           .map((g) => g.guess.id);
         const hintsCount = getRevealedHints(allHints, newAttempt).length;
         const isComplete = newStatus === "won" || newStatus === "lost";
-        syncToServer(newStatus, ids, hintsCount, isComplete).then(() => {
+        syncToServer(newStatus, ids, hintsCount, isComplete, answer).then(() => {
           if (isComplete) {
             window.dispatchEvent(new Event("game-completed"));
           }
@@ -202,7 +207,7 @@ export function useGame(
           .slice()
           .reverse()
           .map((g) => g.guess.id);
-        syncToServer("lost", ids, revealedHints.length, true).then(() => {
+        syncToServer("lost", ids, revealedHints.length, true, answer).then(() => {
           window.dispatchEvent(new Event("game-completed"));
         });
       } else {

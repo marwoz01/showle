@@ -18,6 +18,7 @@ const en: Translations = {
     sectionMain: "Main",
     sectionDiscover: "Discover",
     sectionMore: "More",
+    history: "History",
   },
 
   // Pro section
@@ -251,6 +252,31 @@ const en: Translations = {
       `${count} ${count === 1 ? "movie" : "movies"}`,
     confirmAction: "Confirm",
     cancel: "Cancel",
+  },
+
+  // History
+  history: {
+    title: "Game History",
+    totalGames: "games",
+    filterAll: "All",
+    filterWon: "Won",
+    filterLost: "Lost",
+    columnMovie: "Movie",
+    columnResult: "Result",
+    columnAttempts: "Attempts",
+    columnHints: "Hints",
+    columnDate: "Date",
+    resultWon: "Won",
+    resultLost: "Lost",
+    review: "Review",
+    reviewTitle: "Game Review",
+    noGames: "You haven't completed any games yet.",
+    loading: "Loading...",
+    previousPage: "Previous",
+    nextPage: "Next",
+    pageOf: "of",
+    attempts: "Attempts",
+    hintsUsed: "Hints",
   },
 
   // Language

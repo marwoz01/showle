@@ -39,7 +39,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { dateKey, mode = "daily-movie", status, guessIds, attemptCount, hintsUsed } = await request.json();
+  const {
+    dateKey, mode = "daily-movie", status, guessIds, attemptCount, hintsUsed,
+    targetMovieId = 0, targetTitle = "", targetYear = 0, targetPoster = "",
+  } = await request.json();
 
   if (!dateKey || !status || !guessIds) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -53,7 +56,7 @@ export async function PUT(request: NextRequest) {
         mode,
       },
     },
-    update: { status, guessIds, attemptCount, hintsUsed },
+    update: { status, guessIds, attemptCount, hintsUsed, targetMovieId, targetTitle, targetYear, targetPoster },
     create: {
       userId,
       dateKey,
@@ -62,6 +65,10 @@ export async function PUT(request: NextRequest) {
       guessIds,
       attemptCount,
       hintsUsed,
+      targetMovieId,
+      targetTitle,
+      targetYear,
+      targetPoster,
     },
   });
 

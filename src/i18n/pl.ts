@@ -18,6 +18,7 @@ const pl: Translations = {
     sectionMain: "Główne",
     sectionDiscover: "Odkrywaj",
     sectionMore: "Więcej",
+    history: "Historia",
   },
 
   // Pro section
@@ -257,6 +258,31 @@ const pl: Translations = {
       `${count} ${count === 1 ? "film" : count < 5 ? "filmy" : "filmów"}`,
     confirmAction: "Potwierdź",
     cancel: "Anuluj",
+  },
+
+  // History
+  history: {
+    title: "Historia gier",
+    totalGames: "gier",
+    filterAll: "Wszystkie",
+    filterWon: "Wygrane",
+    filterLost: "Przegrane",
+    columnMovie: "Film",
+    columnResult: "Wynik",
+    columnAttempts: "Próby",
+    columnHints: "Wskazówki",
+    columnDate: "Data",
+    resultWon: "Wygrana",
+    resultLost: "Przegrana",
+    review: "Przegląd",
+    reviewTitle: "Przegląd gry",
+    noGames: "Nie masz jeszcze żadnych ukończonych gier.",
+    loading: "Ładowanie...",
+    previousPage: "Poprzednia",
+    nextPage: "Następna",
+    pageOf: "z",
+    attempts: "Próby",
+    hintsUsed: "Wskazówki",
   },
 
   // Language

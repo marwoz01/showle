@@ -17,6 +17,7 @@ import {
   X,
   LogOut,
   Flame,
+  History,
 } from "lucide-react";
 
 interface NavItem {
@@ -49,6 +50,7 @@ const NAV_SECTIONS: NavSection[] = [
     labelKey: "sectionMore",
     items: [
       { key: "stats", icon: BarChart3, href: "/stats" },
+      { key: "history", icon: History, href: "/history" },
     ],
   },
 ];
