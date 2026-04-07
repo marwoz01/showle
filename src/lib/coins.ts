@@ -23,4 +23,4 @@ export const COST_HINT = 60;
 export const COST_EXTRA_ATTEMPT = 40;
 export const COST_STREAK_FREEZE = 200;
 export const MAX_EXTRA_ATTEMPTS = 3;
-export const MAX_STREAK_FREEZES = 2;
+export const MAX_STREAK_FREEZES = 3;
