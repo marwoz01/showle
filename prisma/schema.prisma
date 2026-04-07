@@ -7,19 +7,22 @@ datasource db {
 }
 
 model GameResult {
-  id            String   @id @default(cuid())
-  userId        String
-  dateKey       String
-  mode          String   @default("daily-movie")
-  status        String
-  guessIds      Int[]
-  attemptCount  Int
-  hintsUsed     Int
-  completedAt   DateTime @default(now())
-  targetMovieId Int      @default(0)
-  targetTitle   String   @default("")
-  targetYear    Int      @default(0)
-  targetPoster  String   @default("")
+  id             String   @id @default(cuid())
+  userId         String
+  dateKey        String
+  mode           String   @default("daily-movie")
+  status         String
+  guessIds       Int[]
+  attemptCount   Int
+  hintsUsed      Int
+  completedAt    DateTime @default(now())
+  targetMovieId  Int      @default(0)
+  targetTitle    String   @default("")
+  targetYear     Int      @default(0)
+  targetPoster   String   @default("")
+  extraAttempts  Int      @default(0)
+  paidHintUsed   Boolean  @default(false)
+  paidHintsCount Int      @default(0)
 
   @@unique([userId, dateKey, mode])
   @@index([userId])
@@ -27,13 +30,14 @@ model GameResult {
 }
 
 model UserStats {
-  id             String @id @default(cuid())
-  userId         String @unique
-  gamesPlayed    Int    @default(0)
-  gamesWon       Int    @default(0)
-  currentStreak  Int    @default(0)
-  maxStreak      Int    @default(0)
-  averageGuesses Float  @default(0)
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  gamesPlayed    Int     @default(0)
+  gamesWon       Int     @default(0)
+  currentStreak  Int     @default(0)
+  maxStreak      Int     @default(0)
+  averageGuesses Float   @default(0)
+  lastPlayedDate String?
 }
 
 model SavedMovie {
@@ -89,4 +93,35 @@ model RankedListItem {
   @@unique([listId, tmdbId])
   @@index([listId, position])
   @@index([listId])
+}
+
+model UserWallet {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  balance       Int      @default(0)
+  streakFreezes Int      @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
+model CoinTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  dateKey   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model MovieEmbedding {
+  tmdbId    Int                          @id
+  title     String
+  year      Int
+  genres    String[]
+  overview  String
+  score     Float                        @default(0)
+  embedding Unsupported("vector(1536)")
+
+  @@index([year])
 }

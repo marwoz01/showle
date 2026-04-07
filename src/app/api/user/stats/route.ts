@@ -12,6 +12,8 @@ export async function GET() {
     where: { userId },
   });
 
+  const wallet = await prisma.userWallet.findUnique({ where: { userId } });
+
   if (!stats) {
     return NextResponse.json({
       gamesPlayed: 0,
@@ -19,6 +21,8 @@ export async function GET() {
       currentStreak: 0,
       maxStreak: 0,
       averageGuesses: 0,
+      coinBalance: wallet?.balance ?? 0,
+      streakFreezes: wallet?.streakFreezes ?? 0,
     });
   }
 
@@ -28,5 +32,7 @@ export async function GET() {
     currentStreak: stats.currentStreak,
     maxStreak: stats.maxStreak,
     averageGuesses: Math.round(stats.averageGuesses * 10) / 10,
+    coinBalance: wallet?.balance ?? 0,
+    streakFreezes: wallet?.streakFreezes ?? 0,
   });
 }
