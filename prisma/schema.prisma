@@ -131,6 +131,7 @@ model MovieEmbedding {
   voteCount  Int                          @default(0)
   rating     Float                        @default(0)
   tagline    String?
+  cast       Json                         @default("[]")
   embedding  Unsupported("vector(1536)")
 
   @@index([year])

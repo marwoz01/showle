@@ -148,8 +148,29 @@ const pl: Translations = {
     playAgain: "Zagraj ponownie",
     storyline: "Fabuła",
     gallery: "Galeria",
+    cast: "Obsada",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle - Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
+  },
+
+  movieModal: {
+    close: "Zamknij",
+    next: "Następne",
+    previous: "Poprzednie",
+  },
+
+  stats: {
+    activityTitle: "Aktywność",
+    activitySummary: (won, played) =>
+      `${won} odgadniętych z ${played} rozegranych w ostatnim roku`,
+    legendNone: "Brak gry",
+    legendLost: "Pudło",
+    legendWonFast: "1-2 próby",
+    legendWonMid: "3-4 próby",
+    legendWonSlow: "5-7 prób",
+    tooltipWon: (attempts) =>
+      `odgadnięte w ${attempts} ${attempts === 1 ? "próbie" : "próbach"}`,
+    tooltipLost: "nieodgadnięte",
   },
 
   // Auth
@@ -180,7 +201,7 @@ const pl: Translations = {
     genresLabel: "Na co masz dziś ochotę?",
     selectGenre: "Wybierz gatunek lub opisz, czego szukasz",
     freeformLabel: "Opisz swój nastrój",
-    freeformPlaceholder: "np. coś jak Inception ale lżejszego...",
+    freeformPlaceholder: "np. coś jak Incepcja ale lżejszego...",
     freeformHint: "Opcjonalnie - opisz własnymi słowami, czego szukasz",
     yearLabel: "Rok premiery",
     popularityLabel: "Jak popularne?",

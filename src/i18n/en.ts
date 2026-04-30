@@ -147,8 +147,29 @@ const en: Translations = {
     playAgain: "Play Again",
     storyline: "Storyline",
     gallery: "Gallery",
+    cast: "Cast",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle - Daily Movie\n\nI guessed "${title}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
+  },
+
+  movieModal: {
+    close: "Close",
+    next: "Next",
+    previous: "Previous",
+  },
+
+  stats: {
+    activityTitle: "Activity",
+    activitySummary: (won, played) =>
+      `${won} guessed out of ${played} played in the last year`,
+    legendNone: "No play",
+    legendLost: "Missed",
+    legendWonFast: "1-2 attempts",
+    legendWonMid: "3-4 attempts",
+    legendWonSlow: "5-7 attempts",
+    tooltipWon: (attempts) =>
+      `guessed in ${attempts} ${attempts === 1 ? "attempt" : "attempts"}`,
+    tooltipLost: "missed",
   },
 
   // Auth

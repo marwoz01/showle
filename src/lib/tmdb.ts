@@ -33,9 +33,16 @@ interface TmdbMovieDetails {
 }
 
 interface TmdbCredits {
-  cast: { name: string; order: number }[];
+  cast: {
+    name: string;
+    order: number;
+    character: string;
+    profile_path: string | null;
+  }[];
   crew: { job: string; name: string }[];
 }
+
+const CAST_LIMIT = 8;
 
 async function tmdbFetch<T>(path: string, params: Record<string, string> = {}): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`);
@@ -165,7 +172,15 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
     ]);
 
     const director = credits.crew.find((c) => c.job === "Director")?.name ?? "Unknown";
-    const leadActor = credits.cast?.[0]?.name ?? "Unknown";
+    const sortedCast = (credits.cast ?? [])
+      .slice()
+      .sort((a, b) => a.order - b.order);
+    const leadActor = sortedCast[0]?.name ?? "Unknown";
+    const cast = sortedCast.slice(0, CAST_LIMIT).map((c) => ({
+      name: c.name,
+      character: c.character ?? "",
+      profilePath: c.profile_path ?? "",
+    }));
     const country = movie.production_countries[0]?.name ?? "Unknown";
 
     return {
@@ -187,6 +202,7 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
       backdropPath: movie.backdrop_path ?? "",
       overview: movie.overview,
       tagline: movie.tagline || undefined,
+      cast,
     };
   } catch {
     return null;

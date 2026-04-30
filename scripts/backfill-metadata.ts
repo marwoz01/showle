@@ -39,9 +39,11 @@ interface TmdbDetails {
 }
 
 interface TmdbCredits {
-  cast: { name: string; order: number }[];
+  cast: { name: string; order: number; character: string; profile_path: string | null }[];
   crew: { job: string; name: string }[];
 }
+
+const CAST_LIMIT = 8;
 
 async function fetchDetails(tmdbId: number): Promise<{ details: TmdbDetails; credits: TmdbCredits } | null> {
   try {
@@ -81,7 +83,15 @@ async function main() {
 
     const { details, credits } = data;
     const director = credits.crew.find((c) => c.job === "Director")?.name ?? "Unknown";
-    const leadActor = credits.cast?.[0]?.name ?? "Unknown";
+    const sortedCast = (credits.cast ?? [])
+      .slice()
+      .sort((a, b) => a.order - b.order);
+    const leadActor = sortedCast[0]?.name ?? "Unknown";
+    const cast = sortedCast.slice(0, CAST_LIMIT).map((c) => ({
+      name: c.name,
+      character: c.character ?? "",
+      profilePath: c.profile_path ?? "",
+    }));
     const country = details.production_countries[0]?.name ?? "Unknown";
     const budget = details.budget ? Math.round(details.budget / 1_000_000) : 0;
 
@@ -96,8 +106,9 @@ async function main() {
         budget = $7,
         "voteCount" = $8,
         rating = $9,
-        tagline = $10
-       WHERE "tmdbId" = $11`,
+        tagline = $10,
+        "cast" = $11::jsonb
+       WHERE "tmdbId" = $12`,
       details.poster_path ?? "",
       details.backdrop_path ?? "",
       director,
@@ -108,6 +119,7 @@ async function main() {
       details.vote_count ?? 0,
       Math.round((details.vote_average ?? 0) * 10) / 10,
       details.tagline || null,
+      JSON.stringify(cast),
       row.tmdbId,
     );
 

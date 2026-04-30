@@ -1,5 +1,11 @@
 export type MediaType = "movie" | "series";
 
+export interface CastMember {
+  name: string;
+  character: string;
+  profilePath: string;
+}
+
 export interface MediaDetails {
   id: number;
   title: string;
@@ -17,6 +23,7 @@ export interface MediaDetails {
   backdropPath?: string;
   overview: string;
   tagline?: string;
+  cast?: CastMember[];
 }
 
 export type MatchStatus = "exact" | "partial" | "miss";

@@ -6,6 +6,7 @@ import { useTranslation } from "@/i18n";
 import { MoreVertical, Eye, Bookmark, Trash2, MessageSquare } from "lucide-react";
 import StarRating from "@/components/collection/StarRating";
 import ConfirmModal from "@/components/collection/ConfirmModal";
+import MovieDetailsModal from "@/components/movie/MovieDetailsModal";
 
 interface SavedMovie {
   id: string;
@@ -39,9 +40,25 @@ export default function CollectionCard({
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Stop nested actions (menu, save) from firing the card click that opens details.
+  const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setShowDetails(true);
+    }
+  };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-white/6 bg-card transition-all hover:bg-card-hover">
+    <>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => setShowDetails(true)}
+      onKeyDown={handleKey}
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/6 bg-card transition-all hover:bg-card-hover focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none">
       {/* Poster */}
       <div className="p-2.5 pb-0">
         <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg">
@@ -60,7 +77,7 @@ export default function CollectionCard({
           )}
 
           {/* Menu button */}
-          <div className="absolute right-1.5 top-1.5">
+          <div className="absolute right-1.5 top-1.5" onClick={stopPropagation}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="rounded-lg bg-black/60 p-1.5 text-white/70 backdrop-blur-sm transition-colors hover:bg-black/80 hover:text-white"
@@ -140,10 +157,12 @@ export default function CollectionCard({
         {/* Rating + Genre badges */}
         <div className="mb-1.5 flex flex-wrap items-center gap-1">
           {movie.category === "watched" && (
-            <StarRating
-              value={movie.rating}
-              onChange={(rating) => onRate(movie.id, rating)}
-            />
+            <div onClick={stopPropagation}>
+              <StarRating
+                value={movie.rating}
+                onChange={(rating) => onRate(movie.id, rating)}
+              />
+            </div>
           )}
           {movie.genres.slice(0, 2).map((genre) => (
             <span
@@ -171,15 +190,33 @@ export default function CollectionCard({
       </div>
 
       {showDeleteConfirm && (
-        <ConfirmModal
-          message={t.collection.removeConfirm}
-          onConfirm={() => {
-            onDelete(movie.id);
-            setShowDeleteConfirm(false);
-          }}
-          onCancel={() => setShowDeleteConfirm(false)}
-        />
+        <div onClick={stopPropagation}>
+          <ConfirmModal
+            message={t.collection.removeConfirm}
+            onConfirm={() => {
+              onDelete(movie.id);
+              setShowDeleteConfirm(false);
+            }}
+            onCancel={() => setShowDeleteConfirm(false)}
+          />
+        </div>
       )}
     </div>
+
+    {showDetails && (
+      <MovieDetailsModal
+        tmdbId={movie.tmdbId}
+        initial={{
+          title: movie.title,
+          year: movie.year,
+          posterPath: movie.posterPath,
+          genres: movie.genres,
+          director: movie.director,
+          overview: movie.overview,
+        }}
+        onClose={() => setShowDetails(false)}
+      />
+    )}
+    </>
   );
 }

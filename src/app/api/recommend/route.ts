@@ -29,6 +29,7 @@ function toMediaDetails(row: SimilarMovieResult): MediaDetails {
     backdropPath: row.backdropPath || undefined,
     overview: row.overview,
     tagline: row.tagline ?? undefined,
+    cast: row.cast,
   };
 }
 
@@ -40,6 +41,38 @@ interface RecommendRequest {
   locale: string;
   exclude?: number[];
   freeformText?: string;
+}
+
+/**
+ * Translate a non-English freeform query to English so the embedding lands in
+ * the same language space as our (English-built) movie embeddings. Cross-lingual
+ * cosine match is unreliable for short, idiomatic phrases ("romans z mocnym
+ * zakończeniem" was matching popular blockbusters instead of romances).
+ */
+async function translateToEnglish(text: string): Promise<string> {
+  try {
+    const completion = await getOpenRouter().chat.completions.create({
+      model: "google/gemini-2.0-flash-001",
+      messages: [
+        {
+          role: "system",
+          content: `You translate movie-recommendation queries into natural English used by film critics and audiences.
+
+Context: the user is describing what kind of MOVIE they want to watch. Disambiguate genre and cinematic terms accordingly:
+- "romans" / "romance" / etc. → "romance" (the film genre), never "novel"
+- "thriller" / "horror" / "comedy" / "drama" → keep as English film-genre terms
+- moods (dark, slow-burn, feel-good, gritty) → preserve them faithfully
+
+Output ONLY the translation — no quotes, no preamble, no explanation.`,
+        },
+        { role: "user", content: text },
+      ],
+    });
+    const translated = completion.choices[0]?.message?.content?.trim();
+    return translated || text;
+  } catch {
+    return text;
+  }
 }
 
 function buildJustificationPrompt(
@@ -126,13 +159,19 @@ export async function POST(request: NextRequest) {
     const sessionExcludes = new Set(body.exclude || []);
     const fullExcludes = new Set([...watchedIds, ...sessionExcludes]);
 
+    // Translate non-English freeform input to match the catalog's English embeddings.
+    let freeformForEmbedding = body.freeformText;
+    if (hasFreeform && body.locale && body.locale !== "en") {
+      freeformForEmbedding = await translateToEnglish(body.freeformText!);
+    }
+
     // Build query text from structured + freeform inputs
     const queryText = buildQueryText({
       genres: body.genres,
       yearFrom: body.yearFrom,
       yearTo: body.yearTo,
       popularity: body.popularity,
-      freeformText: body.freeformText,
+      freeformText: freeformForEmbedding,
     });
 
     const searchParams = {

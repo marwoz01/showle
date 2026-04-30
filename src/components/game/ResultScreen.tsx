@@ -17,6 +17,8 @@ import {
   Star,
 } from "lucide-react";
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
+import MovieGallery from "@/components/movie/MovieGallery";
+import CastList from "@/components/movie/CastList";
 
 interface ResultScreenProps {
   answer: MediaDetails;
@@ -241,12 +243,6 @@ export default function ResultScreen({
                 <dd className="text-foreground">{answer.director}</dd>
               </>
             )}
-            {answer.leadActor && answer.leadActor !== "Unknown" && (
-              <>
-                <dt className="text-muted">{t.comparison.leadActor}</dt>
-                <dd className="text-foreground">{answer.leadActor}</dd>
-              </>
-            )}
             {answer.country && answer.country !== "Unknown" && (
               <>
                 <dt className="text-muted">{t.comparison.country}</dt>
@@ -254,6 +250,12 @@ export default function ResultScreen({
               </>
             )}
           </dl>
+
+          {answer.cast && answer.cast.length > 0 && (
+            <div className="border-t border-white/6 pt-4">
+              <CastList cast={answer.cast} label={t.result.cast} />
+            </div>
+          )}
 
           {answer.overview && (
             <div className="border-t border-white/6 pt-4">
@@ -287,25 +289,7 @@ export default function ResultScreen({
       {/* Gallery — cinematic stills from TMDB */}
       {gallery.length > 0 && (
         <div className="border-t border-white/6 px-6 py-5">
-          <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted">
-            {t.result.gallery}
-          </h4>
-          <div className="-mx-1 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible lg:grid-cols-6">
-            {gallery.map((path) => (
-              <div
-                key={path}
-                className="relative aspect-video w-64 shrink-0 overflow-hidden rounded-lg bg-white/5 sm:w-auto"
-              >
-                <Image
-                  src={`https://image.tmdb.org/t/p/w500${path}`}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 200px, (min-width: 640px) 33vw, 50vw"
-                  className="object-cover"
-                />
-              </div>
-            ))}
-          </div>
+          <MovieGallery paths={gallery} label={t.result.gallery} />
         </div>
       )}
 

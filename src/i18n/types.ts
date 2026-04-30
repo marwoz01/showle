@@ -115,7 +115,24 @@ export interface Translations {
     playAgain: string;
     storyline: string;
     gallery: string;
+    cast: string;
     shareText: (title: string, attempts: number, max: number) => string;
+  };
+  movieModal: {
+    close: string;
+    next: string;
+    previous: string;
+  };
+  stats: {
+    activityTitle: string;
+    activitySummary: (won: number, played: number) => string;
+    legendNone: string;
+    legendLost: string;
+    legendWonFast: string;
+    legendWonMid: string;
+    legendWonSlow: string;
+    tooltipWon: (attempts: number) => string;
+    tooltipLost: string;
   };
   auth: {
     signIn: string;

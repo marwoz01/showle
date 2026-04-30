@@ -12,6 +12,7 @@ import {
   BarChart3,
   Loader2,
 } from "lucide-react";
+import GameHeatmap from "@/components/stats/GameHeatmap";
 
 interface Stats {
   gamesPlayed: number;
@@ -103,6 +104,8 @@ export default function StatsPage() {
         </Link>
         <h1 className="text-2xl font-bold text-foreground">{t.nav.stats}</h1>
       </div>
+
+      <GameHeatmap />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {statCards.map((card) => (
