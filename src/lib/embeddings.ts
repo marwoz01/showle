@@ -35,6 +35,7 @@ export interface SimilarMovieResult {
   genres: string[];
   overview: string;
   posterPath: string;
+  backdropPath: string;
   director: string;
   leadActor: string;
   country: string;
@@ -49,7 +50,7 @@ export interface SimilarMovieResult {
 // Single source of truth for the columns we project from MovieEmbedding.
 // Keep aligned with SimilarMovieResult and the recommend route's MediaDetails mapping.
 const SELECT_FIELDS = `"tmdbId", title, year, genres, overview,
-       "posterPath", director, "leadActor", country, runtime, budget,
+       "posterPath", "backdropPath", director, "leadActor", country, runtime, budget,
        "voteCount", rating, tagline`;
 
 // Calibrated to the actual `score` distribution of the catalog (~988 movies).

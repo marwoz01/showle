@@ -93,6 +93,7 @@ const en: Translations = {
     correct: "Correct!",
     nextIn: "Next in",
     loadError: "Failed to load the movie. Please try again later.",
+    movieCard: "Movie card",
   },
 
   // Comparison labels
@@ -144,6 +145,8 @@ const en: Translations = {
     share: "Share Result",
     copied: "Copied!",
     playAgain: "Play Again",
+    storyline: "Storyline",
+    gallery: "Gallery",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle - Daily Movie\n\nI guessed "${title}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
   },

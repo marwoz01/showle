@@ -120,8 +120,9 @@ model MovieEmbedding {
   year       Int
   genres     String[]
   overview   String
-  score      Float                        @default(0)
-  posterPath String                       @default("")
+  score        Float                      @default(0)
+  posterPath   String                     @default("")
+  backdropPath String                     @default("")
   director   String                       @default("Unknown")
   leadActor  String                       @default("Unknown")
   country    String                       @default("Unknown")

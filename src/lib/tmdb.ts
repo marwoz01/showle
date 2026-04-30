@@ -20,6 +20,7 @@ interface TmdbMovieDetails {
   title: string;
   release_date: string;
   poster_path: string | null;
+  backdrop_path: string | null;
   overview: string;
   tagline: string;
   popularity: number;
@@ -130,6 +131,29 @@ export async function searchMovieByTitleAndYear(
   }
 }
 
+interface TmdbImagesResponse {
+  backdrops: { file_path: string; vote_count: number; aspect_ratio: number }[];
+}
+
+/**
+ * Get up to `limit` cinematic stills (backdrops) for a movie, ranked by community votes.
+ * Returns just the file paths — caller composes the URL with the desired CDN size.
+ */
+export async function getMovieGallery(id: number, limit = 6): Promise<string[]> {
+  try {
+    const data = await tmdbFetch<TmdbImagesResponse>(`/movie/${id}/images`, {
+      // Allow language-less stills first; many backdrops have no localized text overlay.
+      include_image_language: "en,null",
+    });
+    return data.backdrops
+      .sort((a, b) => b.vote_count - a.vote_count)
+      .slice(0, limit)
+      .map((b) => b.file_path);
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Get full movie details by ID, mapped to MediaDetails.
  */
@@ -160,6 +184,7 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
       popularity: movie.vote_count ?? 0,
       rating: Math.round(movie.vote_average * 10) / 10,
       posterPath: movie.poster_path ?? "",
+      backdropPath: movie.backdrop_path ?? "",
       overview: movie.overview,
       tagline: movie.tagline || undefined,
     };

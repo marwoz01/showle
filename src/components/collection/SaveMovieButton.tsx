@@ -88,7 +88,7 @@ export default function SaveMovieButton({
       );
     }
     return (
-      <div className="flex items-center gap-1.5 text-sm text-accent-purple">
+      <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-accent-purple/30 bg-accent-purple/10 px-4 py-2.5 text-sm font-medium text-accent-purple">
         <BookmarkCheck size={16} />
         {t.collection.saved}
       </div>
@@ -110,7 +110,7 @@ export default function SaveMovieButton({
         className={
           variant === "icon"
             ? "rounded-lg bg-black/60 p-1.5 text-white/70 backdrop-blur-sm transition-colors hover:bg-black/80 hover:text-white"
-            : "flex items-center gap-1.5 rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground"
+            : "flex w-full items-center justify-center gap-2 rounded-lg border border-white/8 bg-white/3 px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground"
         }
       >
         <Bookmark size={16} />

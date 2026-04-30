@@ -9,6 +9,7 @@ import { useTranslation } from "@/i18n";
 import { MediaDetails } from "@/types";
 import SearchBar from "@/components/game/SearchBar";
 import GuessCard from "@/components/game/GuessCard";
+import MovieRevealCard from "@/components/game/MovieRevealCard";
 import HintsPanel from "@/components/game/HintsPanel";
 import ResultScreen from "@/components/game/ResultScreen";
 import CountdownTimer from "@/components/game/CountdownTimer";
@@ -131,6 +132,7 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
       {/* Two-column layout: guesses + hints */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         <div className="space-y-4">
+          {!isFinished && <MovieRevealCard guesses={guesses} />}
           {guesses.length === 0 && status === "playing" && (
             <div className="rounded-2xl border border-dashed border-white/8 p-8 text-center text-sm text-muted">
               {t.game.emptyState}

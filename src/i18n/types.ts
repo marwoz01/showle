@@ -69,6 +69,7 @@ export interface Translations {
     correct: string;
     nextIn: string;
     loadError: string;
+    movieCard: string;
   };
   comparison: {
     year: string;
@@ -112,6 +113,8 @@ export interface Translations {
     share: string;
     copied: string;
     playAgain: string;
+    storyline: string;
+    gallery: string;
     shareText: (title: string, attempts: number, max: number) => string;
   };
   auth: {

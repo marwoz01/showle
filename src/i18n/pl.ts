@@ -94,6 +94,7 @@ const pl: Translations = {
     correct: "Trafione!",
     nextIn: "Następny za",
     loadError: "Nie udało się załadować filmu. Spróbuj ponownie później.",
+    movieCard: "Karta filmu",
   },
 
   // Comparison labels
@@ -145,6 +146,8 @@ const pl: Translations = {
     share: "Udostępnij wynik",
     copied: "Skopiowano!",
     playAgain: "Zagraj ponownie",
+    storyline: "Fabuła",
+    gallery: "Galeria",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle - Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
   },

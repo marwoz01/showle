@@ -26,6 +26,7 @@ function toMediaDetails(row: SimilarMovieResult): MediaDetails {
     popularity: row.voteCount,
     rating: row.rating,
     posterPath: row.posterPath,
+    backdropPath: row.backdropPath || undefined,
     overview: row.overview,
     tagline: row.tagline ?? undefined,
   };

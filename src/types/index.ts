@@ -14,6 +14,7 @@ export interface MediaDetails {
   popularity: number;
   rating: number;
   posterPath: string;
+  backdropPath?: string;
   overview: string;
   tagline?: string;
 }

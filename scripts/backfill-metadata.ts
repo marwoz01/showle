@@ -29,6 +29,7 @@ interface TmdbDetails {
   id: number;
   title: string;
   poster_path: string | null;
+  backdrop_path: string | null;
   tagline: string;
   vote_average: number;
   vote_count: number;
@@ -87,16 +88,18 @@ async function main() {
     await prisma.$executeRawUnsafe(
       `UPDATE "MovieEmbedding" SET
         "posterPath" = $1,
-        director = $2,
-        "leadActor" = $3,
-        country = $4,
-        runtime = $5,
-        budget = $6,
-        "voteCount" = $7,
-        rating = $8,
-        tagline = $9
-       WHERE "tmdbId" = $10`,
+        "backdropPath" = $2,
+        director = $3,
+        "leadActor" = $4,
+        country = $5,
+        runtime = $6,
+        budget = $7,
+        "voteCount" = $8,
+        rating = $9,
+        tagline = $10
+       WHERE "tmdbId" = $11`,
       details.poster_path ?? "",
+      details.backdrop_path ?? "",
       director,
       leadActor,
       country,
