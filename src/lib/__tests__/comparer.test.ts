@@ -15,7 +15,7 @@ function makeMovie(overrides: Partial<MediaDetails> = {}): MediaDetails {
     leadActor: "Actor One",
     runtime: 120,
     budget: 100,
-    popularity: 50,
+    popularity: 8000,
     rating: 7.0,
     posterPath: "",
     overview: "A test movie.",
@@ -43,7 +43,7 @@ describe("compareMedia", () => {
       leadActor: "Actor Two",
       runtime: 200,
       budget: 5,
-      popularity: 5,
+      popularity: 100,
       rating: 2.0,
     });
     const answer = makeMovie();
@@ -215,17 +215,20 @@ describe("budget comparison", () => {
 
 describe("popularity comparison", () => {
   it("exact when same bucket", () => {
-    const result = compareMedia(makeMovie({ popularity: 25 }), makeMovie({ popularity: 40 }), en);
+    // Both in bucket 2 (5000–12000): high.
+    const result = compareMedia(makeMovie({ popularity: 6000 }), makeMovie({ popularity: 10000 }), en);
     expect(result[7].status).toBe("exact");
   });
 
   it("partial when adjacent buckets", () => {
-    const result = compareMedia(makeMovie({ popularity: 10 }), makeMovie({ popularity: 30 }), en);
+    // Bucket 1 (medium, 1000–5000) vs bucket 2 (high, 5000–12000).
+    const result = compareMedia(makeMovie({ popularity: 3000 }), makeMovie({ popularity: 8000 }), en);
     expect(result[7].status).toBe("partial");
   });
 
   it("miss when distant buckets", () => {
-    const result = compareMedia(makeMovie({ popularity: 5 }), makeMovie({ popularity: 150 }), en);
+    // Bucket 0 (low) vs bucket 4 (mega).
+    const result = compareMedia(makeMovie({ popularity: 500 }), makeMovie({ popularity: 30000 }), en);
     expect(result[7].status).toBe("miss");
   });
 });

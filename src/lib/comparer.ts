@@ -168,18 +168,21 @@ function getDirection(guess: number, answer: number): Direction {
   return guess < answer ? "up" : "down";
 }
 
+// Buckets are calibrated to TMDB `vote_count` (now stored in `popularity` — see tmdb.ts).
+// Reference points: indie/obscure ~500, lesser-known ~2000, well-known ~8000,
+// hits ~17000 (Green Mile), popular hits ~23000 (Shutter Island), blockbuster 35000+.
 function getPopularityBucket(value: number): number {
-  if (value < 20) return 0;
-  if (value < 50) return 1;
-  if (value < 100) return 2;
-  if (value < 200) return 3;
+  if (value < 1000) return 0;
+  if (value < 5000) return 1;
+  if (value < 12000) return 2;
+  if (value < 25000) return 3;
   return 4;
 }
 
 function getPopularityLabel(value: number, t: Translations): string {
-  if (value < 20) return t.popularity.low;
-  if (value < 50) return t.popularity.medium;
-  if (value < 100) return t.popularity.high;
-  if (value < 200) return t.popularity.veryHigh;
+  if (value < 1000) return t.popularity.low;
+  if (value < 5000) return t.popularity.medium;
+  if (value < 12000) return t.popularity.high;
+  if (value < 25000) return t.popularity.veryHigh;
   return t.popularity.mega;
 }

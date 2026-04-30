@@ -24,6 +24,7 @@ interface TmdbMovieDetails {
   tagline: string;
   popularity: number;
   vote_average: number;
+  vote_count: number;
   runtime: number;
   budget: number;
   genres: { id: number; name: string }[];
@@ -154,7 +155,9 @@ export async function getMovieDetails(id: number): Promise<MediaDetails | null> 
       leadActor,
       runtime: movie.runtime ?? 0,
       budget: movie.budget ? Math.round(movie.budget / 1_000_000) : 0,
-      popularity: Math.round(movie.popularity),
+      // TMDB `popularity` is a daily-decaying activity metric (low for older classics
+      // even when they're famous). `vote_count` is a stable accumulated-fame proxy.
+      popularity: movie.vote_count ?? 0,
       rating: Math.round(movie.vote_average * 10) / 10,
       posterPath: movie.poster_path ?? "",
       overview: movie.overview,
