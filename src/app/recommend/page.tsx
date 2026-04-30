@@ -25,6 +25,7 @@ export default function RecommendPage() {
     yearFrom: 1920,
     yearTo: 2026,
     popularity: "popular",
+    freeformText: "",
   });
   const [excludeIds, setExcludeIds] = useState<number[]>([]);
   const topRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,7 @@ export default function RecommendPage() {
     yearFrom: number;
     yearTo: number;
     popularity: string;
+    freeformText: string;
   }) {
     setPreferences(prefs);
     setView("loading");
@@ -43,7 +45,11 @@ export default function RecommendPage() {
       const res = await fetch("/api/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...prefs, locale, exclude: excludeIds }),
+        body: JSON.stringify({
+          ...prefs,
+          locale,
+          exclude: excludeIds,
+        }),
       });
 
       if (res.status === 429) {
@@ -53,6 +59,12 @@ export default function RecommendPage() {
       }
 
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.error === "no_results") {
+          setErrorType("no_results");
+          setView("error");
+          return;
+        }
         setView("error");
         return;
       }
@@ -110,6 +122,7 @@ export default function RecommendPage() {
             initialYearFrom={preferences.yearFrom}
             initialYearTo={preferences.yearTo}
             initialPopularity={preferences.popularity}
+            initialFreeformText={preferences.freeformText}
           />
         )}
 

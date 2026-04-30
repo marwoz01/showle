@@ -115,13 +115,22 @@ model CoinTransaction {
 }
 
 model MovieEmbedding {
-  tmdbId    Int                          @id
-  title     String
-  year      Int
-  genres    String[]
-  overview  String
-  score     Float                        @default(0)
-  embedding Unsupported("vector(1536)")
+  tmdbId     Int                          @id
+  title      String
+  year       Int
+  genres     String[]
+  overview   String
+  score      Float                        @default(0)
+  posterPath String                       @default("")
+  director   String                       @default("Unknown")
+  leadActor  String                       @default("Unknown")
+  country    String                       @default("Unknown")
+  runtime    Int                          @default(0)
+  budget     Int                          @default(0)
+  voteCount  Int                          @default(0)
+  rating     Float                        @default(0)
+  tagline    String?
+  embedding  Unsupported("vector(1536)")
 
   @@index([year])
 }

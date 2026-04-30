@@ -67,7 +67,7 @@ const pl: Translations = {
       "Codziennie nowy film do odgadnięcia. Wpisz tytuł, a porównamy go z odpowiedzią w 7 parametrach.",
     step2Title: "Czytaj wskazówki",
     step2Desc:
-      "Każda błędna próba odkrywa nową wskazówkę — inicjały reżysera, gatunek, kraj i więcej.",
+      "Każda błędna próba odkrywa nową wskazówkę - inicjały reżysera, gatunek, kraj i więcej.",
     step3Title: "Odkrywaj filmy",
     step3Desc:
       "Wybierz gatunki i preferencje, a dobierzemy 5 filmów idealnie dopasowanych na wieczór.",
@@ -175,7 +175,10 @@ const pl: Translations = {
     modeDesc:
       "Nie wiesz, co obejrzeć? Dobierzemy film idealnie pasujący do Twojego nastroju.",
     genresLabel: "Na co masz dziś ochotę?",
-    selectGenre: "Wybierz przynajmniej 1 gatunek",
+    selectGenre: "Wybierz gatunek lub opisz, czego szukasz",
+    freeformLabel: "Opisz swój nastrój",
+    freeformPlaceholder: "np. coś jak Inception ale lżejszego...",
+    freeformHint: "Opcjonalnie - opisz własnymi słowami, czego szukasz",
     yearLabel: "Rok premiery",
     popularityLabel: "Jak popularne?",
     popularityPopular: "Hity",
@@ -185,7 +188,7 @@ const pl: Translations = {
     loading:
       "Nie zjadaj jeszcze całego popcornu... zaraz pojawią się dobrane filmy!",
     noResults:
-      "Hmm, nic nie pasuje. Spróbuj zmienić preferencje — może trafi się coś fajnego!",
+      "Hmm, nic nie pasuje. Spróbuj zmienić preferencje - może trafi się coś fajnego!",
     error: "Coś poszło nie tak. Spróbuj ponownie za chwilę.",
     tryAgain: "Pokaż inne filmy",
     changePreferences: "Zmień preferencje",
@@ -232,8 +235,10 @@ const pl: Translations = {
     sortRating: "Ocena",
     sortTitle: "Tytuł",
     sortYear: "Rok",
-    emptyWatched: "Nie masz jeszcze obejrzanych filmów. Dodaj swój pierwszy film!",
-    emptyWatchlist: "Twoja lista do obejrzenia jest pusta. Zapisz filmy na później!",
+    emptyWatched:
+      "Nie masz jeszcze obejrzanych filmów. Dodaj swój pierwszy film!",
+    emptyWatchlist:
+      "Twoja lista do obejrzenia jest pusta. Zapisz filmy na później!",
     emptyRankings: "Nie masz jeszcze żadnych rankingów. Stwórz swój pierwszy!",
     createList: "Nowy ranking",
     listName: "Nazwa rankingu",

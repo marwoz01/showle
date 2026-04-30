@@ -33,7 +33,7 @@ const en: Translations = {
   home: {
     title: "Play",
     subtitle:
-      "Guess the daily movie or discover your perfect pick for tonight — all in one place.",
+      "Guess the daily movie or discover your perfect pick for tonight - all in one place.",
     filter: "Filter",
     viewGrid: "View: Grid",
   },
@@ -59,13 +59,14 @@ const en: Translations = {
   // How it works
   howItWorks: {
     title: "How It Works",
-    subtitle: "Guess the daily movie or discover something new — in a few simple steps.",
+    subtitle:
+      "Guess the daily movie or discover something new - in a few simple steps.",
     step1Title: "Guess the daily movie",
     step1Desc:
       "A new movie to guess every day. Type a title and we'll compare it against the answer across 7 parameters.",
     step2Title: "Read the Clues",
     step2Desc:
-      "Each wrong guess reveals a new hint — director initials, genre, country, and more.",
+      "Each wrong guess reveals a new hint - director initials, genre, country, and more.",
     step3Title: "Discover movies",
     step3Desc:
       "Pick your genres and preferences, and we'll find 5 movies perfectly matched for your evening.",
@@ -168,11 +169,17 @@ const en: Translations = {
   // Recommendations
   recommend: {
     title: "What to Watch Tonight?",
-    subtitle: "Popcorn ready, blanket on — tell us what you're in the mood for and we'll handle the rest.",
+    subtitle:
+      "Popcorn ready, blanket on - tell us what you're in the mood for and we'll handle the rest.",
     modeTitle: "What to Watch?",
-    modeDesc: "Got the snacks but no movie? Tell us what you like and we'll pick something perfect for tonight.",
+    modeDesc:
+      "Got the snacks but no movie? Tell us what you like and we'll pick something perfect for tonight.",
     genresLabel: "What are you into?",
-    selectGenre: "Select at least 1 genre",
+    selectGenre: "Select a genre or describe what you're looking for",
+    freeformLabel: "Describe your mood",
+    freeformPlaceholder: "e.g. something like Inception but lighter...",
+    freeformHint:
+      "Optional - describe what you're looking for in your own words",
     yearLabel: "Release year",
     popularityLabel: "How well-known?",
     popularityPopular: "Big hits",
@@ -180,7 +187,8 @@ const en: Translations = {
     popularityNiche: "Hidden gems",
     submit: "Find my movies",
     loading: "Don't eat all the popcorn yet... your picks are almost ready!",
-    noResults: "Hmm, nothing fits. Try tweaking your preferences — something great might pop up!",
+    noResults:
+      "Hmm, nothing fits. Try tweaking your preferences - something great might pop up!",
     error: "Something went wrong. Give it another try in a moment.",
     tryAgain: "Show me different movies",
     changePreferences: "Change Preferences",
@@ -213,7 +221,8 @@ const en: Translations = {
     markWatched: "Mark as watched",
     moveToWatchlist: "Move to watchlist",
     removeMovie: "Remove from collection",
-    removeConfirm: "Are you sure you want to remove this movie from your collection?",
+    removeConfirm:
+      "Are you sure you want to remove this movie from your collection?",
     rating: "Rating",
     review: "Review",
     reviewPlaceholder: "Write your thoughts about this movie...",

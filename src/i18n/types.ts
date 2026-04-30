@@ -137,6 +137,9 @@ export interface Translations {
     modeDesc: string;
     genresLabel: string;
     selectGenre: string;
+    freeformLabel: string;
+    freeformPlaceholder: string;
+    freeformHint: string;
     yearLabel: string;
     popularityLabel: string;
     popularityPopular: string;

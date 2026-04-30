@@ -11,11 +11,13 @@ interface PreferenceFormProps {
     yearFrom: number;
     yearTo: number;
     popularity: string;
+    freeformText: string;
   }) => void;
   initialGenres?: string[];
   initialYearFrom?: number;
   initialYearTo?: number;
   initialPopularity?: string;
+  initialFreeformText?: string;
 }
 
 const YEAR_MIN = 1920;
@@ -35,12 +37,14 @@ export default function PreferenceForm({
   initialYearFrom = YEAR_MIN,
   initialYearTo = YEAR_MAX,
   initialPopularity = "popular",
+  initialFreeformText = "",
 }: PreferenceFormProps) {
   const { t } = useTranslation();
   const [selectedGenres, setSelectedGenres] = useState<string[]>(initialGenres);
   const [yearFrom, setYearFrom] = useState(initialYearFrom);
   const [yearTo, setYearTo] = useState(initialYearTo);
   const [popularity, setPopularity] = useState(initialPopularity);
+  const [freeformText, setFreeformText] = useState(initialFreeformText);
 
   const popularityOptions = [
     {
@@ -80,7 +84,13 @@ export default function PreferenceForm({
   }
 
   function handleSubmit() {
-    onSubmit({ genres: selectedGenres, yearFrom, yearTo, popularity });
+    onSubmit({
+      genres: selectedGenres,
+      yearFrom,
+      yearTo,
+      popularity,
+      freeformText: freeformText.trim(),
+    });
   }
 
   const handleMinChange = useCallback(
@@ -104,13 +114,13 @@ export default function PreferenceForm({
     setYearTo(preset.to);
   }
 
-  const canSubmit = selectedGenres.length >= 1;
+  const canSubmit = selectedGenres.length >= 1 || freeformText.trim().length > 0;
   const minPercent = ((yearFrom - YEAR_MIN) / (YEAR_MAX - YEAR_MIN)) * 100;
   const maxPercent = ((yearTo - YEAR_MIN) / (YEAR_MAX - YEAR_MIN)) * 100;
 
   return (
     <div className="space-y-5">
-      {/* ── Genres (primary) ── */}
+      {/* -- Genres (primary) -- */}
       <section className="rounded-2xl border border-white/6 bg-card p-6 sm:p-8">
         <label className="mb-5 block text-xs font-semibold uppercase tracking-widest text-muted">
           {t.recommend.genresLabel}
@@ -140,7 +150,23 @@ export default function PreferenceForm({
         )}
       </section>
 
-      {/* ── Popularity + Year (secondary, side by side) ── */}
+      {/* -- Freeform text -- */}
+      <section className="rounded-2xl border border-white/6 bg-card p-6">
+        <label className="mb-4 block text-xs font-semibold uppercase tracking-widest text-muted">
+          {t.recommend.freeformLabel}
+        </label>
+        <textarea
+          value={freeformText}
+          onChange={(e) => setFreeformText(e.target.value)}
+          maxLength={400}
+          rows={3}
+          placeholder={t.recommend.freeformPlaceholder}
+          className="w-full resize-none rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-sm text-foreground placeholder-muted/60 transition-colors focus:border-accent-purple/50 focus:outline-none"
+        />
+        <p className="mt-2 text-xs text-muted">{t.recommend.freeformHint}</p>
+      </section>
+
+      {/* -- Popularity + Year (secondary, side by side) -- */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Popularity */}
         <section className="rounded-2xl border border-white/6 bg-card p-6">
@@ -250,7 +276,7 @@ export default function PreferenceForm({
         </section>
       </div>
 
-      {/* ── CTA ── */}
+      {/* -- CTA -- */}
       <button
         onClick={handleSubmit}
         disabled={!canSubmit}

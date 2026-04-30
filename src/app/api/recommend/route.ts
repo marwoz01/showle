@@ -1,14 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { getOpenRouter } from "@/lib/gemini";
-import { searchMovieByTitleAndYear } from "@/lib/tmdb";
+import {
+  findSimilarMovies,
+  findMoviesByFilters,
+  buildQueryText,
+  type SimilarMovieResult,
+} from "@/lib/embeddings";
+import { prisma } from "@/lib/prisma";
 import type { MediaDetails } from "@/types";
 
-interface AIMovie {
-  title: string;
-  title_en: string;
-  year: number;
-  justification: string;
+function toMediaDetails(row: SimilarMovieResult): MediaDetails {
+  return {
+    id: row.tmdbId,
+    title: row.title,
+    type: "movie",
+    year: row.year,
+    genres: row.genres,
+    country: row.country,
+    director: row.director,
+    leadActor: row.leadActor,
+    runtime: row.runtime,
+    budget: row.budget,
+    popularity: row.voteCount,
+    rating: row.rating,
+    posterPath: row.posterPath,
+    overview: row.overview,
+    tagline: row.tagline ?? undefined,
+  };
 }
 
 interface RecommendRequest {
@@ -18,44 +38,44 @@ interface RecommendRequest {
   popularity: string;
   locale: string;
   exclude?: number[];
+  freeformText?: string;
 }
 
-const POPULARITY_DESCRIPTIONS: Record<string, string> = {
-  popular: "popularne, znane szerokiej publiczności",
-  medium: "średnio popularne, cenione przez koneserów",
-  niche: "niszowe, mało znane perełki",
-};
-
-function buildSystemPrompt(locale: string): string {
+function buildJustificationPrompt(
+  movies: { title: string; year: number; overview: string }[],
+  preferences: { genres: string[]; freeformText?: string; popularity: string },
+  locale: string
+): { system: string; user: string } {
   const lang = locale === "pl"
-    ? "Uzasadnienia pisz po polsku."
+    ? "Pisz uzasadnienia po polsku."
     : "Write justifications in English.";
 
-  return `Jesteś ekspertem od rekomendacji filmów. Twoim zadaniem jest zaproponować użytkownikowi filmy idealnie dopasowane do jego preferencji.
+  const system = `You are a movie recommendation expert. The user has been matched with movies based on their preferences. Your job is to write a short, compelling justification (1-2 sentences) for each movie explaining WHY it fits the user's taste.
 
-Zasady:
-1. Wybierz DOKŁADNIE 10 filmów (podajemy więcej, żeby mieć zapas).
-2. Dla każdego filmu podaj uzasadnienie w 1-2 zdaniach wyjaśniające, DLACZEGO ten film pasuje do użytkownika.
-3. Jeśli użytkownik preferuje filmy niszowe, unikaj oczywistych blockbusterów. Szukaj ukrytych perełek.
-4. Jeśli użytkownik preferuje filmy popularne, wybieraj uznane, wysoko oceniane tytuły.
-5. Zadbaj o różnorodność — nie wybieraj filmów od tego samego reżysera ani z tego samego roku (chyba że to jedyne opcje).
-6. Podaj tytuły w języku angielskim (title_en) oraz oryginalnym (title).
-7. Nie używaj ogólników typu "świetny film" — zawsze podaj konkretny powód dopasowania (klimat, tempo, styl narracji, tematyka).
-8. ${lang}
+Rules:
+1. Be specific — reference the movie's mood, themes, style, or narrative approach.
+2. Connect each justification to the user's stated preferences.
+3. Never use generic phrases like "great movie" or "must-see".
+4. ${lang}
 
-Odpowiedz WYŁĄCZNIE w formacie JSON:
-{"recommendations": [{"title": "...", "title_en": "...", "year": 2000, "justification": "..."}]}`;
-}
+Respond ONLY in JSON: {"justifications": ["...", "...", ...]}`;
 
-function buildUserPrompt(req: RecommendRequest): string {
-  const popularity = POPULARITY_DESCRIPTIONS[req.popularity] || POPULARITY_DESCRIPTIONS.popular;
-  const yearRange = req.yearFrom && req.yearTo
-    ? `filmy z lat ${req.yearFrom}–${req.yearTo}`
-    : "dowolny okres";
+  const movieList = movies
+    .map((m, i) => `${i + 1}. "${m.title}" (${m.year}) — ${m.overview.slice(0, 200)}`)
+    .join("\n");
 
-  return `Gatunki: ${req.genres.join(", ")}
-Okres: ${yearRange}
-Popularność: ${popularity}`;
+  const prefParts: string[] = [];
+  if (preferences.genres.length) prefParts.push(`Genres: ${preferences.genres.join(", ")}`);
+  if (preferences.freeformText) prefParts.push(`User description: "${preferences.freeformText}"`);
+  if (preferences.popularity) prefParts.push(`Popularity preference: ${preferences.popularity}`);
+
+  const user = `User preferences:
+${prefParts.join("\n")}
+
+Movies to justify:
+${movieList}`;
+
+  return { system, user };
 }
 
 export async function POST(request: NextRequest) {
@@ -76,46 +96,118 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (!body.genres || body.genres.length === 0) {
-    return NextResponse.json({ error: "At least one genre required" }, { status: 400 });
+  const hasFreeform = !!body.freeformText?.trim();
+  const hasGenres = body.genres && body.genres.length > 0;
+
+  if (!hasFreeform && !hasGenres) {
+    return NextResponse.json({ error: "At least one genre or freeform text required" }, { status: 400 });
   }
 
-  try {
-    const excludeSet = new Set(body.exclude || []);
-    const systemPrompt = buildSystemPrompt(body.locale || "en");
-    const userPrompt = buildUserPrompt(body);
+  if (hasFreeform && body.freeformText!.length > 400) {
+    return NextResponse.json({ error: "Freeform text too long (max 400)" }, { status: 400 });
+  }
 
-    const completion = await getOpenRouter().chat.completions.create({
-      model: "google/gemini-2.0-flash-001",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: { type: "json_object" },
+  const TARGET = 8;
+
+  try {
+    // Watched movies are always excluded for signed-in users.
+    const watchedIds = new Set<number>();
+    const { userId } = await auth();
+    if (userId) {
+      const watched = await prisma.savedMovie.findMany({
+        where: { userId, category: "watched" },
+        select: { tmdbId: true },
+      });
+      watched.forEach((w) => watchedIds.add(w.tmdbId));
+    }
+
+    // Session-tracked exclusions (movies already shown to the user this visit).
+    const sessionExcludes = new Set(body.exclude || []);
+    const fullExcludes = new Set([...watchedIds, ...sessionExcludes]);
+
+    // Build query text from structured + freeform inputs
+    const queryText = buildQueryText({
+      genres: body.genres,
+      yearFrom: body.yearFrom,
+      yearTo: body.yearTo,
+      popularity: body.popularity,
+      freeformText: body.freeformText,
     });
 
-    const text = completion.choices[0]?.message?.content;
-    if (!text) {
-      return NextResponse.json({ error: "Empty AI response" }, { status: 500 });
-    }
+    const searchParams = {
+      queryText,
+      genres: body.genres,
+      yearFrom: body.yearFrom,
+      yearTo: body.yearTo,
+      popularity: body.popularity,
+    };
 
-    const parsed = JSON.parse(text) as { recommendations: AIMovie[] };
-
-    // Try to match each recommendation to TMDB, take first 5 successful
-    const recommendations: { movie: MediaDetails; justification: string }[] = [];
-
-    for (const rec of parsed.recommendations) {
-      if (recommendations.length >= 6) break;
-
-      // 3-level fallback: title_en+year → title_en → title+year
-      let movie = await searchMovieByTitleAndYear(rec.title_en, rec.year);
-      if (!movie) movie = await searchMovieByTitleAndYear(rec.title_en);
-      if (!movie) movie = await searchMovieByTitleAndYear(rec.title, rec.year);
-
-      if (movie && !excludeSet.has(movie.id)) {
-        recommendations.push({ movie, justification: rec.justification });
+    // Vector search with filter-only fallback if embeddings fail.
+    async function search(excludeIds: number[]) {
+      try {
+        return await findSimilarMovies({ ...searchParams, excludeIds, limit: TARGET });
+      } catch (embeddingError) {
+        console.error("Embedding search failed, falling back to filters:", embeddingError);
+        return findMoviesByFilters({ ...searchParams, excludeIds, limit: TARGET });
       }
     }
+
+    let similarMovies = await search([...fullExcludes]);
+
+    // Pool-exhaustion fallback: if we don't have enough results AND the user has been
+    // clicking "try again" (sessionExcludes non-empty), retry without the session
+    // exclusions so they get fresh recommendations even after burning through the pool.
+    // Watched-exclusion is always preserved.
+    if (similarMovies.length < TARGET && sessionExcludes.size > 0) {
+      similarMovies = await search([...watchedIds]);
+    }
+
+    if (similarMovies.length === 0) {
+      return NextResponse.json({ error: "no_results" }, { status: 404 });
+    }
+
+    // All movie data is in our own catalog now — no TMDB roundtrip needed.
+    const movies: MediaDetails[] = similarMovies.map(toMediaDetails);
+
+    // Generate AI justifications
+    let justifications: string[] = movies.map((m) => m.overview.slice(0, 200));
+
+    try {
+      const prompt = buildJustificationPrompt(
+        movies.map((m) => ({
+          title: m.title,
+          year: m.year,
+          overview: m.overview,
+        })),
+        { genres: body.genres, freeformText: body.freeformText, popularity: body.popularity },
+        body.locale || "en"
+      );
+
+      const completion = await getOpenRouter().chat.completions.create({
+        model: "google/gemini-2.0-flash-001",
+        messages: [
+          { role: "system", content: prompt.system },
+          { role: "user", content: prompt.user },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      const text = completion.choices[0]?.message?.content;
+      if (text) {
+        const parsed = JSON.parse(text) as { justifications: string[] };
+        if (parsed.justifications?.length === movies.length) {
+          justifications = parsed.justifications;
+        }
+      }
+    } catch (aiError) {
+      console.error("Justification generation failed, using overviews:", aiError);
+    }
+
+    // Build response in same shape as before
+    const recommendations = movies.map((movie, i) => ({
+      movie,
+      justification: justifications[i] || movie.overview.slice(0, 200),
+    }));
 
     return NextResponse.json(recommendations);
   } catch (error) {
