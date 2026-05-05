@@ -113,8 +113,22 @@ ${movieList}`;
   return { system, user };
 }
 
-const DAILY_LIMIT_AUTH = 5;
+const DAILY_LIMIT_AUTH = 7;
 const DAILY_LIMIT_ANON = 1;
+
+export async function GET(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  const { userId } = await auth();
+  const today = new Date().toISOString().slice(0, 10);
+  const dailyLimit = userId ? DAILY_LIMIT_AUTH : DAILY_LIMIT_ANON;
+  const dailyKey = userId
+    ? `recommend:${userId}:${today}`
+    : `recommend:anon:${ip}:${today}`;
+
+  const usage = await prisma.dailyUsage.findUnique({ where: { key: dailyKey } });
+  const remaining = Math.max(0, dailyLimit - (usage?.count ?? 0));
+  return NextResponse.json({ remaining, limit: dailyLimit });
+}
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
@@ -128,16 +142,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Daily quota — keyed by date so it resets at midnight (calendar day)
+  // Daily quota — persisted in DB so it survives serverless cold starts
   const { userId } = await auth();
   const today = new Date().toISOString().slice(0, 10);
   const dailyLimit = userId ? DAILY_LIMIT_AUTH : DAILY_LIMIT_ANON;
   const dailyKey = userId
-    ? `recommend-daily:${userId}:${today}`
-    : `recommend-daily-anon:${ip}:${today}`;
-  const dailyRl = rateLimit(dailyKey, { limit: dailyLimit, windowMs: 25 * 60 * 60 * 1000 });
+    ? `recommend:${userId}:${today}`
+    : `recommend:anon:${ip}:${today}`;
 
-  if (!dailyRl.success) {
+  // Read current count before deciding whether to allow
+  const existingUsage = await prisma.dailyUsage.findUnique({ where: { key: dailyKey } });
+  if (existingUsage && existingUsage.count >= dailyLimit) {
     const error = userId ? "daily_limit_reached" : "daily_limit_anon";
     return NextResponse.json({ error, remaining: 0, limit: dailyLimit }, { status: 429 });
   }
@@ -277,7 +292,15 @@ export async function POST(request: NextRequest) {
       justification: justifications[i] || movie.overview.slice(0, 200),
     }));
 
-    return NextResponse.json({ recommendations, remaining: dailyRl.remaining, limit: dailyLimit });
+    // Increment usage counter only on a successful response
+    const updated = await prisma.dailyUsage.upsert({
+      where: { key: dailyKey },
+      update: { count: { increment: 1 } },
+      create: { key: dailyKey, count: 1, date: today },
+    });
+    const remaining = Math.max(0, dailyLimit - updated.count);
+
+    return NextResponse.json({ recommendations, remaining, limit: dailyLimit });
   } catch (error) {
     console.error("Recommend error:", error);
     return NextResponse.json({ error: "internal" }, { status: 500 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
 import { ArrowLeft, Loader2, RefreshCw, ArrowRight } from "lucide-react";
@@ -23,6 +23,19 @@ export default function RecommendPage() {
   const [results, setResults] = useState<Recommendation[]>([]);
   const [errorType, setErrorType] = useState<string>("");
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [quotaLimit, setQuotaLimit] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/recommend")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setRemaining(data.remaining);
+          setQuotaLimit(data.limit);
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [preferences, setPreferences] = useState({
     genres: [] as string[],
     yearFrom: 1920,
@@ -84,6 +97,7 @@ export default function RecommendPage() {
       }
 
       if (data.remaining !== undefined) setRemaining(data.remaining);
+      if (data.limit !== undefined) setQuotaLimit(data.limit);
       setResults(recommendations);
       setExcludeIds((prev) => [...prev, ...recommendations.map((r: Recommendation) => r.movie.id)]);
       setView("results");
@@ -130,6 +144,8 @@ export default function RecommendPage() {
             initialYearTo={preferences.yearTo}
             initialPopularity={preferences.popularity}
             initialFreeformText={preferences.freeformText}
+            remaining={remaining}
+            quotaLimit={quotaLimit}
           />
         )}
 

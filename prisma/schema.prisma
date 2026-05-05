@@ -114,6 +114,15 @@ model CoinTransaction {
   @@index([userId])
 }
 
+model DailyUsage {
+  key       String   @id // e.g. "recommend:userId:2026-05-05"
+  count     Int      @default(0)
+  date      String   // "YYYY-MM-DD" — for cleanup queries
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
 model MovieEmbedding {
   tmdbId     Int                          @id
   title      String

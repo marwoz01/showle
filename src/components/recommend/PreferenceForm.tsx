@@ -18,6 +18,8 @@ interface PreferenceFormProps {
   initialYearTo?: number;
   initialPopularity?: string;
   initialFreeformText?: string;
+  remaining?: number | null;
+  quotaLimit?: number | null;
 }
 
 const YEAR_MIN = 1920;
@@ -38,6 +40,8 @@ export default function PreferenceForm({
   initialYearTo = YEAR_MAX,
   initialPopularity = "popular",
   initialFreeformText = "",
+  remaining = null,
+  quotaLimit = null,
 }: PreferenceFormProps) {
   const { t } = useTranslation();
   const [selectedGenres, setSelectedGenres] = useState<string[]>(initialGenres);
@@ -279,7 +283,7 @@ export default function PreferenceForm({
       {/* -- CTA -- */}
       <button
         onClick={handleSubmit}
-        disabled={!canSubmit}
+        disabled={!canSubmit || remaining === 0}
         className="group/cta relative w-full overflow-hidden rounded-2xl bg-linear-to-r from-accent-purple to-purple-500 px-8 py-4.5 text-base font-bold text-white transition-all hover:shadow-[0_0_30px_rgba(124,77,255,0.3)] disabled:cursor-not-allowed disabled:opacity-40"
       >
         <div className="pointer-events-none absolute inset-0 bg-white/0 transition-colors group-hover/cta:bg-white/5" />
@@ -288,6 +292,11 @@ export default function PreferenceForm({
           {t.recommend.submit}
         </span>
       </button>
+      {remaining !== null && quotaLimit !== null && (
+        <p className="text-center text-xs text-muted">
+          {t.recommend.quotaInfo(remaining, quotaLimit)}
+        </p>
+      )}
 
       {/* Range slider thumb styles */}
       <style jsx>{`

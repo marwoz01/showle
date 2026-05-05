@@ -234,6 +234,7 @@ const en: Translations = {
     dailyLimitReached: "You've used your daily recommendation limit. Come back tomorrow!",
     dailyLimitAnon: "Sign in to get more recommendations every day.",
     loginForMore: "Sign in for more",
+    quotaInfo: (remaining: number, limit: number) => `${remaining} of ${limit} recommendations left today`,
   },
 
   // Collection

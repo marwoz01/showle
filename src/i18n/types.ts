@@ -189,6 +189,7 @@ export interface Translations {
     dailyLimitReached: string;
     dailyLimitAnon: string;
     loginForMore: string;
+    quotaInfo: (remaining: number, limit: number) => string;
   };
   collection: {
     title: string;
