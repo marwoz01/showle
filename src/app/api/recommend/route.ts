@@ -113,7 +113,7 @@ ${movieList}`;
   return { system, user };
 }
 
-const DAILY_LIMIT_AUTH = 7;
+const DAILY_LIMIT_AUTH = 20;
 const DAILY_LIMIT_ANON = 1;
 
 export async function GET(request: NextRequest) {
