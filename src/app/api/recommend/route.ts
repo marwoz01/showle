@@ -210,9 +210,15 @@ export async function POST(request: NextRequest) {
     // When freeform text mentions a genre but the user didn't pick one from the UI,
     // infer it so the SQL genre filter fires and popular off-topic blockbusters don't
     // crowd out genuinely relevant films (e.g. "romance" → require Romance genre).
+    // Run on BOTH the translated text and the original to survive translation failures.
     const inferredGenres =
       hasFreeform && !hasGenres
-        ? inferGenresFromText(freeformForEmbedding ?? body.freeformText!)
+        ? [
+            ...new Set([
+              ...inferGenresFromText(body.freeformText!),
+              ...inferGenresFromText(freeformForEmbedding ?? ""),
+            ]),
+          ]
         : [];
 
     const searchParams = {

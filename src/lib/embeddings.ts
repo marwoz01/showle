@@ -136,10 +136,11 @@ function getExcludedGenres(selectedGenres: string[]): string[] {
   return [];
 }
 
-// Maps lowercase English keywords → catalog genre names.
-// Used to infer genre intent from freeform text so we can apply a genre filter
-// even when the user didn't explicitly select one.
+// Maps lowercase keywords → catalog genre names.
+// Includes both English and Polish variants so inference works even when
+// translation fails or the original user text is used as a fallback.
 const GENRE_KEYWORD_MAP: Record<string, string> = {
+  // English
   romance: "Romance", romantic: "Romance",
   comedy: "Comedy", comedies: "Comedy", funny: "Comedy", humor: "Comedy", humour: "Comedy",
   horror: "Horror", scary: "Horror",
@@ -149,6 +150,13 @@ const GENRE_KEYWORD_MAP: Record<string, string> = {
   animation: "Animation", animated: "Animation", cartoon: "Animation",
   family: "Family",
   war: "War", military: "War",
+  // Polish
+  romans: "Romance", romantyczny: "Romance", romantyczna: "Romance",
+  "miłosny": "Romance", "miłosna": "Romance",
+  komedia: "Comedy", komediowy: "Comedy", komediowa: "Comedy",
+  animacja: "Animation",
+  "kryminał": "Crime",
+  wojenny: "War", wojenna: "War",
 };
 
 /**
