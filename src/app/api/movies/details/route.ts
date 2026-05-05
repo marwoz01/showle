@@ -20,7 +20,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const movie = await getMovieDetails(Number(id));
+    const lang = request.nextUrl.searchParams.get("lang");
+    const language = lang === "pl" ? "pl-PL" : "en-US";
+    const movie = await getMovieDetails(Number(id), language);
 
     if (!movie) {
       return NextResponse.json({ error: "Movie not found" }, { status: 404 });

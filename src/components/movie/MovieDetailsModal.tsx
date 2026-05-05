@@ -22,14 +22,14 @@ export default function MovieDetailsModal({
   initial,
   onClose,
 }: MovieDetailsModalProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [gallery, setGallery] = useState<string[]>([]);
 
   useEffect(() => {
     const ac = new AbortController();
 
-    fetch(`/api/movies/details?id=${tmdbId}`, { signal: ac.signal })
+    fetch(`/api/movies/details?id=${tmdbId}&lang=${locale}`, { signal: ac.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data) setDetails(data as MediaDetails);

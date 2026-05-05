@@ -34,11 +34,13 @@ export default function ResultScreen({
   guesses,
   hintsUsed,
 }: ResultScreenProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const won = status === "won";
   const [gallery, setGallery] = useState<string[]>([]);
+  const [plOverview, setPlOverview] = useState<string | null>(null);
+  const [plTagline, setPlTagline] = useState<string | null>(null);
 
   // Fetch a handful of cinematic stills once the result is shown.
   useEffect(() => {
@@ -53,6 +55,19 @@ export default function ResultScreen({
       });
     return () => ac.abort();
   }, [answer.id]);
+
+  useEffect(() => {
+    if (locale !== "pl") return;
+    const ac = new AbortController();
+    fetch(`/api/movies/details?id=${answer.id}&lang=pl`, { signal: ac.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.overview) setPlOverview(data.overview);
+        if (data?.tagline) setPlTagline(data.tagline);
+      })
+      .catch(() => {});
+    return () => ac.abort();
+  }, [answer.id, locale]);
 
   useEffect(() => {
     if (!won) return;
@@ -218,9 +233,9 @@ export default function ResultScreen({
 
         {/* Middle — details */}
         <div className="flex min-w-0 flex-col gap-4">
-          {answer.tagline && (
+          {(plTagline ?? answer.tagline) && (
             <p className="text-base italic text-muted/80">
-              &ldquo;{answer.tagline}&rdquo;
+              &ldquo;{plTagline ?? answer.tagline}&rdquo;
             </p>
           )}
 
@@ -258,13 +273,13 @@ export default function ResultScreen({
             </div>
           )}
 
-          {answer.overview && (
+          {(plOverview ?? answer.overview) && (
             <div className="border-t border-white/6 pt-4">
               <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">
                 {t.result.storyline}
               </h4>
               <p className="text-sm leading-relaxed text-muted">
-                {answer.overview}
+                {plOverview ?? answer.overview}
               </p>
             </div>
           )}

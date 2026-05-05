@@ -193,10 +193,10 @@ export async function getWatchProviders(id: number, region = "PL"): Promise<Watc
 /**
  * Get full movie details by ID, mapped to MediaDetails.
  */
-export async function getMovieDetails(id: number): Promise<MediaDetails | null> {
+export async function getMovieDetails(id: number, language = "en-US"): Promise<MediaDetails | null> {
   try {
     const [movie, credits] = await Promise.all([
-      tmdbFetch<TmdbMovieDetails>(`/movie/${id}`, { language: "en-US" }),
+      tmdbFetch<TmdbMovieDetails>(`/movie/${id}`, { language }),
       tmdbFetch<TmdbCredits>(`/movie/${id}/credits`),
     ]);
 

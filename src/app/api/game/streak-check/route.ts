@@ -40,6 +40,14 @@ export async function GET() {
     return NextResponse.json({ status: "ok" });
   }
 
+  // If there's already a game result for today, streak is fine
+  const todayGame = await prisma.gameResult.findUnique({
+    where: { userId_dateKey_mode: { userId, dateKey: today, mode: "daily-movie" } },
+  });
+  if (todayGame) {
+    return NextResponse.json({ status: "ok" });
+  }
+
   // Streak is already 0 → nothing to break
   if (stats.currentStreak === 0) {
     return NextResponse.json({ status: "ok" });
