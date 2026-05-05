@@ -198,19 +198,9 @@ export async function POST(request: NextRequest) {
       freeformForEmbedding = await translateToEnglish(body.freeformText!);
     }
 
-    // Build query text from structured + freeform inputs
-    const queryText = buildQueryText({
-      genres: body.genres,
-      yearFrom: body.yearFrom,
-      yearTo: body.yearTo,
-      popularity: body.popularity,
-      freeformText: freeformForEmbedding,
-    });
-
-    // When freeform text mentions a genre but the user didn't pick one from the UI,
-    // infer it so the SQL genre filter fires and popular off-topic blockbusters don't
-    // crowd out genuinely relevant films (e.g. "romance" → require Romance genre).
-    // Run on BOTH the translated text and the original to survive translation failures.
+    // Infer genre hints from freeform text BEFORE building the query so they can
+    // strengthen both the embedding vector AND the SQL genre filter.
+    // Run on both the original text and the translation to survive failures of either.
     const inferredGenres =
       hasFreeform && !hasGenres
         ? [
@@ -220,6 +210,16 @@ export async function POST(request: NextRequest) {
             ]),
           ]
         : [];
+
+    // Build query text — pass inferred genres as a hint so the embedding vector
+    // also leans toward the right genre (e.g. appends ". Genres: Romance").
+    const queryText = buildQueryText({
+      genres: hasGenres ? body.genres : inferredGenres,
+      yearFrom: body.yearFrom,
+      yearTo: body.yearTo,
+      popularity: body.popularity,
+      freeformText: freeformForEmbedding,
+    });
 
     const searchParams = {
       queryText,
