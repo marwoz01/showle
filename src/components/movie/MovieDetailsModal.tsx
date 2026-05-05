@@ -8,6 +8,7 @@ import { MediaDetails } from "@/types";
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieGallery from "@/components/movie/MovieGallery";
 import CastList from "@/components/movie/CastList";
+import WatchProviders from "@/components/movie/WatchProviders";
 
 interface MovieDetailsModalProps {
   tmdbId: number;
@@ -226,6 +227,8 @@ export default function MovieDetailsModal({
                     </p>
                   </div>
                 )}
+
+                <WatchProviders tmdbId={tmdbId} />
               </div>
             </div>
 

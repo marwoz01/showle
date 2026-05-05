@@ -149,6 +149,9 @@ const pl: Translations = {
     storyline: "Fabuła",
     gallery: "Galeria",
     cast: "Obsada",
+    whereToWatch: "Gdzie obejrzeć",
+    rent: "Wypożycz",
+    seeAllProviders: "Pełna lista",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle - Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
   },

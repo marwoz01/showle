@@ -161,6 +161,35 @@ export async function getMovieGallery(id: number, limit = 6): Promise<string[]> 
   }
 }
 
+export interface WatchProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+}
+
+export interface WatchProvidersResult {
+  flatrate?: WatchProvider[];
+  rent?: WatchProvider[];
+  link?: string;
+}
+
+/**
+ * Get streaming/rental providers for a movie in a given region (default: PL).
+ * Data sourced from JustWatch via TMDB.
+ */
+export async function getWatchProviders(id: number, region = "PL"): Promise<WatchProvidersResult | null> {
+  try {
+    const data = await tmdbFetch<{
+      results: Record<string, { flatrate?: WatchProvider[]; rent?: WatchProvider[]; link?: string }>;
+    }>(`/movie/${id}/watch/providers`);
+    const r = data.results?.[region];
+    if (!r) return null;
+    return { flatrate: r.flatrate, rent: r.rent, link: r.link };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Get full movie details by ID, mapped to MediaDetails.
  */

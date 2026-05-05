@@ -19,6 +19,7 @@ import {
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieGallery from "@/components/movie/MovieGallery";
 import CastList from "@/components/movie/CastList";
+import WatchProviders from "@/components/movie/WatchProviders";
 
 interface ResultScreenProps {
   answer: MediaDetails;
@@ -267,6 +268,8 @@ export default function ResultScreen({
               </p>
             </div>
           )}
+
+          <WatchProviders tmdbId={answer.id} />
         </div>
 
         {/* Right — stats */}

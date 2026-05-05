@@ -148,6 +148,9 @@ const en: Translations = {
     storyline: "Storyline",
     gallery: "Gallery",
     cast: "Cast",
+    whereToWatch: "Where to watch",
+    rent: "Rent",
+    seeAllProviders: "Full list",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle - Daily Movie\n\nI guessed "${title}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
   },

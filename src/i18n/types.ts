@@ -116,6 +116,9 @@ export interface Translations {
     storyline: string;
     gallery: string;
     cast: string;
+    whereToWatch: string;
+    rent: string;
+    seeAllProviders: string;
     shareText: (title: string, attempts: number, max: number) => string;
   };
   movieModal: {
