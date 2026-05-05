@@ -20,7 +20,7 @@ const siteUrl = "https://showle.vercel.app";
 
 export const metadata: Metadata = {
   title: {
-    default: "Showle — Daily Movie Guessing Game",
+    default: "Showle - Daily Movie",
     template: "%s | Showle",
   },
   description:
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   openGraph: {
-    title: "Showle — Daily Movie Guessing Game",
+    title: "Showle - Daily Movie",
     description:
       "Guess the daily movie by comparing year, genre, director, budget and more. A new challenge every day!",
     url: siteUrl,
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Showle — Daily Movie Guessing Game",
+    title: "Showle - Daily Movie",
     description:
       "Guess the daily movie by comparing year, genre, director, budget and more.",
   },

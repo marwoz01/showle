@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useUser } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
 import { ArrowLeft, Loader2, RefreshCw, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -17,9 +18,11 @@ type ViewState = "form" | "loading" | "results" | "error";
 
 export default function RecommendPage() {
   const { t, locale } = useTranslation();
+  const { isSignedIn } = useUser();
   const [view, setView] = useState<ViewState>("form");
   const [results, setResults] = useState<Recommendation[]>([]);
   const [errorType, setErrorType] = useState<string>("");
+  const [remaining, setRemaining] = useState<number | null>(null);
   const [preferences, setPreferences] = useState({
     genres: [] as string[],
     yearFrom: 1920,
@@ -52,14 +55,17 @@ export default function RecommendPage() {
         }),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (res.status === 429) {
-        setErrorType("rate_limited");
+        const errCode = data.error ?? "rate_limited";
+        setErrorType(errCode);
+        if (data.remaining !== undefined) setRemaining(data.remaining);
         setView("error");
         return;
       }
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         if (data.error === "no_results") {
           setErrorType("no_results");
           setView("error");
@@ -69,16 +75,17 @@ export default function RecommendPage() {
         return;
       }
 
-      const data: Recommendation[] = await res.json();
+      const recommendations: Recommendation[] = data.recommendations ?? data;
 
-      if (data.length === 0) {
+      if (recommendations.length === 0) {
         setView("error");
         setErrorType("no_results");
         return;
       }
 
-      setResults(data);
-      setExcludeIds((prev) => [...prev, ...data.map((r) => r.movie.id)]);
+      if (data.remaining !== undefined) setRemaining(data.remaining);
+      setResults(recommendations);
+      setExcludeIds((prev) => [...prev, ...recommendations.map((r: Recommendation) => r.movie.id)]);
       setView("results");
       topRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch {
@@ -138,21 +145,33 @@ export default function RecommendPage() {
 
         {view === "error" && (
           <div className="flex flex-col items-center justify-center gap-4 py-20">
-            <p className="text-sm text-muted">
-              {errorType === "rate_limited"
-                ? t.recommend.error
-                : errorType === "no_results"
-                  ? t.recommend.noResults
-                  : t.recommend.error}
+            <p className="max-w-sm text-center text-sm text-muted">
+              {errorType === "daily_limit_reached"
+                ? t.recommend.dailyLimitReached
+                : errorType === "daily_limit_anon"
+                  ? t.recommend.dailyLimitAnon
+                  : errorType === "no_results"
+                    ? t.recommend.noResults
+                    : t.recommend.error}
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={handleTryAgain}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-purple px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              >
-                <RefreshCw size={16} />
-                {t.recommend.tryAgain}
-              </button>
+              {errorType === "daily_limit_anon" && (
+                <Link
+                  href="/sign-in"
+                  className="inline-flex items-center gap-2 rounded-lg bg-accent-purple px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  {t.recommend.loginForMore}
+                </Link>
+              )}
+              {errorType !== "daily_limit_reached" && errorType !== "daily_limit_anon" && (
+                <button
+                  onClick={handleTryAgain}
+                  className="inline-flex items-center gap-2 rounded-lg bg-accent-purple px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  <RefreshCw size={16} />
+                  {t.recommend.tryAgain}
+                </button>
+              )}
               <button
                 onClick={handleChangePreferences}
                 className="inline-flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-white/6"
@@ -192,10 +211,16 @@ export default function RecommendPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <button
                 onClick={handleTryAgain}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-purple px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:w-auto"
+                disabled={remaining === 0}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-purple px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
               >
                 <RefreshCw size={16} />
                 {t.recommend.tryAgain}
+                {remaining !== null && (
+                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-xs tabular-nums">
+                    {remaining}
+                  </span>
+                )}
               </button>
               <button
                 onClick={handleChangePreferences}

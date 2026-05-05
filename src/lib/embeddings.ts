@@ -119,8 +119,22 @@ const POPULARITY_RANGES: Record<string, { min: number; max: number }> = {
 // to a steadier mix where popularity keeps random near-ties on the well-known side.
 const FREEFORM_SIM_WEIGHT = 0.85;
 const FREEFORM_SCORE_WEIGHT = 0.15;
-const STRUCTURED_SIM_WEIGHT = 0.7;
-const STRUCTURED_SCORE_WEIGHT = 0.3;
+const STRUCTURED_SIM_WEIGHT = 0.82;
+const STRUCTURED_SCORE_WEIGHT = 0.18;
+
+// Tonal genre clusters used to exclude tonally incompatible films.
+// "Neutral" genres (Action, Adventure, Fantasy, Sci-Fi, Documentary, Western)
+// are not in either cluster and never trigger exclusions.
+const DARK_GENRES = new Set(["Crime", "Thriller", "Mystery", "Drama", "Horror", "War"]);
+const LIGHT_GENRES = new Set(["Comedy", "Animation", "Family", "Romance"]);
+
+function getExcludedGenres(selectedGenres: string[]): string[] {
+  const hasDark = selectedGenres.some((g) => DARK_GENRES.has(g));
+  const hasLight = selectedGenres.some((g) => LIGHT_GENRES.has(g));
+  if (hasDark && !hasLight) return [...LIGHT_GENRES];
+  if (hasLight && !hasDark) return [...DARK_GENRES];
+  return [];
+}
 
 interface FindSimilarParams {
   queryText: string;
@@ -188,9 +202,10 @@ export async function findSimilarMovies(params: FindSimilarParams): Promise<Simi
 
   const popRange = params.popularity ? POPULARITY_RANGES[params.popularity] : null;
   const hasFreeform = !!params.queryText && !params.queryText.startsWith("I want a");
-  // Apply genre filter whenever genres are picked — even alongside freeform.
-  // The user's genre choice is an explicit "must include" signal.
   const useGenreFilter = !!params.genres?.length;
+  // Derive genres to hard-exclude based on tonal cluster rules.
+  // e.g. selecting Dark genres → excludedGenres = Light genres (Comedy etc.)
+  const excludedGenres = params.genres?.length ? getExcludedGenres(params.genres) : [];
 
   // Hybrid ranking: simWeight * cosine_sim + scoreWeight * popularity, DESC.
   const simWeight = hasFreeform ? FREEFORM_SIM_WEIGHT : STRUCTURED_SIM_WEIGHT;
@@ -205,11 +220,12 @@ export async function findSimilarMovies(params: FindSimilarParams): Promise<Simi
       WHERE year >= $2 AND year <= $3
         AND "tmdbId" != ALL($4::int[])
         AND genres && $5::text[]
-        AND score >= $6 AND score <= $7
+        AND (cardinality($6::text[]) = 0 OR NOT genres && $6::text[])
+        AND score >= $7 AND score <= $8
       ORDER BY ${rankExpr} DESC
-      LIMIT $8
+      LIMIT $9
     `;
-    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, params.genres!, popRange.min, popRange.max, limit];
+    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, params.genres!, excludedGenres, popRange.min, popRange.max, limit];
   } else if (useGenreFilter) {
     query = `
       SELECT ${SELECT_FIELDS},
@@ -218,10 +234,11 @@ export async function findSimilarMovies(params: FindSimilarParams): Promise<Simi
       WHERE year >= $2 AND year <= $3
         AND "tmdbId" != ALL($4::int[])
         AND genres && $5::text[]
+        AND (cardinality($6::text[]) = 0 OR NOT genres && $6::text[])
       ORDER BY ${rankExpr} DESC
-      LIMIT $6
+      LIMIT $7
     `;
-    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, params.genres!, limit];
+    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, params.genres!, excludedGenres, limit];
   } else if (popRange) {
     query = `
       SELECT ${SELECT_FIELDS},
@@ -271,6 +288,8 @@ export async function findMoviesByFilters(params: {
   let query: string;
   let queryParams: unknown[];
 
+  const fallbackExcludedGenres = params.genres?.length ? getExcludedGenres(params.genres) : [];
+
   if (params.genres?.length && popRange) {
     query = `
       SELECT ${SELECT_FIELDS}, 0::float AS similarity
@@ -278,11 +297,12 @@ export async function findMoviesByFilters(params: {
       WHERE year >= $1 AND year <= $2
         AND "tmdbId" != ALL($3::int[])
         AND genres && $4::text[]
-        AND score >= $5 AND score <= $6
+        AND (cardinality($5::text[]) = 0 OR NOT genres && $5::text[])
+        AND score >= $6 AND score <= $7
       ORDER BY score DESC
-      LIMIT $7
+      LIMIT $8
     `;
-    queryParams = [yearFrom, yearTo, excludeIds, params.genres, popRange.min, popRange.max, limit];
+    queryParams = [yearFrom, yearTo, excludeIds, params.genres, fallbackExcludedGenres, popRange.min, popRange.max, limit];
   } else {
     query = `
       SELECT ${SELECT_FIELDS}, 0::float AS similarity

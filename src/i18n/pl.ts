@@ -229,6 +229,9 @@ const pl: Translations = {
     popularityNicheDesc: "Mało znane perełki do odkrycia",
     yearPresets: "Szybki wybór",
     yearAny: "Dowolny",
+    dailyLimitReached: "Wykorzystałeś dzienny limit rekomendacji. Wróć jutro po więcej!",
+    dailyLimitAnon: "Zaloguj się, aby uzyskać więcej rekomendacji każdego dnia.",
+    loginForMore: "Zaloguj się po więcej",
   },
 
   // Collection
@@ -261,6 +264,7 @@ const pl: Translations = {
     sortYear: "Rok",
     emptyWatched:
       "Nie masz jeszcze obejrzanych filmów. Dodaj swój pierwszy film!",
+    loadMore: "Załaduj więcej",
     emptyWatchlist:
       "Twoja lista do obejrzenia jest pusta. Zapisz filmy na później!",
     emptyRankings: "Nie masz jeszcze żadnych rankingów. Stwórz swój pierwszy!",

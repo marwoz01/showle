@@ -23,14 +23,24 @@ export async function GET(request: NextRequest) {
   const page = Math.max(1, Number(searchParams.get("page") || "1"));
   const perPage = 20;
 
-  const orderBy =
-    sort === "rating"
-      ? { rating: "desc" as const }
-      : sort === "title"
-        ? { title: "asc" as const }
-        : sort === "year"
-          ? { year: "desc" as const }
-          : { createdAt: "desc" as const };
+  const defaultOrders: Record<string, "asc" | "desc"> = {
+    date: "desc",
+    rating: "desc",
+    title: "asc",
+    year: "desc",
+  };
+  const rawOrder = searchParams.get("order");
+  const direction: "asc" | "desc" =
+    rawOrder === "asc" || rawOrder === "desc"
+      ? rawOrder
+      : (defaultOrders[sort] ?? "desc");
+
+  const fieldKey =
+    sort === "rating" ? "rating" :
+    sort === "title" ? "title" :
+    sort === "year" ? "year" :
+    "createdAt";
+  const orderBy = { [fieldKey]: direction };
 
   const [items, total] = await Promise.all([
     prisma.savedMovie.findMany({

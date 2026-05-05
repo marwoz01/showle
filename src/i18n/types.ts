@@ -183,6 +183,9 @@ export interface Translations {
     popularityNicheDesc: string;
     yearPresets: string;
     yearAny: string;
+    dailyLimitReached: string;
+    dailyLimitAnon: string;
+    loginForMore: string;
   };
   collection: {
     title: string;
@@ -213,6 +216,7 @@ export interface Translations {
     sortYear: string;
     emptyWatched: string;
     emptyWatchlist: string;
+    loadMore: string;
     emptyRankings: string;
     createList: string;
     listName: string;

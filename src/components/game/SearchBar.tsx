@@ -116,7 +116,7 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          className="w-full rounded-xl border border-white/6 bg-card py-3.5 pl-12 pr-4 text-sm text-foreground placeholder-muted outline-none transition-all focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/30 disabled:opacity-50"
+          className="w-full rounded-xl border border-white/6 bg-card py-3.5 pl-12 pr-4 text-base sm:text-sm text-foreground placeholder-muted outline-none transition-all focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/30 disabled:opacity-50"
         />
       </div>
 

@@ -57,35 +57,69 @@ function CollectionContent() {
       : "watched"
   );
   const [sort, setSort] = useState<SortOption>("date");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [movies, setMovies] = useState<SavedMovie[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({ watched: 0, watchlist: 0, rankings: 0 });
   const [reviewMovie, setReviewMovie] = useState<SavedMovie | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  const defaultOrders: Record<SortOption, "asc" | "desc"> = {
+    date: "desc",
+    rating: "desc",
+    title: "asc",
+    year: "desc",
+  };
+
   const handleTabChange = (tab: CollectionTab) => {
     setActiveTab(tab);
     setSort("date");
+    setOrder("desc");
+    setPage(1);
     router.replace(`/collection?tab=${tab}`, { scroll: false });
   };
 
-  const fetchMovies = useCallback(async () => {
+  const handleSortChange = (newSort: SortOption) => {
+    if (newSort === sort) {
+      setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSort(newSort);
+      setOrder(defaultOrders[newSort]);
+    }
+    setPage(1);
+  };
+
+  const fetchMovies = useCallback(async (pageNum: number = 1) => {
     if (activeTab === "rankings") return;
-    setLoading(true);
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
     try {
       const res = await fetch(
-        `/api/collection?category=${activeTab}&sort=${sort}`
+        `/api/collection?category=${activeTab}&sort=${sort}&order=${order}&page=${pageNum}`
       );
       const data = await res.json();
-      setMovies(data.items || []);
+      if (pageNum === 1) {
+        setMovies(data.items || []);
+      } else {
+        setMovies((prev) => [...prev, ...(data.items || [])]);
+      }
       setTotal(data.total || 0);
     } catch {
       // silently fail
     } finally {
-      setLoading(false);
+      if (pageNum === 1) setLoading(false);
+      else setLoadingMore(false);
     }
-  }, [activeTab, sort]);
+  }, [activeTab, sort, order]);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchMovies(nextPage);
+  };
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -106,7 +140,8 @@ function CollectionContent() {
 
   useEffect(() => {
     if (!isSignedIn) return;
-    fetchMovies();
+    setPage(1);
+    fetchMovies(1);
   }, [isSignedIn, fetchMovies]);
 
   useEffect(() => {
@@ -229,15 +264,32 @@ function CollectionContent() {
             }}
           />
         ) : (
-          <MovieGrid
-            movies={movies}
-            sort={sort}
-            onSortChange={setSort}
-            onRate={handleRate}
-            onChangeCategory={handleChangeCategory}
-            onDelete={handleDelete}
-            onReview={setReviewMovie}
-          />
+          <>
+            <MovieGrid
+              movies={movies}
+              sort={sort}
+              order={order}
+              onSortChange={handleSortChange}
+              onRate={handleRate}
+              onChangeCategory={handleChangeCategory}
+              onDelete={handleDelete}
+              onReview={setReviewMovie}
+            />
+            {movies.length < total && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="flex items-center gap-2 rounded-lg border border-white/10 px-6 py-2.5 text-sm font-medium text-muted transition-colors hover:border-white/20 hover:text-foreground disabled:opacity-50"
+                >
+                  {loadingMore ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : null}
+                  {t.collection.loadMore}
+                </button>
+              </div>
+            )}
+          </>
         )
       ) : (
         <RankingsList />

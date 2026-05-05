@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/i18n";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import CollectionCard from "@/components/collection/CollectionCard";
 
 interface SavedMovie {
@@ -23,6 +23,7 @@ type SortOption = "date" | "rating" | "title" | "year";
 interface MovieGridProps {
   movies: SavedMovie[];
   sort: SortOption;
+  order: "asc" | "desc";
   onSortChange: (sort: SortOption) => void;
   onRate: (id: string, rating: number) => void;
   onChangeCategory: (id: string, category: "watched" | "watchlist") => void;
@@ -35,6 +36,7 @@ const SORT_OPTIONS: SortOption[] = ["date", "rating", "title", "year"];
 export default function MovieGrid({
   movies,
   sort,
+  order,
   onSortChange,
   onRate,
   onChangeCategory,
@@ -57,19 +59,24 @@ export default function MovieGrid({
         <ArrowUpDown size={14} className="text-muted" />
         <span className="text-xs text-muted">{t.collection.sortBy}:</span>
         <div className="flex gap-1">
-          {SORT_OPTIONS.map((option) => (
-            <button
-              key={option}
-              onClick={() => onSortChange(option)}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                sort === option
-                  ? "bg-accent-purple/15 text-accent-purple"
-                  : "text-muted hover:bg-white/4 hover:text-foreground"
-              }`}
-            >
-              {sortLabels[option]}
-            </button>
-          ))}
+          {SORT_OPTIONS.map((option) => {
+            const isActive = sort === option;
+            const Icon = isActive ? (order === "asc" ? ArrowUp : ArrowDown) : null;
+            return (
+              <button
+                key={option}
+                onClick={() => onSortChange(option)}
+                className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  isActive
+                    ? "bg-accent-purple/15 text-accent-purple"
+                    : "text-muted hover:bg-white/4 hover:text-foreground"
+                }`}
+              >
+                {sortLabels[option]}
+                {Icon && <Icon size={10} />}
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -112,15 +112,33 @@ ${movieList}`;
   return { system, user };
 }
 
+const DAILY_LIMIT_AUTH = 5;
+const DAILY_LIMIT_ANON = 1;
+
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { success } = rateLimit(`recommend:${ip}`, { limit: 5, windowMs: 300_000 });
 
-  if (!success) {
+  // Anti-abuse: 5 req per 5 min per IP (independent of daily quota)
+  const { success: ipOk } = rateLimit(`recommend:${ip}`, { limit: 5, windowMs: 300_000 });
+  if (!ipOk) {
     return NextResponse.json(
       { error: "rate_limited" },
       { status: 429, headers: { "Retry-After": "300" } }
     );
+  }
+
+  // Daily quota — keyed by date so it resets at midnight (calendar day)
+  const { userId } = await auth();
+  const today = new Date().toISOString().slice(0, 10);
+  const dailyLimit = userId ? DAILY_LIMIT_AUTH : DAILY_LIMIT_ANON;
+  const dailyKey = userId
+    ? `recommend-daily:${userId}:${today}`
+    : `recommend-daily-anon:${ip}:${today}`;
+  const dailyRl = rateLimit(dailyKey, { limit: dailyLimit, windowMs: 25 * 60 * 60 * 1000 });
+
+  if (!dailyRl.success) {
+    const error = userId ? "daily_limit_reached" : "daily_limit_anon";
+    return NextResponse.json({ error, remaining: 0, limit: dailyLimit }, { status: 429 });
   }
 
   let body: RecommendRequest;
@@ -146,7 +164,6 @@ export async function POST(request: NextRequest) {
   try {
     // Watched movies are always excluded for signed-in users.
     const watchedIds = new Set<number>();
-    const { userId } = await auth();
     if (userId) {
       const watched = await prisma.savedMovie.findMany({
         where: { userId, category: "watched" },
@@ -249,7 +266,7 @@ export async function POST(request: NextRequest) {
       justification: justifications[i] || movie.overview.slice(0, 200),
     }));
 
-    return NextResponse.json(recommendations);
+    return NextResponse.json({ recommendations, remaining: dailyRl.remaining, limit: dailyLimit });
   } catch (error) {
     console.error("Recommend error:", error);
     return NextResponse.json({ error: "internal" }, { status: 500 });

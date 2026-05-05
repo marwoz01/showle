@@ -228,6 +228,9 @@ const en: Translations = {
     popularityNicheDesc: "Hidden gems to discover",
     yearPresets: "Quick pick",
     yearAny: "Any",
+    dailyLimitReached: "You've used your daily recommendation limit. Come back tomorrow!",
+    dailyLimitAnon: "Sign in to get more recommendations every day.",
+    loginForMore: "Sign in for more",
   },
 
   // Collection
@@ -260,6 +263,7 @@ const en: Translations = {
     sortTitle: "Title",
     sortYear: "Year",
     emptyWatched: "No watched movies yet. Add your first one!",
+    loadMore: "Load more",
     emptyWatchlist: "Your watchlist is empty. Save movies for later!",
     emptyRankings: "No rankings yet. Create your first one!",
     createList: "New ranking",
