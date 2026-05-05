@@ -161,7 +161,7 @@ export default function PreferenceForm({
           maxLength={400}
           rows={3}
           placeholder={t.recommend.freeformPlaceholder}
-          className="w-full resize-none rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-sm text-foreground placeholder-muted/60 transition-colors focus:border-accent-purple/50 focus:outline-none"
+          className="w-full resize-none rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-base sm:text-sm text-foreground placeholder-muted/60 transition-colors focus:border-accent-purple/50 focus:outline-none"
         />
         <p className="mt-2 text-xs text-muted">{t.recommend.freeformHint}</p>
       </section>
