@@ -6,6 +6,7 @@ import {
   findSimilarMovies,
   findMoviesByFilters,
   buildQueryText,
+  inferGenresFromText,
   type SimilarMovieResult,
 } from "@/lib/embeddings";
 import { prisma } from "@/lib/prisma";
@@ -191,9 +192,19 @@ export async function POST(request: NextRequest) {
       freeformText: freeformForEmbedding,
     });
 
+    // When freeform text mentions a genre but the user didn't pick one from the UI,
+    // infer it so the SQL genre filter fires and popular off-topic blockbusters don't
+    // crowd out genuinely relevant films (e.g. "romance" → require Romance genre).
+    const inferredGenres =
+      hasFreeform && !hasGenres
+        ? inferGenresFromText(freeformForEmbedding ?? body.freeformText!)
+        : [];
+
     const searchParams = {
       queryText,
       genres: body.genres,
+      inferredGenres: inferredGenres.length ? inferredGenres : undefined,
+      hasFreeform,
       yearFrom: body.yearFrom,
       yearTo: body.yearTo,
       popularity: body.popularity,

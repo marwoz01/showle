@@ -125,7 +125,7 @@ const STRUCTURED_SCORE_WEIGHT = 0.18;
 // Tonal genre clusters used to exclude tonally incompatible films.
 // "Neutral" genres (Action, Adventure, Fantasy, Sci-Fi, Documentary, Western)
 // are not in either cluster and never trigger exclusions.
-const DARK_GENRES = new Set(["Crime", "Thriller", "Mystery", "Drama", "Horror", "War"]);
+const DARK_GENRES = new Set(["Crime", "Thriller", "Mystery", "Horror", "War"]);
 const LIGHT_GENRES = new Set(["Comedy", "Animation", "Family", "Romance"]);
 
 function getExcludedGenres(selectedGenres: string[]): string[] {
@@ -136,9 +136,40 @@ function getExcludedGenres(selectedGenres: string[]): string[] {
   return [];
 }
 
+// Maps lowercase English keywords → catalog genre names.
+// Used to infer genre intent from freeform text so we can apply a genre filter
+// even when the user didn't explicitly select one.
+const GENRE_KEYWORD_MAP: Record<string, string> = {
+  romance: "Romance", romantic: "Romance",
+  comedy: "Comedy", comedies: "Comedy", funny: "Comedy", humor: "Comedy", humour: "Comedy",
+  horror: "Horror", scary: "Horror",
+  thriller: "Thriller", suspense: "Thriller",
+  mystery: "Mystery", detective: "Mystery", whodunit: "Mystery",
+  crime: "Crime", gangster: "Crime",
+  animation: "Animation", animated: "Animation", cartoon: "Animation",
+  family: "Family",
+  war: "War", military: "War",
+};
+
+/**
+ * Extracts genre hints from a freeform description (English text expected).
+ * Returns catalog genre names that were explicitly mentioned.
+ */
+export function inferGenresFromText(text: string): string[] {
+  const lower = text.toLowerCase();
+  const found = new Set<string>();
+  for (const [keyword, genre] of Object.entries(GENRE_KEYWORD_MAP)) {
+    if (lower.includes(keyword)) found.add(genre);
+  }
+  return [...found];
+}
+
 interface FindSimilarParams {
   queryText: string;
   genres?: string[];
+  /** Genres inferred from freeform text — used as inclusion filter only (no tonal exclusion). */
+  inferredGenres?: string[];
+  hasFreeform?: boolean;
   yearFrom?: number;
   yearTo?: number;
   popularity?: string;
@@ -201,10 +232,15 @@ export async function findSimilarMovies(params: FindSimilarParams): Promise<Simi
   let queryParams: unknown[];
 
   const popRange = params.popularity ? POPULARITY_RANGES[params.popularity] : null;
-  const hasFreeform = !!params.queryText && !params.queryText.startsWith("I want a");
-  const useGenreFilter = !!params.genres?.length;
-  // Derive genres to hard-exclude based on tonal cluster rules.
-  // e.g. selecting Dark genres → excludedGenres = Light genres (Comedy etc.)
+  const hasFreeform = params.hasFreeform ?? (!!params.queryText && !params.queryText.startsWith("I want a"));
+
+  // Explicit genres selected by the user → hard filter + tonal exclusion.
+  // Inferred genres from freeform text → hard filter only (no tonal exclusion so that
+  // e.g. "romance" doesn't exclude Drama and then cut out Titanic).
+  const useGenreFilter = !!(params.genres?.length || params.inferredGenres?.length);
+  const activeGenres = params.genres?.length
+    ? params.genres
+    : (params.inferredGenres ?? []);
   const excludedGenres = params.genres?.length ? getExcludedGenres(params.genres) : [];
 
   // Hybrid ranking: simWeight * cosine_sim + scoreWeight * popularity, DESC.
@@ -225,7 +261,7 @@ export async function findSimilarMovies(params: FindSimilarParams): Promise<Simi
       ORDER BY ${rankExpr} DESC
       LIMIT $9
     `;
-    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, params.genres!, excludedGenres, popRange.min, popRange.max, limit];
+    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, activeGenres, excludedGenres, popRange.min, popRange.max, limit];
   } else if (useGenreFilter) {
     query = `
       SELECT ${SELECT_FIELDS},
@@ -238,7 +274,7 @@ export async function findSimilarMovies(params: FindSimilarParams): Promise<Simi
       ORDER BY ${rankExpr} DESC
       LIMIT $7
     `;
-    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, params.genres!, excludedGenres, limit];
+    queryParams = [vectorStr, yearFrom, yearTo, excludeIds, activeGenres, excludedGenres, limit];
   } else if (popRange) {
     query = `
       SELECT ${SELECT_FIELDS},
