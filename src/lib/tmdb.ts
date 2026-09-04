@@ -39,7 +39,11 @@ interface TmdbCredits {
     character: string;
     profile_path: string | null;
   }[];
-  crew: { job: string; name: string }[];
+  crew: {
+    job: string;
+    name: string;
+    profile_path: string | null;
+  }[];
 }
 
 const CAST_LIMIT = 8;
@@ -200,7 +204,8 @@ export async function getMovieDetails(id: number, language = "en-US"): Promise<M
       tmdbFetch<TmdbCredits>(`/movie/${id}/credits`),
     ]);
 
-    const director = credits.crew.find((c) => c.job === "Director")?.name ?? "Unknown";
+    const directorCredit = credits.crew.find((c) => c.job === "Director");
+    const director = directorCredit?.name ?? "Unknown";
     const sortedCast = (credits.cast ?? [])
       .slice()
       .sort((a, b) => a.order - b.order);
@@ -220,6 +225,7 @@ export async function getMovieDetails(id: number, language = "en-US"): Promise<M
       genres: movie.genres.map((g) => g.name),
       country,
       director,
+      directorProfilePath: directorCredit?.profile_path ?? "",
       leadActor,
       runtime: movie.runtime ?? 0,
       budget: movie.budget ? Math.round(movie.budget / 1_000_000) : 0,

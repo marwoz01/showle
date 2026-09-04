@@ -27,9 +27,9 @@ export default function HintsPanel({
         {revealedHints.map((hint) => (
           <div
             key={hint.id}
-            className="flex items-start gap-3 rounded-lg bg-accent-purple/5 px-3 py-2.5 text-sm"
+            className="animate-hint-reveal flex items-start gap-3 rounded-lg bg-accent-purple/5 px-3 py-2.5 text-sm"
           >
-            <span className="mt-0.5 text-accent-purple">
+            <span className="animate-hint-bulb mt-0.5 text-accent-purple">
               <Lightbulb size={16} />
             </span>
             <span className="text-foreground">{hint.content}</span>

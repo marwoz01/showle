@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import type { CSSProperties } from "react";
 import { MediaDetails } from "@/types";
 import { useTranslation } from "@/i18n";
-import { Search, Loader2 } from "lucide-react";
+import { Film, Search, Loader2 } from "lucide-react";
 
 interface SearchBarProps {
   onSelect: (movie: MediaDetails) => void;
@@ -121,19 +123,39 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/6 bg-card-hover py-1 shadow-xl shadow-black/40">
+        <div className="animate-search-popover absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-white/6 bg-card-hover py-1 shadow-xl shadow-black/40">
           {results.map((movie, i) => (
             <button
               key={movie.id}
               onClick={() => handleSelect(movie)}
-              className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors ${
+              style={{ "--result-delay": `${i * 45}ms` } as CSSProperties}
+              className={`animate-search-result flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors ${
                 i === selectedIndex
                   ? "bg-accent-purple/15 text-foreground"
                   : "text-muted hover:bg-white/4 hover:text-foreground"
               }`}
             >
-              <span className="font-medium text-foreground">{movie.title}</span>
-              <span className="text-xs text-muted">({movie.year})</span>
+              <span className="relative h-12 w-8 shrink-0 overflow-hidden rounded bg-white/5">
+                {movie.posterPath ? (
+                  <Image
+                    src={`https://image.tmdb.org/t/p/w92${movie.posterPath}`}
+                    alt=""
+                    fill
+                    sizes="32px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-muted/50">
+                    <Film size={14} />
+                  </span>
+                )}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-foreground">
+                  {movie.title}
+                </span>
+                <span className="block text-xs text-muted">{movie.year}</span>
+              </span>
             </button>
           ))}
         </div>

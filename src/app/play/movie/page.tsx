@@ -132,7 +132,9 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
       {/* Two-column layout: guesses + hints */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         <div className="space-y-4">
-          {!isFinished && <MovieRevealCard guesses={guesses} />}
+          {!isFinished && (
+            <MovieRevealCard guesses={guesses} answer={dailyAnswer} />
+          )}
           {guesses.length === 0 && status === "playing" && (
             <div className="rounded-2xl border border-dashed border-white/8 p-8 text-center text-sm text-muted">
               {t.game.emptyState}

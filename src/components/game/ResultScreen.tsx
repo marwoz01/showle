@@ -70,7 +70,12 @@ export default function ResultScreen({
   }, [answer.id, locale]);
 
   useEffect(() => {
-    if (!won) return;
+    if (
+      !won ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
 
     const duration = 2500;
     const end = Date.now() + duration;
@@ -125,7 +130,7 @@ export default function ResultScreen({
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/6 bg-card">
+    <div className="animate-result-reveal overflow-hidden rounded-2xl border border-white/6 bg-card">
       {/* Cinematic hero with backdrop */}
       <div className="relative h-72 overflow-hidden sm:h-96">
         {answer.backdropPath ? (
@@ -135,7 +140,7 @@ export default function ResultScreen({
             fill
             priority
             sizes="(min-width: 1024px) 1024px, 100vw"
-            className="object-cover"
+            className="animate-result-backdrop object-cover"
           />
         ) : (
           <div className="absolute inset-0 bg-linear-to-br from-accent-purple/30 to-card" />
@@ -146,7 +151,7 @@ export default function ResultScreen({
         <div className="absolute inset-0 bg-linear-to-r from-card/70 via-transparent to-transparent" />
 
         {/* Outcome badge — top-right */}
-        <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 backdrop-blur-md">
+        <div className="animate-result-badge absolute right-5 top-5 flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 backdrop-blur-md">
           <span
             className={`flex h-7 w-7 items-center justify-center rounded-full ${
               won ? "bg-match-exact/30 text-match-exact" : "bg-match-miss/30 text-match-miss"
