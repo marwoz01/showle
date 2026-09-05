@@ -126,7 +126,7 @@ export default function PreferenceForm({
   return (
     <div className="space-y-5">
       {/* -- Genres (primary) -- */}
-      <section className="rounded-2xl border border-white/6 bg-card p-6 sm:p-8">
+      <section className="soft-card rounded-2xl p-6 sm:p-8">
         <label className="mb-5 block text-xs font-semibold uppercase tracking-widest text-muted">
           {t.recommend.genresLabel}
         </label>
@@ -156,7 +156,7 @@ export default function PreferenceForm({
       </section>
 
       {/* -- Freeform text -- */}
-      <section className="rounded-2xl border border-white/6 bg-card p-6">
+      <section className="soft-card rounded-2xl p-6">
         <label className="mb-4 block text-xs font-semibold uppercase tracking-widest text-muted">
           {t.recommend.freeformLabel}
         </label>
@@ -174,7 +174,7 @@ export default function PreferenceForm({
       {/* -- Popularity + Year (secondary, side by side) -- */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Popularity */}
-        <section className="rounded-2xl border border-white/6 bg-card p-6">
+        <section className="soft-card rounded-2xl p-6">
           <label className="mb-4 block text-xs font-semibold uppercase tracking-widest text-muted">
             {t.recommend.popularityLabel}
           </label>
@@ -218,7 +218,7 @@ export default function PreferenceForm({
         </section>
 
         {/* Year range */}
-        <section className="rounded-2xl border border-white/6 bg-card p-6">
+        <section className="soft-card rounded-2xl p-6">
           <div className="mb-4 flex items-center justify-between">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted">
               {t.recommend.yearLabel}

@@ -54,9 +54,9 @@ export default function MovieRevealCard({
   ].filter(Boolean).length;
 
   return (
-    <div className="overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#25252a,#18181c)] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,.09),inset_0_-1px_0_rgba(0,0,0,.45),0_24px_55px_rgba(0,0,0,.25)]">
+    <div className="soft-panel overflow-hidden rounded-[2rem] p-2">
       <div className="grid gap-2 sm:grid-cols-[170px_minmax(0,1fr)]">
-        <section className="rounded-[1.55rem] bg-[#202024] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_10px_28px_rgba(0,0,0,.18)]">
+        <section className="soft-card rounded-[1.55rem] p-4">
           <div className="mystery-poster relative mx-auto flex aspect-2/3 w-40 items-center justify-center overflow-hidden rounded-[1.35rem] bg-[#121214] text-muted/30 shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_18px_35px_rgba(0,0,0,.32)] sm:w-full">
             <div
               className="pointer-events-none absolute inset-0 opacity-40"
@@ -89,7 +89,7 @@ export default function MovieRevealCard({
           </div>
         </section>
 
-        <section className="relative overflow-hidden rounded-[1.55rem] bg-[#0d0d0f] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.035),0_14px_35px_rgba(0,0,0,.28)] sm:p-5">
+        <section className="soft-card relative overflow-hidden rounded-[1.55rem] p-4 sm:p-5">
           <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-accent-purple/8 blur-3xl" />
           <div
             className="pointer-events-none absolute inset-0 opacity-20"

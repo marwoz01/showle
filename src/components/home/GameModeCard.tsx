@@ -20,10 +20,10 @@ export default function GameModeCard({
   badge,
   disabled = false,
 }: GameModeCardProps) {
-  const cardClassName = `group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/6 bg-card p-6 transition-all duration-300 ${
+  const cardClassName = `soft-card group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 ${
     disabled
       ? "cursor-not-allowed opacity-70"
-      : "hover:bg-card-hover"
+      : "soft-card-interactive"
   }`;
 
   const content = (

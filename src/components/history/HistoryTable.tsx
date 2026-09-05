@@ -39,7 +39,7 @@ export default function HistoryTable({ items, onReview }: HistoryTableProps) {
   return (
     <>
       {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-xl border border-white/6 bg-card lg:block">
+      <div className="soft-card hidden overflow-hidden rounded-xl lg:block">
         <table className="w-full">
           <thead>
             <tr className="border-b border-white/6 bg-white/3">
@@ -146,7 +146,7 @@ export default function HistoryTable({ items, onReview }: HistoryTableProps) {
           return (
             <div
               key={item.id}
-              className="rounded-xl border border-white/6 bg-card p-4"
+              className="soft-card rounded-xl p-4"
             >
               <div className="flex items-start gap-3">
                 {item.targetPoster ? (

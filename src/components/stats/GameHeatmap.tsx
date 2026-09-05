@@ -111,7 +111,7 @@ export default function GameHeatmap() {
   const played = results.length;
 
   return (
-    <div className="rounded-xl border border-white/6 bg-card p-5">
+    <div className="soft-card rounded-xl p-5">
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">
           {t.stats.activityTitle}

@@ -254,7 +254,7 @@ function LobbySetup({
 
   return (
     <div className="grid items-stretch gap-6 lg:grid-cols-[1fr_440px]">
-      <section className="relative overflow-hidden rounded-[2rem] bg-[#0d0d0f] p-7 shadow-[inset_0_1px_0_rgba(255,255,255,.05),0_24px_60px_rgba(0,0,0,.3)] sm:p-10">
+      <section className="soft-card relative overflow-hidden rounded-[2rem] p-7 sm:p-10">
         <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-accent-purple/15 blur-3xl" />
         <div className="relative">
           <span className="mb-7 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-purple/15 text-accent-purple shadow-[inset_0_1px_0_rgba(255,255,255,.08)]">
@@ -279,8 +279,8 @@ function LobbySetup({
         </div>
       </section>
 
-      <section className="rounded-[2rem] bg-[linear-gradient(145deg,#25252a,#18181c)] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,.09),0_24px_55px_rgba(0,0,0,.25)]">
-        <div className="h-full rounded-[1.55rem] bg-[#151518] p-6 sm:p-8">
+      <section className="soft-panel rounded-[2rem] p-2">
+        <div className="soft-card h-full rounded-[1.55rem] p-6 sm:p-8">
           <label className="text-xs font-semibold uppercase tracking-wider text-muted">
             {t.duel.nameLabel}
           </label>
@@ -347,8 +347,8 @@ function WaitingRoom({
 }) {
   const { t } = useTranslation();
   return (
-    <section className="mx-auto max-w-2xl overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#29292f,#17171a)] p-2 text-center shadow-[0_28px_70px_rgba(0,0,0,.32)]">
-      <div className="rounded-[1.55rem] bg-[#101012] px-6 py-12 sm:px-12">
+    <section className="soft-panel mx-auto max-w-2xl overflow-hidden rounded-[2rem] p-2 text-center">
+      <div className="soft-card rounded-[1.55rem] px-6 py-12 sm:px-12">
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-purple/15 text-accent-purple">
           <LoaderCircle className="animate-spin" size={30} />
         </span>
@@ -429,7 +429,7 @@ function DuelGame({
         <PlayerScore player={room.players[1]} isYou={room.you === "guest"} reverse />
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#27272d,#17171a)] p-2 shadow-[0_28px_65px_rgba(0,0,0,.3)]">
+      <section className="soft-panel overflow-hidden rounded-[2rem] p-2">
         <div className="overflow-hidden rounded-[1.55rem] bg-[#0d0d0f]">
           <div className="relative h-[clamp(14rem,46vh,28rem)] w-full overflow-hidden bg-black">
             {room.question && (
@@ -543,8 +543,8 @@ function FinishedRoom({ room, onReset }: { room: DuelRoomView; onReset: () => vo
   }, [room.winner, room.you, t]);
 
   return (
-    <section className="mx-auto max-w-3xl overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#29292f,#17171a)] p-2 text-center shadow-[0_28px_70px_rgba(0,0,0,.32)]">
-      <div className="rounded-[1.55rem] bg-[#101012] px-6 py-12 sm:px-12">
+    <section className="soft-panel mx-auto max-w-3xl overflow-hidden rounded-[2rem] p-2 text-center">
+      <div className="soft-card rounded-[1.55rem] px-6 py-12 sm:px-12">
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-match-partial/15 text-match-partial">
           <Trophy size={30} />
         </span>

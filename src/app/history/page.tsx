@@ -99,7 +99,7 @@ function HistoryContent() {
 
   if (!isSignedIn) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-white/6 bg-card py-20">
+      <div className="soft-card flex flex-col items-center justify-center gap-4 rounded-xl py-20">
         <User size={32} className="text-muted" />
         <p className="text-sm text-muted">{t.history.noGames}</p>
         <Link
@@ -135,7 +135,7 @@ function HistoryContent() {
           <Loader2 size={24} className="animate-spin text-muted" />
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-white/6 bg-card py-20">
+        <div className="soft-card flex flex-col items-center justify-center gap-3 rounded-xl py-20">
           <Film size={32} className="text-muted" />
           <p className="text-sm text-muted">{t.history.noGames}</p>
         </div>

@@ -171,7 +171,7 @@ export default function ResultScreen({
   ];
 
   return (
-    <div className="animate-result-reveal overflow-hidden rounded-2xl border border-white/6 bg-card">
+    <div className="soft-panel animate-result-reveal overflow-hidden rounded-2xl">
       {/* Cinematic hero with backdrop */}
       <div className="relative h-72 overflow-hidden sm:h-96">
         {displayAnswer.backdropPath ? (
@@ -349,7 +349,7 @@ export default function ResultScreen({
         {/* Right — trailer first on mobile, with compact stats underneath */}
         <aside className="order-first min-w-0 lg:order-none">
           {won && (youtubeEmbedUrl || trailerPending) ? (
-            <div className="overflow-hidden rounded-2xl bg-[#09090b] shadow-[0_20px_55px_rgba(0,0,0,.34),inset_0_1px_0_rgba(255,255,255,.055)]">
+            <div className="soft-card overflow-hidden rounded-2xl">
               <div className="flex items-center justify-between gap-3 px-4 py-3.5">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-purple/15 text-accent-purple">

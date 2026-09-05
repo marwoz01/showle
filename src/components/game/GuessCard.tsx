@@ -17,15 +17,9 @@ export default function GuessCard({ result }: GuessCardProps) {
     result.guess.director && result.guess.director !== "Unknown";
 
   return (
-    <div
-      className={`animate-guess-card-in rounded-[2rem] bg-[linear-gradient(145deg,#25252a,#18181c)] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,.10),inset_0_-1px_0_rgba(0,0,0,.45),0_24px_55px_rgba(0,0,0,.28)] sm:p-2.5 ${
-        result.isCorrect
-          ? "shadow-[inset_0_1px_0_rgba(255,255,255,.10),inset_0_-1px_0_rgba(0,0,0,.45),0_24px_55px_rgba(0,0,0,.32),0_0_48px_rgba(0,230,118,.06)]"
-          : ""
-      }`}
-    >
+    <div className="soft-panel animate-guess-card-in rounded-[2rem] p-2 sm:p-2.5">
       <div className="grid gap-2 2xl:grid-cols-[minmax(260px,.7fr)_minmax(0,2fr)]">
-        <section className="rounded-[1.55rem] bg-[#202024] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_10px_28px_rgba(0,0,0,.18)] sm:p-5">
+        <section className="soft-card rounded-[1.55rem] p-4 sm:p-5">
           <div className="flex items-start gap-3 sm:gap-4">
             <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl bg-white/4 shadow-[0_12px_28px_rgba(0,0,0,.42)]">
               {result.guess.posterPath ? (
@@ -82,7 +76,7 @@ export default function GuessCard({ result }: GuessCardProps) {
           </div>
         </section>
 
-        <section className="relative overflow-hidden rounded-[1.55rem] bg-[#0d0d0f] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.035),0_14px_35px_rgba(0,0,0,.32)] sm:p-5">
+        <section className="soft-card relative overflow-hidden rounded-[1.55rem] p-4 sm:p-5">
           <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-accent-purple/7 blur-3xl" />
           <div
             className="pointer-events-none absolute inset-0 opacity-20"

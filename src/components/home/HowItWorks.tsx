@@ -57,7 +57,7 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-card px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+    <section className="soft-panel relative overflow-hidden rounded-[2rem] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
       <div
         className="pointer-events-none absolute inset-0 opacity-35"
         style={{
@@ -106,7 +106,7 @@ export default function HowItWorks() {
             style={{ "--step-delay": `${index * 130}ms` } as CSSProperties}
           >
             <div className="absolute inset-0 translate-x-2 translate-y-3 rotate-[-2deg] rounded-[1.65rem] border border-white/6 bg-white/4 transition-transform duration-500 group-hover:translate-y-4 group-hover:rotate-[-4deg]" />
-            <article className="relative min-h-48 overflow-hidden rounded-[1.65rem] border border-white/12 bg-[#1b1b20]/95 p-6 pt-9 shadow-[0_24px_55px_rgba(0,0,0,.38)] backdrop-blur-xl">
+            <article className="soft-card relative min-h-48 overflow-hidden rounded-[1.65rem] p-6 pt-9 backdrop-blur-xl">
               <span className="absolute left-1/2 top-3 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white/25 bg-[#2c2c32] shadow-[0_3px_8px_rgba(0,0,0,.7)]">
                 <span className="absolute inset-0 rounded-full bg-accent-purple/45 motion-safe:animate-ping" />
               </span>

@@ -110,7 +110,7 @@ export default function StatsPage() {
         {statCards.map((card) => (
           <div
             key={card.label}
-            className="rounded-xl border border-white/6 bg-card p-5"
+            className="soft-card rounded-xl p-5"
           >
             <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-accent-purple/15 text-accent-purple">
               <card.icon size={18} />
@@ -122,7 +122,7 @@ export default function StatsPage() {
       </div>
 
       {stats && stats.gamesPlayed > 0 && (
-        <div className="rounded-xl border border-white/6 bg-card p-5">
+        <div className="soft-card rounded-xl p-5">
           <h2 className="mb-2 text-sm font-semibold text-foreground">
             {t.result.attempts}
           </h2>

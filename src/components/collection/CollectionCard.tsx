@@ -59,7 +59,7 @@ export default function CollectionCard({
       tabIndex={0}
       onClick={() => setShowDetails(true)}
       onKeyDown={handleKey}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/6 bg-card transition-all hover:bg-card-hover focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none">
+      className="soft-card soft-card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-xl focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none">
       {/* Poster */}
       <div className="p-2.5 pb-0">
         <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg">
