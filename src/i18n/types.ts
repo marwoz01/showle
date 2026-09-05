@@ -173,6 +173,20 @@ export interface Translations {
     whereToWatch: string;
     rent: string;
     seeAllProviders: string;
+    streakExtended: string;
+    dayStreak: (count: number) => string;
+    streakSaved: string;
+    bestStreak: (count: number) => string;
+    yourRanking: string;
+    betterThan: (percent: number) => string;
+    calculatingResult: string;
+    playersToday: (count: number) => string;
+    answerDistribution: string;
+    missedShort: string;
+    tomorrowTitle: string;
+    tomorrowHint: (decade: number, genre: string) => string;
+    tomorrowMystery: string;
+    comeBackTomorrow: string;
     shareText: (title: string, attempts: number, max: number) => string;
   };
   movieModal: {

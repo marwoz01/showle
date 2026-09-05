@@ -24,6 +24,7 @@ import CastList from "@/components/movie/CastList";
 import WatchProviders from "@/components/movie/WatchProviders";
 import { localizeCountry, localizeGenre } from "@/lib/localization";
 import type { MovieTrailer } from "@/lib/trailers";
+import DailyCompletionRecap from "@/components/game/DailyCompletionRecap";
 
 interface ResultScreenProps {
   answer: MediaDetails;
@@ -31,6 +32,7 @@ interface ResultScreenProps {
   status: GameStatus;
   guesses: GuessResult[];
   hintsUsed: number;
+  signedIn?: boolean;
 }
 
 interface TrailerState {
@@ -45,6 +47,7 @@ export default function ResultScreen({
   status,
   guesses,
   hintsUsed,
+  signedIn = false,
 }: ResultScreenProps) {
   const { t, locale } = useTranslation();
   const [copied, setCopied] = useState(false);
@@ -171,6 +174,12 @@ export default function ResultScreen({
 
   return (
     <div className="animate-result-reveal overflow-hidden rounded-2xl border border-white/6 bg-card">
+      <DailyCompletionRecap
+        status={status}
+        attempts={attempts}
+        signedIn={signedIn}
+      />
+
       {youtubeEmbedUrl && activeTrailer && (
         <section className="bg-[#08080a]">
           <div className="flex items-center justify-between gap-4 bg-white/[.035] px-5 py-3">

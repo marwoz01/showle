@@ -12,6 +12,13 @@ export function getTodayKey(): string {
   return new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
 }
 
+/** Shift a YYYY-MM-DD date key without depending on the server timezone. */
+export function shiftDateKey(dateKey: string, days: number): string {
+  const date = new Date(`${dateKey}T12:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 /**
  * Returns milliseconds until next midnight in Europe/Warsaw timezone.
  */
