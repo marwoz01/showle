@@ -17,7 +17,7 @@ export default function CastList({ cast, label }: CastListProps) {
       <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted">
         {label}
       </h4>
-      <div className="flex flex-wrap gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 2xl:grid-cols-4">
         {cast.map((member) => (
           <div key={member.name} className="flex items-center gap-2.5">
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white/5">

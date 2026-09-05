@@ -6,7 +6,13 @@ import { ExternalLink } from "lucide-react";
 import { useTranslation } from "@/i18n";
 import type { WatchProvider, WatchProvidersResult } from "@/lib/tmdb";
 
-export default function WatchProviders({ tmdbId }: { tmdbId: number }) {
+export default function WatchProviders({
+  tmdbId,
+  divider = true,
+}: {
+  tmdbId: number;
+  divider?: boolean;
+}) {
   const { t } = useTranslation();
   const [data, setData] = useState<WatchProvidersResult | null | undefined>(undefined);
 
@@ -23,7 +29,7 @@ export default function WatchProviders({ tmdbId }: { tmdbId: number }) {
   if (!data || (!data.flatrate?.length && !data.rent?.length)) return null;
 
   return (
-    <div className="border-t border-white/6 pt-4">
+    <div className={divider ? "border-t border-white/6 pt-4" : "min-w-0"}>
       <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted">
         {t.result.whereToWatch}
       </h4>

@@ -245,12 +245,12 @@ export default function ResultScreen({
       <div
         className={`grid grid-cols-1 gap-6 px-6 py-6 lg:gap-8 ${
           won
-            ? "lg:grid-cols-[180px_minmax(0,1fr)_360px]"
-            : "lg:grid-cols-[180px_minmax(0,1fr)_180px]"
+            ? "lg:grid-cols-[180px_minmax(0,1fr)] xl:grid-cols-[180px_minmax(0,1fr)_360px]"
+            : "lg:grid-cols-[180px_minmax(0,1fr)] xl:grid-cols-[180px_minmax(0,1fr)_180px]"
         }`}
       >
         {/* Left — poster + actions */}
-        <div className="flex flex-row gap-4 lg:flex-col">
+        <div className="flex flex-row gap-4 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:flex-col">
           <div className="aspect-2/3 w-32 shrink-0 overflow-hidden rounded-xl bg-white/5 shadow-lg shadow-black/40 lg:w-full">
             {displayAnswer.posterPath ? (
               <Image
@@ -284,7 +284,11 @@ export default function ResultScreen({
         </div>
 
         {/* Middle — details */}
-        <div className="flex min-w-0 flex-col gap-4">
+        <div
+          className={`flex min-w-0 flex-col gap-4 lg:col-start-2 ${
+            won ? "lg:row-start-2 xl:row-start-1" : "lg:row-start-1"
+          }`}
+        >
           {localizedTagline && (
             <p className="text-base italic text-muted/80">
               &ldquo;{localizedTagline}&rdquo;
@@ -332,22 +336,16 @@ export default function ResultScreen({
             </div>
           )}
 
-          {localizedOverview && (
-            <div className="border-t border-white/6 pt-4">
-              <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">
-                {t.result.storyline}
-              </h4>
-              <p className="text-sm leading-relaxed text-muted">
-                {localizedOverview}
-              </p>
-            </div>
-          )}
-
-          <WatchProviders tmdbId={answer.id} />
         </div>
 
         {/* Right — trailer first on mobile, with compact stats underneath */}
-        <aside className="order-first min-w-0 lg:order-none">
+        <aside
+          className={`min-w-0 lg:col-start-2 ${
+            won
+              ? "order-first lg:order-none lg:row-start-1 xl:col-start-3"
+              : "order-none lg:row-start-2 xl:col-start-3 xl:row-start-1"
+          }`}
+        >
           {won && (youtubeEmbedUrl || trailerPending) ? (
             <div className="soft-card overflow-hidden rounded-2xl">
               <div className="flex items-center justify-between gap-3 px-4 py-3.5">
@@ -407,11 +405,11 @@ export default function ResultScreen({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3 lg:grid-cols-1 lg:gap-4 lg:border-l lg:border-white/6 lg:pl-8">
+            <div className="grid grid-cols-3 gap-3 xl:grid-cols-1 xl:gap-4 xl:border-l xl:border-white/6 xl:pl-8">
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex flex-col items-center gap-1 rounded-xl bg-white/3 px-3 py-4 lg:items-start lg:bg-transparent lg:px-0 lg:py-0"
+                    className="flex flex-col items-center gap-1 rounded-xl bg-white/3 px-3 py-4 xl:items-start xl:bg-transparent xl:px-0 xl:py-0"
                 >
                   <span className="text-muted">{stat.icon}</span>
                   <span className="text-2xl font-bold text-foreground">
@@ -423,6 +421,24 @@ export default function ResultScreen({
             </div>
           )}
         </aside>
+
+        {/* Shared lower row — uses the space beneath both details and trailer */}
+        <div className="min-w-0 border-t border-white/6 pt-5 lg:col-start-2 lg:row-start-3 xl:col-span-2 xl:row-start-2">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(260px,0.75fr)] xl:gap-10">
+            {localizedOverview && (
+              <section className="min-w-0">
+                <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">
+                  {t.result.storyline}
+                </h4>
+                <p className="text-sm leading-relaxed text-muted">
+                  {localizedOverview}
+                </p>
+              </section>
+            )}
+
+            <WatchProviders tmdbId={answer.id} divider={false} />
+          </div>
+        </div>
       </div>
 
       {/* Gallery — cinematic stills from TMDB */}
