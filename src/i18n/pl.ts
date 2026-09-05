@@ -139,17 +139,8 @@ const pl: Translations = {
     leadActor: "Aktor",
     runtime: "Czas",
     budget: "Budżet",
-    popularity: "Popularność",
+    popularity: "Liczba głosów",
     rating: "Ocena",
-  },
-
-  // Popularity labels
-  popularity: {
-    low: "Niska",
-    medium: "Średnia",
-    high: "Wysoka",
-    veryHigh: "Bardzo wysoka",
-    mega: "Ogromna",
   },
 
   // Hints

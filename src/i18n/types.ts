@@ -96,13 +96,6 @@ export interface Translations {
     popularity: string;
     rating: string;
   };
-  popularity: {
-    low: string;
-    medium: string;
-    high: string;
-    veryHigh: string;
-    mega: string;
-  };
   hints: {
     title: string;
     directorStartsWith: (letter: string) => string;

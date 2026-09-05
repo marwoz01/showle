@@ -21,7 +21,7 @@ export function compareMedia(
     compareLeadActor(guess.leadActor, answer.leadActor, t),
     compareRuntime(guess.runtime, answer.runtime, t),
     compareBudget(guess.budget, answer.budget, t),
-    comparePopularity(guess.popularity, answer.popularity, t),
+    comparePopularity(guess.popularity, answer.popularity, t, locale),
     compareRating(guess.rating, answer.rating, t),
   ];
 }
@@ -129,7 +129,12 @@ function compareRuntime(guess: number, answer: number, t: Translations): Compari
   };
 }
 
-function comparePopularity(guess: number, answer: number, t: Translations): ComparisonField {
+function comparePopularity(
+  guess: number,
+  answer: number,
+  t: Translations,
+  locale: Locale,
+): ComparisonField {
   const guessBucket = getPopularityBucket(guess);
   const answerBucket = getPopularityBucket(answer);
   const diff = Math.abs(guessBucket - answerBucket);
@@ -140,8 +145,8 @@ function comparePopularity(guess: number, answer: number, t: Translations): Comp
 
   return {
     label: t.comparison.popularity,
-    guessValue: getPopularityLabel(guess, t),
-    answerValue: getPopularityLabel(answer, t),
+    guessValue: formatVoteCount(guess, locale),
+    answerValue: formatVoteCount(answer, locale),
     status,
     direction: getDirection(guess, answer),
   };
@@ -203,10 +208,8 @@ function getPopularityBucket(value: number): number {
   return 4;
 }
 
-function getPopularityLabel(value: number, t: Translations): string {
-  if (value < 1000) return t.popularity.low;
-  if (value < 5000) return t.popularity.medium;
-  if (value < 12000) return t.popularity.high;
-  if (value < 25000) return t.popularity.veryHigh;
-  return t.popularity.mega;
+function formatVoteCount(value: number, locale: Locale): string {
+  return new Intl.NumberFormat(locale === "pl" ? "pl-PL" : "en-US").format(
+    Math.max(0, Math.round(value)),
+  );
 }

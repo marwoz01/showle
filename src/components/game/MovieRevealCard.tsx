@@ -21,7 +21,7 @@ export default function MovieRevealCard({
   for (const result of guesses) {
     for (const field of result.comparison) {
       if (field.status === "exact" && !solved.has(field.label)) {
-        solved.set(field.label, field.guessValue);
+        solved.set(field.label, field.answerValue);
       }
     }
   }

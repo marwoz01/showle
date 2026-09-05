@@ -218,6 +218,8 @@ describe("popularity comparison", () => {
     // Both in bucket 2 (5000–12000): high.
     const result = compareMedia(makeMovie({ popularity: 6000 }), makeMovie({ popularity: 10000 }), en);
     expect(result[7].status).toBe("exact");
+    expect(result[7].guessValue).toBe("6,000");
+    expect(result[7].answerValue).toBe("10,000");
   });
 
   it("partial when adjacent buckets", () => {

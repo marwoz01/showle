@@ -118,17 +118,8 @@ const en: Translations = {
     leadActor: "Lead Actor",
     runtime: "Runtime",
     budget: "Budget",
-    popularity: "Popularity",
+    popularity: "Vote count",
     rating: "Rating",
-  },
-
-  // Popularity labels
-  popularity: {
-    low: "Low",
-    medium: "Medium",
-    high: "High",
-    veryHigh: "Very high",
-    mega: "Mega",
   },
 
   // Hints
