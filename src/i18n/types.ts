@@ -129,6 +129,8 @@ export interface Translations {
     storyline: string;
     gallery: string;
     cast: string;
+    trailer: string;
+    watchOnYouTube: string;
     whereToWatch: string;
     rent: string;
     seeAllProviders: string;

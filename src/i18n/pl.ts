@@ -181,6 +181,8 @@ const pl: Translations = {
     storyline: "Fabuła",
     gallery: "Galeria",
     cast: "Obsada",
+    trailer: "Zwiastun",
+    watchOnYouTube: "Obejrzyj w YouTube",
     whereToWatch: "Gdzie obejrzeć",
     rent: "Wypożycz",
     seeAllProviders: "Pełna lista",

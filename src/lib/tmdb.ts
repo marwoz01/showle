@@ -1,4 +1,9 @@
 import { MediaDetails } from "@/types";
+import {
+  selectBestTrailer,
+  type MovieTrailer,
+  type TrailerCandidate,
+} from "@/lib/trailers";
 
 const API_KEY = process.env.TMDB_API_KEY!;
 const BASE_URL = "https://api.themoviedb.org/3";
@@ -144,6 +149,36 @@ export async function searchMovieByTitleAndYear(
 
 interface TmdbImagesResponse {
   backdrops: { file_path: string; vote_count: number; aspect_ratio: number }[];
+}
+
+interface TmdbVideosResponse {
+  results: TrailerCandidate[];
+}
+
+/**
+ * Get the best available YouTube trailer, preferring the selected language
+ * and falling back to English when TMDB has no localized trailer.
+ */
+export async function getMovieTrailer(
+  id: number,
+  language = "en-US",
+): Promise<MovieTrailer | null> {
+  const languages = language === "en-US" ? [language] : [language, "en-US"];
+
+  const responses = await Promise.all(
+    languages.map(async (videoLanguage) => {
+      try {
+        const data = await tmdbFetch<TmdbVideosResponse>(`/movie/${id}/videos`, {
+          language: videoLanguage,
+        });
+        return data.results;
+      } catch {
+        return [];
+      }
+    }),
+  );
+
+  return selectBestTrailer(responses.flat(), language);
 }
 
 /**

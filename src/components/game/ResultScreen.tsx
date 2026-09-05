@@ -15,12 +15,15 @@ import {
   Lightbulb,
   Target,
   Star,
+  Play,
+  ExternalLink,
 } from "lucide-react";
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieGallery from "@/components/movie/MovieGallery";
 import CastList from "@/components/movie/CastList";
 import WatchProviders from "@/components/movie/WatchProviders";
 import { localizeCountry, localizeGenre } from "@/lib/localization";
+import type { MovieTrailer } from "@/lib/trailers";
 
 interface ResultScreenProps {
   answer: MediaDetails;
@@ -28,6 +31,12 @@ interface ResultScreenProps {
   status: GameStatus;
   guesses: GuessResult[];
   hintsUsed: number;
+}
+
+interface TrailerState {
+  requestKey: string;
+  trailer: MovieTrailer | null;
+  autoplay: boolean;
 }
 
 export default function ResultScreen({
@@ -42,6 +51,8 @@ export default function ResultScreen({
 
   const won = status === "won";
   const [gallery, setGallery] = useState<string[]>([]);
+  const [trailerState, setTrailerState] = useState<TrailerState | null>(null);
+  const trailerRequestKey = `${answer.id}:${locale}`;
 
   // Fetch a handful of cinematic stills once the result is shown.
   useEffect(() => {
@@ -56,6 +67,29 @@ export default function ResultScreen({
       });
     return () => ac.abort();
   }, [answer.id]);
+
+  useEffect(() => {
+    if (!won) return;
+
+    const ac = new AbortController();
+    fetch(`/api/movies/trailer?id=${answer.id}&lang=${locale}`, {
+      signal: ac.signal,
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const trailer = (data?.trailer ?? null) as MovieTrailer | null;
+        setTrailerState({
+          requestKey: trailerRequestKey,
+          trailer,
+          autoplay: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        });
+      })
+      .catch(() => {
+        // A missing trailer should never block the result screen.
+      });
+
+    return () => ac.abort();
+  }, [answer.id, locale, trailerRequestKey, won]);
 
   useEffect(() => {
     if (
@@ -108,6 +142,15 @@ export default function ResultScreen({
   const localizedOverview = locale === "pl"
     ? localizedAnswer?.overview
     : answer.overview;
+  const activeTrailer =
+    won && trailerState?.requestKey === trailerRequestKey
+      ? trailerState.trailer
+      : null;
+  const trailerAutoplay =
+    trailerState?.requestKey === trailerRequestKey && trailerState.autoplay;
+  const youtubeEmbedUrl = activeTrailer
+    ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(activeTrailer.key)}?autoplay=${trailerAutoplay ? "1" : "0"}&mute=${trailerAutoplay ? "1" : "0"}&playsinline=1&rel=0&hl=${locale}&cc_lang_pref=${locale}`
+    : null;
 
   async function handleShare() {
     const text = t.result.shareText(displayAnswer.title, attempts, MAX_ATTEMPTS);
@@ -128,6 +171,40 @@ export default function ResultScreen({
 
   return (
     <div className="animate-result-reveal overflow-hidden rounded-2xl border border-white/6 bg-card">
+      {youtubeEmbedUrl && activeTrailer && (
+        <section className="bg-[#08080a]">
+          <div className="flex items-center justify-between gap-4 bg-white/[.035] px-5 py-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-purple/15 text-accent-purple">
+                <Play size={15} className="fill-current" />
+              </span>
+              <span className="truncate text-sm font-semibold text-foreground">
+                {t.result.trailer}
+              </span>
+            </div>
+            <a
+              href={`https://www.youtube.com/watch?v=${encodeURIComponent(activeTrailer.key)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-muted transition-colors hover:text-foreground"
+            >
+              {t.result.watchOnYouTube}
+              <ExternalLink size={13} />
+            </a>
+          </div>
+          <div className="aspect-video w-full bg-black">
+            <iframe
+              src={youtubeEmbedUrl}
+              title={`${t.result.trailer}: ${displayAnswer.title}`}
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+        </section>
+      )}
+
       {/* Cinematic hero with backdrop */}
       <div className="relative h-72 overflow-hidden sm:h-96">
         {displayAnswer.backdropPath ? (

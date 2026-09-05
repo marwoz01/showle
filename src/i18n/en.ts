@@ -160,6 +160,8 @@ const en: Translations = {
     storyline: "Storyline",
     gallery: "Gallery",
     cast: "Cast",
+    trailer: "Trailer",
+    watchOnYouTube: "Watch on YouTube",
     whereToWatch: "Where to watch",
     rent: "Rent",
     seeAllProviders: "Full list",
