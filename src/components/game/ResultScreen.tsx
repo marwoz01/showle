@@ -151,6 +151,7 @@ export default function ResultScreen({
   const youtubeEmbedUrl = activeTrailer
     ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(activeTrailer.key)}?autoplay=${trailerAutoplay ? "1" : "0"}&mute=${trailerAutoplay ? "1" : "0"}&playsinline=1&rel=0&hl=${locale}&cc_lang_pref=${locale}`
     : null;
+  const trailerPending = won && trailerState?.requestKey !== trailerRequestKey;
 
   async function handleShare() {
     const text = t.result.shareText(displayAnswer.title, attempts, MAX_ATTEMPTS);
@@ -171,40 +172,6 @@ export default function ResultScreen({
 
   return (
     <div className="animate-result-reveal overflow-hidden rounded-2xl border border-white/6 bg-card">
-      {youtubeEmbedUrl && activeTrailer && (
-        <section className="bg-[#08080a]">
-          <div className="flex items-center justify-between gap-4 bg-white/[.035] px-5 py-3">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-purple/15 text-accent-purple">
-                <Play size={15} className="fill-current" />
-              </span>
-              <span className="truncate text-sm font-semibold text-foreground">
-                {t.result.trailer}
-              </span>
-            </div>
-            <a
-              href={`https://www.youtube.com/watch?v=${encodeURIComponent(activeTrailer.key)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-muted transition-colors hover:text-foreground"
-            >
-              {t.result.watchOnYouTube}
-              <ExternalLink size={13} />
-            </a>
-          </div>
-          <div className="aspect-video w-full bg-black">
-            <iframe
-              src={youtubeEmbedUrl}
-              title={`${t.result.trailer}: ${displayAnswer.title}`}
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
-        </section>
-      )}
-
       {/* Cinematic hero with backdrop */}
       <div className="relative h-72 overflow-hidden sm:h-96">
         {displayAnswer.backdropPath ? (
@@ -274,8 +241,14 @@ export default function ResultScreen({
         </div>
       </div>
 
-      {/* Three-column body: poster | details | stats */}
-      <div className="grid grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[180px_1fr_180px] lg:gap-8">
+      {/* Three-column body: poster | details | trailer and stats */}
+      <div
+        className={`grid grid-cols-1 gap-6 px-6 py-6 lg:gap-8 ${
+          won
+            ? "lg:grid-cols-[180px_minmax(0,1fr)_360px]"
+            : "lg:grid-cols-[180px_minmax(0,1fr)_180px]"
+        }`}
+      >
         {/* Left — poster + actions */}
         <div className="flex flex-row gap-4 lg:flex-col">
           <div className="aspect-2/3 w-32 shrink-0 overflow-hidden rounded-xl bg-white/5 shadow-lg shadow-black/40 lg:w-full">
@@ -373,21 +346,83 @@ export default function ResultScreen({
           <WatchProviders tmdbId={answer.id} />
         </div>
 
-        {/* Right — stats */}
-        <div className="grid grid-cols-3 gap-3 lg:grid-cols-1 lg:gap-4 lg:border-l lg:border-white/6 lg:pl-8">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="flex flex-col items-center gap-1 rounded-xl bg-white/3 px-3 py-4 lg:items-start lg:bg-transparent lg:px-0 lg:py-0"
-            >
-              <span className="text-muted">{stat.icon}</span>
-              <span className="text-2xl font-bold text-foreground">
-                {stat.value}
-              </span>
-              <span className="text-xs text-muted">{stat.label}</span>
+        {/* Right — trailer first on mobile, with compact stats underneath */}
+        <aside className="order-first min-w-0 lg:order-none">
+          {won && (youtubeEmbedUrl || trailerPending) ? (
+            <div className="overflow-hidden rounded-2xl bg-[#09090b] shadow-[0_20px_55px_rgba(0,0,0,.34),inset_0_1px_0_rgba(255,255,255,.055)]">
+              <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-purple/15 text-accent-purple">
+                    <Play size={14} className="fill-current" />
+                  </span>
+                  <span className="truncate text-sm font-semibold text-foreground">
+                    {t.result.trailer}
+                  </span>
+                </div>
+                {activeTrailer && (
+                  <a
+                    href={`https://www.youtube.com/watch?v=${encodeURIComponent(activeTrailer.key)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-medium text-muted transition-colors hover:text-foreground"
+                  >
+                    {t.result.watchOnYouTube}
+                    <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
+
+              <div className="aspect-video w-full overflow-hidden bg-black">
+                {youtubeEmbedUrl ? (
+                  <iframe
+                    src={youtubeEmbedUrl}
+                    title={`${t.result.trailer}: ${displayAnswer.title}`}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <span className="h-9 w-9 animate-pulse rounded-full bg-accent-purple/20" />
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-px bg-white/5">
+                {stats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="flex min-w-0 flex-col items-center bg-[#111114] px-2 py-4 text-center"
+                  >
+                    <span className="mb-1.5 text-muted">{stat.icon}</span>
+                    <span className="text-xl font-bold text-foreground">
+                      {stat.value}
+                    </span>
+                    <span className="mt-0.5 truncate text-[10px] text-muted sm:text-xs">
+                      {stat.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3 lg:grid-cols-1 lg:gap-4 lg:border-l lg:border-white/6 lg:pl-8">
+              {stats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex flex-col items-center gap-1 rounded-xl bg-white/3 px-3 py-4 lg:items-start lg:bg-transparent lg:px-0 lg:py-0"
+                >
+                  <span className="text-muted">{stat.icon}</span>
+                  <span className="text-2xl font-bold text-foreground">
+                    {stat.value}
+                  </span>
+                  <span className="text-xs text-muted">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </aside>
       </div>
 
       {/* Gallery — cinematic stills from TMDB */}
