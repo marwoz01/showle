@@ -190,7 +190,7 @@ function RevealPerson({
 function InfoSlot({ label, value }: { label: string; value: string | undefined }) {
   return (
     <div
-      className={`flex h-20 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_8px_18px_rgba(0,0,0,.16)] ${
+      className={`flex h-20 min-w-0 flex-col items-start justify-center gap-1 rounded-2xl px-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_8px_18px_rgba(0,0,0,.16)] ${
         value ? "bg-match-exact/8" : "bg-white/[.035]"
       }`}
     >
@@ -198,7 +198,7 @@ function InfoSlot({ label, value }: { label: string; value: string | undefined }
         {label}
       </span>
       <span
-        className={`line-clamp-2 max-w-full text-xs font-semibold leading-tight [overflow-wrap:anywhere] ${value ? "text-match-exact" : "text-muted/40"}`}
+        className={`line-clamp-2 w-full max-w-full text-xs font-semibold leading-tight [overflow-wrap:anywhere] ${value ? "text-match-exact" : "text-muted/40"}`}
         title={value}
       >
         {value ?? "?"}
