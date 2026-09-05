@@ -83,6 +83,7 @@ export interface Translations {
     nextIn: string;
     loadError: string;
     movieCard: string;
+    revealed: string;
   };
   comparison: {
     year: string;

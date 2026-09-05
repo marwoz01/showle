@@ -60,7 +60,7 @@ export default function GuessCard({ result }: GuessCardProps) {
               </div>
 
               {(hasDirector || cast.length > 0) && (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 grid gap-2 sm:grid-cols-3 2xl:grid-cols-1">
                   {hasDirector && (
                     <PersonChip
                       label={t.comparison.director}
@@ -111,7 +111,7 @@ function PersonChip({
   profilePath?: string;
 }) {
   return (
-    <div className="flex min-w-0 max-w-48 items-center gap-2 rounded-full bg-[#2a2a2f] py-1 pl-1 pr-3 shadow-[inset_0_1px_0_rgba(255,255,255,.065),0_7px_16px_rgba(0,0,0,.18)]">
+    <div className="flex min-w-0 w-full items-center gap-2 rounded-full bg-[#2a2a2f] py-1 pl-1 pr-3 shadow-[inset_0_1px_0_rgba(255,255,255,.065),0_7px_16px_rgba(0,0,0,.18)]">
       <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-white/6 shadow-inner">
         {profilePath ? (
           <Image

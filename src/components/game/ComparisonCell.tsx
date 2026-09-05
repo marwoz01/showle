@@ -38,14 +38,14 @@ export default function ComparisonCell({
 
   return (
     <div
-      className="comparison-tile min-w-0"
+      className="comparison-tile h-28 min-w-0"
       data-status={status}
       style={style}
     >
-      <div className="comparison-tile-inner grid">
+      <div className="comparison-tile-inner grid h-full">
         <div
           aria-hidden="true"
-          className="comparison-tile-face col-start-1 row-start-1 flex min-h-19 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl bg-white/[.035] px-3 py-3 text-muted/40 shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_9px_22px_rgba(0,0,0,.16)]"
+          className="comparison-tile-face col-start-1 row-start-1 flex h-full w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl bg-white/[.035] px-3 py-3 text-muted/40 shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_9px_22px_rgba(0,0,0,.16)]"
         >
           <span className="text-[10px] font-medium uppercase tracking-wider">
             {label}
@@ -54,7 +54,7 @@ export default function ComparisonCell({
         </div>
 
         <div
-          className={`comparison-tile-face comparison-tile-back relative col-start-1 row-start-1 flex min-h-19 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_9px_22px_rgba(0,0,0,.2)] ${statusColors[status]}`}
+          className={`comparison-tile-face comparison-tile-back relative col-start-1 row-start-1 flex h-full w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_9px_22px_rgba(0,0,0,.2)] ${statusColors[status]}`}
         >
           <span
             aria-hidden="true"
@@ -63,20 +63,18 @@ export default function ComparisonCell({
           <span className="text-[10px] font-medium uppercase tracking-wider opacity-60">
             {label}
           </span>
-          <div className="flex min-w-0 max-w-full items-center justify-center gap-1">
-            <span
-              className="min-w-0 text-center text-xs font-bold leading-tight [overflow-wrap:anywhere]"
-              title={value}
-            >
-              {value}
-            </span>
-            {direction && (
-              <ArrowUp
-                size={14}
-                className={`comparison-direction shrink-0 ${direction === "down" ? "rotate-180" : ""}`}
-              />
-            )}
-          </div>
+          <span
+            className="line-clamp-4 min-w-0 max-w-full text-center text-xs font-bold leading-tight [overflow-wrap:anywhere]"
+            title={value}
+          >
+            {value}
+          </span>
+          {direction && (
+            <ArrowUp
+              size={14}
+              className={`comparison-direction absolute bottom-3 right-3 shrink-0 ${direction === "down" ? "rotate-180" : ""}`}
+            />
+          )}
         </div>
       </div>
     </div>

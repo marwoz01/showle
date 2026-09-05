@@ -41,52 +41,83 @@ export default function MovieRevealCard({
       )
     : undefined;
 
-  const sub = (value: string | undefined) =>
-    value ? <span className="text-match-exact">{value}</span> : <span className="text-muted/40">?</span>;
+  const revealedCount = [
+    year,
+    genres,
+    country,
+    director,
+    leadActor,
+    runtime,
+    budget,
+    popularity,
+    rating,
+  ].filter(Boolean).length;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/6 bg-card">
-      <div className="flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-start sm:gap-6">
-        {/* Poster placeholder — hidden until the answer is revealed at game end */}
-        <div className="flex shrink-0 justify-center sm:justify-start">
-          <div className="mystery-poster relative flex h-72 w-48 items-center justify-center overflow-hidden rounded-xl border border-dashed border-white/10 bg-white/3 text-muted/30">
-            <div className="mystery-poster-scan absolute inset-y-0 w-20 bg-linear-to-r from-transparent via-accent-purple/10 to-transparent" />
-            <Film className="relative" size={56} strokeWidth={1.5} />
-          </div>
-        </div>
-
-        {/* Details — slots fill in as exact matches happen */}
-        <div className="flex min-w-0 flex-1 flex-col justify-center text-center sm:text-left">
-          <h3 className="text-2xl font-bold text-muted/40">???</h3>
-          <p className="mt-1 text-sm text-muted">
-            {sub(year)} <span className="text-muted/40">&middot;</span>{" "}
-            {sub(runtime)}
-          </p>
-
-          {/* Genre tags — reveal full list when genre matches exactly */}
-          <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
-            {genres ? (
-              genres.split(",").map((g) => (
-                <span
-                  key={g.trim()}
-                  className="rounded-full bg-match-exact/15 px-2.5 py-0.5 text-xs font-medium text-match-exact"
-                >
-                  {g.trim()}
-                </span>
-              ))
-            ) : (
-              [0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  className="rounded-full bg-white/3 px-2.5 py-0.5 text-xs font-medium text-muted/40"
-                >
-                  ?
-                </span>
-              ))
-            )}
+    <div className="overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#25252a,#18181c)] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,.09),inset_0_-1px_0_rgba(0,0,0,.45),0_24px_55px_rgba(0,0,0,.25)]">
+      <div className="grid gap-2 sm:grid-cols-[170px_minmax(0,1fr)]">
+        <section className="rounded-[1.55rem] bg-[#202024] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_10px_28px_rgba(0,0,0,.18)]">
+          <div className="mystery-poster relative mx-auto flex aspect-2/3 w-40 items-center justify-center overflow-hidden rounded-[1.35rem] bg-[#121214] text-muted/30 shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_18px_35px_rgba(0,0,0,.32)] sm:w-full">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-40"
+              style={{
+                backgroundImage:
+                  "linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)",
+                backgroundSize: "22px 22px",
+              }}
+            />
+            <div className="mystery-poster-scan absolute inset-y-0 w-20 bg-linear-to-r from-transparent via-accent-purple/12 to-transparent" />
+            <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[.035] shadow-[inset_0_1px_0_rgba(255,255,255,.05)]">
+              <Film size={34} strokeWidth={1.5} />
+            </span>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div
+            className="mt-4"
+            aria-label={`${t.game.revealed}: ${revealedCount}/9`}
+          >
+            <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted/55">
+              <span>{t.game.revealed}</span>
+              <span className="text-foreground/75">{revealedCount}/9</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-black/30">
+              <div
+                className="h-full rounded-full bg-linear-to-r from-accent-purple to-match-exact transition-[width] duration-500"
+                style={{ width: `${(revealedCount / 9) * 100}%` }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden rounded-[1.55rem] bg-[#0d0d0f] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.035),0_14px_35px_rgba(0,0,0,.28)] sm:p-5">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-accent-purple/8 blur-3xl" />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-20"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+            }}
+          />
+
+          <header className="relative flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-purple">
+                {t.game.movieCard}
+              </p>
+              <h3 className="mt-1 font-display text-2xl font-bold tracking-wide text-muted/45">
+                ???
+              </h3>
+            </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[.045] text-xs font-bold text-muted/40 shadow-[inset_0_1px_0_rgba(255,255,255,.05)]">
+              ?
+            </span>
+          </header>
+
+          <div className="relative mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-3">
+            <InfoSlot label={t.comparison.year} value={year} />
+            <InfoSlot label={t.comparison.genre} value={genres} />
+            <InfoSlot label={t.comparison.country} value={country} />
             <RevealPerson
               key={director ?? "director-locked"}
               label={t.comparison.director}
@@ -99,20 +130,12 @@ export default function MovieRevealCard({
               name={leadActor}
               profilePath={leadActorMember?.profilePath}
             />
+            <InfoSlot label={t.comparison.runtime} value={runtime} />
+            <InfoSlot label={t.comparison.budget} value={budget} />
+            <InfoSlot label={t.comparison.popularity} value={popularity} />
+            <InfoSlot label={t.comparison.rating} value={rating} />
           </div>
-
-          {/* Secondary slots — line up with the per-guess comparison grid below */}
-          <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs sm:grid-cols-4">
-            <SlotRow label={t.comparison.country} value={country} />
-            <SlotRow label={t.comparison.budget} value={budget} />
-            <SlotRow label={t.comparison.popularity} value={popularity} />
-            <SlotRow label={t.comparison.rating} value={rating} />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-white/6 px-6 py-3 text-[10px] font-medium uppercase tracking-widest text-muted/60">
-        {t.game.movieCard}
+        </section>
       </div>
     </div>
   );
@@ -129,10 +152,10 @@ function RevealPerson({
 }) {
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2 text-left ${
+      className={`flex h-20 min-w-0 items-center gap-2.5 rounded-2xl px-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_8px_18px_rgba(0,0,0,.16)] ${
         name
-          ? "animate-person-reveal border-match-exact/25 bg-match-exact/8"
-          : "border-white/6 bg-white/2"
+          ? "animate-person-reveal bg-match-exact/8"
+          : "bg-white/[.035]"
       }`}
     >
       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white/5">
@@ -164,14 +187,19 @@ function RevealPerson({
   );
 }
 
-function SlotRow({ label, value }: { label: string; value: string | undefined }) {
+function InfoSlot({ label, value }: { label: string; value: string | undefined }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div
+      className={`flex h-20 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_8px_18px_rgba(0,0,0,.16)] ${
+        value ? "bg-match-exact/8" : "bg-white/[.035]"
+      }`}
+    >
       <span className="text-[10px] uppercase tracking-wider text-muted/60">
         {label}
       </span>
       <span
-        className={`truncate font-semibold ${value ? "text-match-exact" : "text-muted/40"}`}
+        className={`line-clamp-2 max-w-full text-xs font-semibold leading-tight [overflow-wrap:anywhere] ${value ? "text-match-exact" : "text-muted/40"}`}
+        title={value}
       >
         {value ?? "?"}
       </span>

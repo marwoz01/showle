@@ -127,6 +127,7 @@ const pl: Translations = {
     nextIn: "Następny za",
     loadError: "Nie udało się załadować filmu. Spróbuj ponownie później.",
     movieCard: "Karta filmu",
+    revealed: "Odkryto",
   },
 
   // Comparison labels

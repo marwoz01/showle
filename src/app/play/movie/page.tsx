@@ -13,7 +13,7 @@ import MovieRevealCard from "@/components/game/MovieRevealCard";
 import HintsPanel from "@/components/game/HintsPanel";
 import ResultScreen from "@/components/game/ResultScreen";
 import CountdownTimer from "@/components/game/CountdownTimer";
-import { ChevronLeft, Flag, Loader2 } from "lucide-react";
+import { ChevronLeft, Flag, Loader2, Search } from "lucide-react";
 
 export default function PlayMoviePage() {
   const { t } = useTranslation();
@@ -170,14 +170,18 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
       )}
 
       {/* Two-column layout: guesses + hints */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-4">
           {!isFinished && (
             <MovieRevealCard guesses={guesses} answer={dailyAnswer} />
           )}
           {guesses.length === 0 && status === "playing" && (
-            <div className="rounded-2xl border border-dashed border-white/8 p-8 text-center text-sm text-muted">
-              {t.game.emptyState}
+            <div className="relative overflow-hidden rounded-2xl bg-[#151518] px-6 py-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_18px_38px_rgba(0,0,0,.18)]">
+              <div className="pointer-events-none absolute left-1/2 top-0 h-24 w-48 -translate-x-1/2 rounded-full bg-accent-purple/10 blur-3xl" />
+              <span className="relative mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-accent-purple/12 text-accent-purple shadow-[inset_0_1px_0_rgba(255,255,255,.06)]">
+                <Search size={17} />
+              </span>
+              <p className="relative text-sm text-muted">{t.game.emptyState}</p>
             </div>
           )}
           {guesses.map((result) => (
@@ -185,7 +189,7 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
           ))}
         </div>
 
-        <div>
+        <div className="2xl:sticky 2xl:top-8 2xl:self-start">
           <HintsPanel
             revealedHints={revealedHints}
             totalHints={allHints.length}

@@ -106,6 +106,7 @@ const en: Translations = {
     nextIn: "Next in",
     loadError: "Failed to load the movie. Please try again later.",
     movieCard: "Movie card",
+    revealed: "Revealed",
   },
 
   // Comparison labels
