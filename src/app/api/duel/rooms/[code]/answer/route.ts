@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { DuelQuestion } from "@/lib/duel";
+import { calculateDuelPoints, type DuelQuestion } from "@/lib/duel";
 import {
   getDuelRoomView,
   normalizeDuelCode,
@@ -59,6 +59,15 @@ export async function POST(
     return NextResponse.json({ error: "room_not_found" }, { status: 404 });
   }
 
+  const remainingMs = (room.roundEndsAt?.getTime() ?? 0) - Date.now();
+  if (remainingMs <= 0) {
+    return NextResponse.json(await getDuelRoomView(code, playerId));
+  }
+
+  const questions = room.questions as unknown as DuelQuestion[];
+  const correct = questions[round]?.correctIndex === answerIndex;
+  const points = correct ? calculateDuelPoints(remainingMs) : 0;
+
   const marked = isHost
     ? await prisma.duelRoom.updateMany({
         where: {
@@ -68,7 +77,11 @@ export async function POST(
           roundResolvedAt: null,
           hostAnsweredRound: { not: round },
         },
-        data: { hostAnsweredRound: round },
+        data: {
+          hostAnsweredRound: round,
+          hostRoundPoints: points,
+          hostScore: { increment: points },
+        },
       })
     : await prisma.duelRoom.updateMany({
         where: {
@@ -78,44 +91,33 @@ export async function POST(
           roundResolvedAt: null,
           guestAnsweredRound: { not: round },
         },
-        data: { guestAnsweredRound: round },
+        data: {
+          guestAnsweredRound: round,
+          guestRoundPoints: points,
+          guestScore: { increment: points },
+        },
       });
 
   if (marked.count === 0) {
     return NextResponse.json(await getDuelRoomView(code, playerId));
   }
 
-  const questions = room.questions as unknown as DuelQuestion[];
-  const correct = questions[round]?.correctIndex === answerIndex;
-  if (correct) {
+  const afterAnswer = await prisma.duelRoom.findUnique({ where: { code } });
+  if (
+    afterAnswer &&
+    afterAnswer.hostAnsweredRound === round &&
+    afterAnswer.guestAnsweredRound === round
+  ) {
+    const roundWinnerId =
+      afterAnswer.hostRoundPoints === afterAnswer.guestRoundPoints
+        ? null
+        : afterAnswer.hostRoundPoints > afterAnswer.guestRoundPoints
+          ? afterAnswer.hostId
+          : afterAnswer.guestId;
     await prisma.duelRoom.updateMany({
-      where: {
-        code,
-        status: "playing",
-        currentRound: round,
-        roundResolvedAt: null,
-        roundWinnerId: null,
-      },
-      data: {
-        roundWinnerId: playerId,
-        roundResolvedAt: new Date(),
-        ...(isHost
-          ? { hostScore: { increment: 1 } }
-          : { guestScore: { increment: 1 } }),
-      },
+      where: { code, currentRound: round, roundResolvedAt: null },
+      data: { roundResolvedAt: new Date(), roundWinnerId },
     });
-  } else {
-    const afterAnswer = await prisma.duelRoom.findUnique({ where: { code } });
-    if (
-      afterAnswer &&
-      afterAnswer.hostAnsweredRound === round &&
-      afterAnswer.guestAnsweredRound === round
-    ) {
-      await prisma.duelRoom.updateMany({
-        where: { code, currentRound: round, roundResolvedAt: null },
-        data: { roundResolvedAt: new Date() },
-      });
-    }
   }
 
   return NextResponse.json(await getDuelRoomView(code, playerId));

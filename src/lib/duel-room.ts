@@ -20,6 +20,12 @@ export async function getDuelRoomView(
     const now = Date.now();
 
     if (!room.roundResolvedAt && room.roundEndsAt && room.roundEndsAt.getTime() <= now) {
+      const roundWinnerId =
+        room.hostRoundPoints === room.guestRoundPoints
+          ? null
+          : room.hostRoundPoints > room.guestRoundPoints
+            ? room.hostId
+            : room.guestId;
       await prisma.duelRoom.updateMany({
         where: {
           code,
@@ -27,7 +33,7 @@ export async function getDuelRoomView(
           currentRound: room.currentRound,
           roundResolvedAt: null,
         },
-        data: { roundResolvedAt: new Date() },
+        data: { roundResolvedAt: new Date(), roundWinnerId },
       });
       room = (await prisma.duelRoom.findUnique({ where: { code } })) ?? room;
     }
@@ -50,6 +56,8 @@ export async function getDuelRoomView(
           ? { status: "finished" }
           : {
               currentRound: { increment: 1 },
+              hostRoundPoints: 0,
+              guestRoundPoints: 0,
               roundWinnerId: null,
               roundResolvedAt: null,
               roundStartedAt: nextRoundAt,
@@ -96,6 +104,7 @@ function serializeRoom(
         role: "host",
         name: room.hostName,
         score: room.hostScore,
+        roundPoints: room.hostRoundPoints,
         answered: room.hostAnsweredRound === room.currentRound,
       },
       ...(room.guestId && room.guestName
@@ -104,6 +113,7 @@ function serializeRoom(
               role: "guest" as const,
               name: room.guestName,
               score: room.guestScore,
+              roundPoints: room.guestRoundPoints,
               answered: room.guestAnsweredRound === room.currentRound,
             },
           ]

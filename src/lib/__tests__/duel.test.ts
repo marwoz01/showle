@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createDuelQuestions, createRoomCode, DUEL_ROUNDS } from "@/lib/duel";
+import {
+  calculateDuelPoints,
+  createDuelQuestions,
+  createRoomCode,
+  DUEL_ROUND_MS,
+  DUEL_ROUNDS,
+} from "@/lib/duel";
 import type { DuelMovieCandidate } from "@/lib/tmdb";
 
 const movies: DuelMovieCandidate[] = Array.from({ length: 12 }, (_, index) => ({
@@ -27,5 +33,11 @@ describe("duel questions", () => {
   it("creates readable six-character room codes", () => {
     expect(createRoomCode(() => 0)).toBe("AAAAAA");
     expect(createRoomCode(() => 0.999)).toBe("999999");
+  });
+
+  it("awards more points for a faster correct answer", () => {
+    expect(calculateDuelPoints(DUEL_ROUND_MS)).toBe(1000);
+    expect(calculateDuelPoints(DUEL_ROUND_MS / 2)).toBe(750);
+    expect(calculateDuelPoints(0)).toBe(500);
   });
 });

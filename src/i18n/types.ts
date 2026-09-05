@@ -82,9 +82,9 @@ export interface Translations {
     points: (count: number) => string;
     chooseAnswer: string;
     answerLocked: string;
-    roundWon: string;
-    roundLost: string;
-    noRoundWinner: string;
+    correctAnswer: (points: number) => string;
+    wrongAnswer: string;
+    timeUp: string;
     finished: string;
     youWon: string;
     youLost: string;

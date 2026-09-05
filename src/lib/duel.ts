@@ -1,7 +1,7 @@
 import type { DuelMovieCandidate } from "@/lib/tmdb";
 
 export const DUEL_ROUNDS = 6;
-export const DUEL_ROUND_MS = 15_000;
+export const DUEL_ROUND_MS = 10_000;
 export const DUEL_REVEAL_MS = 2_500;
 
 export interface DuelOption {
@@ -54,6 +54,11 @@ export function createRoomCode(random: () => number = Math.random): string {
     { length: 6 },
     () => alphabet[Math.floor(random() * alphabet.length)],
   ).join("");
+}
+
+export function calculateDuelPoints(remainingMs: number): number {
+  const timeRatio = Math.min(1, Math.max(0, remainingMs / DUEL_ROUND_MS));
+  return Math.round(500 + timeRatio * 500);
 }
 
 function shuffle<T>(values: T[], random: () => number): T[] {

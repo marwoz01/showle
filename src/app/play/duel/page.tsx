@@ -14,6 +14,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useTranslation } from "@/i18n";
+import { DUEL_ROUND_MS } from "@/lib/duel";
 import type { DuelRoomView } from "@/types/duel";
 
 type LobbyAction = "create" | "join";
@@ -402,16 +403,17 @@ function DuelGame({
   const { t } = useTranslation();
   const me = room.players.find((player) => player.role === room.you);
   const resolved = Boolean(room.roundResolvedAt);
-  const secondsLeft = room.roundEndsAt
-    ? Math.max(0, Math.ceil((new Date(room.roundEndsAt).getTime() - now) / 1000))
+  const remainingMs = room.roundEndsAt
+    ? Math.max(0, new Date(room.roundEndsAt).getTime() - now)
     : 0;
-  const timerWidth = `${Math.min(100, (secondsLeft / 15) * 100)}%`;
+  const secondsLeft = Math.ceil(remainingMs / 1000);
+  const timerWidth = `${Math.min(100, (remainingMs / DUEL_ROUND_MS) * 100)}%`;
   const feedback = resolved
-    ? room.roundWinner === room.you
-      ? t.duel.roundWon
-      : room.roundWinner
-        ? t.duel.roundLost
-        : t.duel.noRoundWinner
+    ? !me?.answered
+      ? t.duel.timeUp
+      : me.roundPoints > 0
+        ? t.duel.correctAnswer(me.roundPoints)
+        : t.duel.wrongAnswer
     : me?.answered
       ? t.duel.answerLocked
       : t.duel.chooseAnswer;

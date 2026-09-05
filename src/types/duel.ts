@@ -5,6 +5,7 @@ export interface DuelPlayerView {
   role: DuelRole;
   name: string;
   score: number;
+  roundPoints: number;
   answered: boolean;
 }
 

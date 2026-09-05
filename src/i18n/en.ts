@@ -69,7 +69,7 @@ const en: Translations = {
   duel: {
     modeTitle: "Movie duel",
     modeDesc:
-      "Join a second player and identify movies from cinematic stills. Six quick rounds, four choices, and a point for the fastest correct answer.",
+      "Join a second player and identify movies from cinematic stills. You both answer, with accuracy and speed determining the score.",
     modeAction: "Start a duel",
     badge: "2 players",
     fourAnswers: "4 choices",
@@ -78,7 +78,7 @@ const en: Translations = {
     selectSubtitle: "Play the daily movie solo or challenge a friend live.",
     title: "Movie duel",
     subtitle:
-      "Identify the movie from a still. The first correct answer scores, and the best player after six rounds wins.",
+      "You have 10 seconds to identify each movie. Correct, faster answers earn more points, and the best player after six rounds wins.",
     back: "Back to modes",
     nameLabel: "Your name",
     namePlaceholder: "Enter player name",
@@ -97,9 +97,9 @@ const en: Translations = {
     points: (count) => `${count} pts`,
     chooseAnswer: "Which movie is it?",
     answerLocked: "Answer locked — waiting for the result",
-    roundWon: "You score the point!",
-    roundLost: "Your opponent scores",
-    noRoundWinner: "No point this round",
+    correctAnswer: (points) => `Correct! +${points} pts`,
+    wrongAnswer: "That wasn't the right movie",
+    timeUp: "Time's up",
     finished: "Duel complete",
     youWon: "You win!",
     youLost: "Your opponent wins this time",

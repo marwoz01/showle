@@ -90,7 +90,7 @@ const pl: Translations = {
   duel: {
     modeTitle: "Filmowy pojedynek",
     modeDesc:
-      "Dołącz do drugiego gracza i rozpoznawaj filmy po kadrach. Sześć szybkich rund, cztery odpowiedzi i punkt dla najszybszej poprawnej odpowiedzi.",
+      "Dołącz do drugiego gracza i rozpoznawaj filmy po kadrach. Oboje odpowiadacie, a poprawność i szybkość decydują o liczbie punktów.",
     modeAction: "Rozpocznij pojedynek",
     badge: "2 graczy",
     fourAnswers: "4 odpowiedzi",
@@ -99,7 +99,7 @@ const pl: Translations = {
     selectSubtitle: "Zagraj sam w film dnia albo zmierz się ze znajomym na żywo.",
     title: "Filmowy pojedynek",
     subtitle:
-      "Rozpoznaj film po kadrze. Pierwsza poprawna odpowiedź zdobywa punkt, a po sześciu rundach wygrywa najlepszy gracz.",
+      "Macie 10 sekund na rozpoznanie filmu po kadrze. Poprawna i szybsza odpowiedź daje więcej punktów, a po sześciu rundach wygrywa najlepszy gracz.",
     back: "Wróć do trybów",
     nameLabel: "Twoja nazwa",
     namePlaceholder: "Wpisz nazwę gracza",
@@ -118,9 +118,9 @@ const pl: Translations = {
     points: (count) => `${count} pkt`,
     chooseAnswer: "Który to film?",
     answerLocked: "Odpowiedź zapisana — czekamy na wynik",
-    roundWon: "Punkt dla Ciebie!",
-    roundLost: "Przeciwnik zdobywa punkt",
-    noRoundWinner: "Nikt nie zdobył punktu",
+    correctAnswer: (points) => `Dobra odpowiedź! +${points} pkt`,
+    wrongAnswer: "Niestety, to nie ten film",
+    timeUp: "Czas minął",
     finished: "Koniec pojedynku",
     youWon: "Wygrywasz!",
     youLost: "Tym razem wygrywa przeciwnik",
