@@ -13,11 +13,19 @@ interface TmdbMovieListItem {
   title: string;
   release_date: string;
   poster_path: string | null;
+  backdrop_path: string | null;
   overview: string;
   popularity: number;
   vote_average: number;
   vote_count: number;
   genre_ids: number[];
+}
+
+export interface DuelMovieCandidate {
+  id: number;
+  title: string;
+  year: number;
+  backdropPath: string;
 }
 
 interface TmdbMovieDetails {
@@ -104,6 +112,44 @@ export async function getPopularMovies(page: number = 1): Promise<{ results: Med
     results: details.filter((d): d is MediaDetails => d !== null),
     totalPages: Math.min(data.total_pages, 20),
   };
+}
+
+/**
+ * Fetch a broad pool of recognizable movies with cinematic stills for duels.
+ * This uses list responses only, avoiding dozens of detail requests per room.
+ */
+export async function getDuelMoviePool(
+  language = "en-US",
+): Promise<DuelMovieCandidate[]> {
+  const pages = await Promise.all(
+    [1, 2, 3].map((page) =>
+      tmdbFetch<{ results: TmdbMovieListItem[] }>("/movie/popular", {
+        language,
+        page: String(page),
+      }),
+    ),
+  );
+
+  const unique = new Map<number, DuelMovieCandidate>();
+  for (const movie of pages.flatMap((page) => page.results)) {
+    if (
+      unique.has(movie.id) ||
+      movie.vote_count < 750 ||
+      !movie.release_date ||
+      !movie.backdrop_path
+    ) {
+      continue;
+    }
+
+    unique.set(movie.id, {
+      id: movie.id,
+      title: movie.title,
+      year: Number(movie.release_date.slice(0, 4)),
+      backdropPath: movie.backdrop_path,
+    });
+  }
+
+  return [...unique.values()];
 }
 
 /**

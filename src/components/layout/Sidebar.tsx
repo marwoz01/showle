@@ -36,7 +36,7 @@ const NAV_SECTIONS: NavSection[] = [
     labelKey: "sectionMain",
     items: [
       { key: "home", icon: Home, href: "/" },
-      { key: "play", icon: Play, href: "/play/movie" },
+      { key: "play", icon: Play, href: "/play" },
     ],
   },
   {

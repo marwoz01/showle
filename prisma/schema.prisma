@@ -123,6 +123,31 @@ model DailyUsage {
   @@index([date])
 }
 
+model DuelRoom {
+  code                 String    @id
+  status               String    @default("waiting")
+  hostId               String
+  hostName             String
+  guestId              String?
+  guestName            String?
+  questions            Json
+  currentRound         Int       @default(0)
+  hostScore             Int       @default(0)
+  guestScore            Int       @default(0)
+  hostAnsweredRound     Int       @default(-1)
+  guestAnsweredRound    Int       @default(-1)
+  roundWinnerId         String?
+  roundStartedAt        DateTime?
+  roundEndsAt           DateTime?
+  roundResolvedAt       DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  expiresAt             DateTime
+
+  @@index([status])
+  @@index([expiresAt])
+}
+
 model MovieEmbedding {
   tmdbId     Int                          @id
   title      String
