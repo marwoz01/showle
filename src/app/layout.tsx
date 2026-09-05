@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
-import { I18nProvider } from "@/i18n";
+import { cookies } from "next/headers";
+import AppProviders from "@/components/providers/AppProviders";
 import Sidebar from "@/components/layout/Sidebar";
+import type { Locale } from "@/i18n";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,98 +18,71 @@ const spaceGrotesk = Space_Grotesk({
 
 const siteUrl = "https://showle.vercel.app";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Showle - Daily Movie",
-    template: "%s | Showle",
-  },
-  description:
-    "Guess the daily movie by comparing year, genre, director, budget and more. A new challenge every day!",
-  metadataBase: new URL(siteUrl),
-  icons: {
-    icon: "/favicon.svg",
-  },
-  openGraph: {
-    title: "Showle - Daily Movie",
+const metadataCopy = {
+  pl: {
+    title: "Showle — Film dnia",
     description:
-      "Guess the daily movie by comparing year, genre, director, budget and more. A new challenge every day!",
-    url: siteUrl,
-    siteName: "Showle",
+      "Odgadnij film dnia, porównując rok, gatunek, reżysera, budżet i inne cechy. Codziennie nowe wyzwanie!",
     locale: "pl_PL",
-    type: "website",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Showle - Daily Movie",
+  en: {
+    title: "Showle — Daily Movie",
     description:
-      "Guess the daily movie by comparing year, genre, director, budget and more.",
+      "Guess the daily movie by comparing its year, genre, director, budget, and more. A new challenge every day!",
+    locale: "en_US",
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+} as const;
 
-export default function RootLayout({
+async function getRequestLocale(): Promise<Locale> {
+  return (await cookies()).get("showle-locale")?.value === "en" ? "en" : "pl";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const copy = metadataCopy[locale];
+
+  return {
+    title: { default: copy.title, template: "%s | Showle" },
+    description: copy.description,
+    metadataBase: new URL(siteUrl),
+    icons: { icon: "/favicon.svg" },
+    openGraph: {
+      title: copy.title,
+      description: copy.description,
+      url: siteUrl,
+      siteName: "Showle",
+      locale: copy.locale,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: copy.title,
+      description: copy.description,
+    },
+    robots: { index: true, follow: true },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getRequestLocale();
+
   return (
-    <ClerkProvider
-      appearance={{
-        baseTheme: dark,
-        variables: {
-          colorPrimary: "#7c4dff",
-          colorTextOnPrimaryBackground: "#ffffff",
-          colorBackground: "transparent",
-          colorInputBackground: "#28282e",
-          colorInputText: "#ffffff",
-          colorText: "#ffffff",
-          colorTextSecondary: "#b0b0c0",
-          colorDanger: "#ff5252",
-          colorSuccess: "#00e676",
-          borderRadius: "0.75rem",
-          fontFamily: "var(--font-inter), system-ui, sans-serif",
-        },
-        elements: {
-          rootBox: "w-full",
-          card: "!bg-transparent !shadow-none w-full",
-          headerTitle: "!text-white",
-          headerSubtitle: "!text-[#b0b0c0]",
-          socialButtonsBlockButton:
-            "!border-[#3a3a42] !bg-[#28282e] hover:!bg-[#32323a] !text-white",
-          formButtonPrimary:
-            "!bg-[#7c4dff] hover:!bg-[#6a3de8] !text-white !shadow-none",
-          footerActionLink: "!text-[#7c4dff] hover:!text-[#9b7aff]",
-          footerActionText: "!text-[#b0b0c0]",
-          formFieldInput:
-            "!bg-[#28282e] !border-[#3a3a42] !text-white focus:!border-[#7c4dff]",
-          formFieldLabel: "!text-[#b0b0c0]",
-          dividerLine: "!bg-[#3a3a42]",
-          dividerText: "!text-[#8a8a9a]",
-          identityPreviewEditButton: "!text-[#7c4dff]",
-          identityPreviewText: "!text-white",
-          formResendCodeLink: "!text-[#7c4dff]",
-          otpCodeFieldInput: "!border-[#3a3a42] !bg-[#28282e] !text-white",
-          alert: "!bg-[#28282e] !border-[#3a3a42]",
-          footer: "!bg-transparent [&_*]:!bg-transparent [&_*]:!shadow-none",
-        },
-      }}
-    >
-      <html lang="pl" suppressHydrationWarning>
-        <body
-          className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
-        >
-          <I18nProvider>
-            <Sidebar />
-            <main className="relative min-h-screen overflow-x-hidden p-4 pt-18 lg:ml-60 lg:p-10">
-              <div className="pointer-events-none absolute left-1/2 top-0 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
-              {children}
-            </main>
-          </I18nProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
+      >
+        <AppProviders initialLocale={locale}>
+          <Sidebar />
+          <main className="relative min-h-screen overflow-x-hidden p-4 pt-18 lg:ml-60 lg:p-10">
+            <div className="pointer-events-none absolute left-1/2 top-0 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
+            {children}
+          </main>
+        </AppProviders>
+      </body>
+    </html>
   );
 }

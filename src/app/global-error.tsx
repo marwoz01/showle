@@ -1,7 +1,17 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+import en from "@/i18n/en";
+import pl from "@/i18n/pl";
+
+function readLocale() {
+  return localStorage.getItem("showle-locale") === "en" ? "en" : "pl";
+}
+
+function subscribe() {
+  return () => {};
+}
 
 export default function GlobalError({
   error,
@@ -14,11 +24,16 @@ export default function GlobalError({
     Sentry.captureException(error);
   }, [error]);
 
+  const locale = useSyncExternalStore(subscribe, readLocale, () => "pl");
+  const t = locale === "en" ? en : pl;
+
   return (
-    <html lang="pl">
+    <html lang={locale} suppressHydrationWarning>
       <body style={{ background: "#101012", color: "#f0f0f5", fontFamily: "system-ui" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", gap: "1rem" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: 600 }}>Something went wrong</h2>
+          <h2 style={{ fontSize: "1.5rem", fontWeight: 600 }}>
+            {t.common.genericError}
+          </h2>
           <button
             onClick={reset}
             style={{
@@ -31,7 +46,7 @@ export default function GlobalError({
               fontSize: "0.875rem",
             }}
           >
-            Try again
+            {t.common.tryAgain}
           </button>
         </div>
       </body>

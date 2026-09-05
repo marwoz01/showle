@@ -7,6 +7,7 @@ import { MoreVertical, Eye, Bookmark, Trash2, MessageSquare } from "lucide-react
 import StarRating from "@/components/collection/StarRating";
 import ConfirmModal from "@/components/collection/ConfirmModal";
 import MovieDetailsModal from "@/components/movie/MovieDetailsModal";
+import { localizeGenre } from "@/lib/localization";
 
 interface SavedMovie {
   id: string;
@@ -169,17 +170,10 @@ export default function CollectionCard({
               key={genre}
               className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-muted"
             >
-              {genre}
+              {localizeGenre(genre, t)}
             </span>
           ))}
         </div>
-
-        {/* Overview */}
-        {movie.overview && (
-          <p className="mb-1.5 line-clamp-2 text-[10px] leading-snug text-muted/70">
-            {movie.overview}
-          </p>
-        )}
 
         {/* Review snippet */}
         {movie.review && (

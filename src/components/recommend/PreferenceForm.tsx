@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "@/i18n";
 import { MOVIE_GENRES } from "@/constants/genres";
+import { localizeGenre } from "@/lib/localization";
 import { Sparkles, Flame, Target, FlaskConical } from "lucide-react";
 
 interface PreferenceFormProps {
@@ -73,10 +74,10 @@ export default function PreferenceForm({
 
   const presetLabels: Record<string, string> = {
     any: t.recommend.yearAny,
-    "90s": "90s",
-    "2000s": "2000s",
-    "2010s": "2010s",
-    recent: "2020+",
+    "90s": t.recommend.yearPreset90s,
+    "2000s": t.recommend.yearPreset2000s,
+    "2010s": t.recommend.yearPreset2010s,
+    recent: t.recommend.yearPresetRecent,
   };
 
   function toggleGenre(genre: string) {
@@ -143,7 +144,7 @@ export default function PreferenceForm({
                     : "border-white/8 bg-white/3 text-muted hover:border-white/15 hover:bg-white/6 hover:text-foreground"
                 }`}
               >
-                {genre}
+                {localizeGenre(genre, t)}
               </button>
             );
           })}

@@ -215,7 +215,8 @@ export async function getMovieDetails(id: number, language = "en-US"): Promise<M
       character: c.character ?? "",
       profilePath: c.profile_path ?? "",
     }));
-    const country = movie.production_countries[0]?.name ?? "Unknown";
+    const productionCountry = movie.production_countries[0];
+    const country = productionCountry?.name ?? "Unknown";
 
     return {
       id: movie.id,
@@ -224,6 +225,7 @@ export async function getMovieDetails(id: number, language = "en-US"): Promise<M
       year: movie.release_date ? parseInt(movie.release_date.slice(0, 4)) : 0,
       genres: movie.genres.map((g) => g.name),
       country,
+      countryCode: productionCountry?.iso_3166_1,
       director,
       directorProfilePath: directorCredit?.profile_path ?? "",
       leadActor,

@@ -13,6 +13,7 @@ export interface MediaDetails {
   year: number;
   genres: string[];
   country: string;
+  countryCode?: string;
   director: string;
   directorProfilePath?: string;
   leadActor: string;

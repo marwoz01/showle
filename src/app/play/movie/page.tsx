@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { MAX_ATTEMPTS } from "@/constants";
@@ -62,8 +62,41 @@ export default function PlayMoviePage() {
 }
 
 function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { userId } = useAuth();
+  const [localizedAnswer, setLocalizedAnswer] = useState<MediaDetails | null>(null);
+
+  useEffect(() => {
+    if (locale !== "pl") return;
+
+    const ac = new AbortController();
+    fetch(`/api/movies/details?id=${dailyAnswer.id}&lang=pl`, {
+      signal: ac.signal,
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((movie) => {
+        if (movie) setLocalizedAnswer(movie as MediaDetails);
+      })
+      .catch(() => {});
+
+    return () => ac.abort();
+  }, [dailyAnswer.id, locale]);
+
+  const translatedAnswer =
+    locale === "pl" && localizedAnswer?.id === dailyAnswer.id
+      ? localizedAnswer
+      : null;
+  const hintAnswer = useMemo(
+    () =>
+      locale === "pl"
+        ? (translatedAnswer ?? {
+            ...dailyAnswer,
+            overview: "",
+            tagline: undefined,
+          })
+        : dailyAnswer,
+    [dailyAnswer, locale, translatedAnswer],
+  );
 
   const {
     guesses,
@@ -73,7 +106,13 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
     attemptCount,
     submitGuess,
     giveUp,
-  } = useGame(dailyAnswer, t, userId ?? undefined);
+  } = useGame(
+    dailyAnswer,
+    t,
+    locale,
+    userId ?? undefined,
+    hintAnswer,
+  );
 
   const isFinished = status === "won" || status === "lost";
 
@@ -126,6 +165,7 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
           status={status}
           guesses={guesses}
           hintsUsed={revealedHints.length}
+          localizedAnswer={translatedAnswer}
         />
       )}
 

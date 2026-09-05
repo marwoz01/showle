@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Showle — Daily movie guessing game";
+export const alt = "Showle — codzienna gra w zgadywanie filmów";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -91,15 +91,15 @@ export default function OgImage() {
             marginBottom: 48,
           }}
         >
-          Daily movie guessing game
+          Codzienna gra w zgadywanie filmów
         </div>
 
         {/* Match pills */}
         <div style={{ display: "flex", gap: 16 }}>
           {[
-            { label: "exact", color: "#00e676" },
-            { label: "close", color: "#ffc107" },
-            { label: "miss", color: "#ff5252" },
+            { label: "trafione", color: "#00e676" },
+            { label: "blisko", color: "#ffc107" },
+            { label: "pudło", color: "#ff5252" },
           ].map((pill) => (
             <div
               key={pill.label}

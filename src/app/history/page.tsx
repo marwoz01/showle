@@ -122,7 +122,7 @@ function HistoryContent() {
           </h1>
           {!loading && (
             <span className="text-sm text-muted">
-              ({total} {t.history.totalGames})
+              ({t.history.totalGames(total)})
             </span>
           )}
         </div>

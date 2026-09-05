@@ -1,6 +1,36 @@
 import { Translations } from "./types";
 
+function polishMovieCount(count: number): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+  if (count === 1) return "1 film";
+  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+    return `${count} filmy`;
+  }
+  return `${count} filmów`;
+}
+
+function polishGameCount(count: number): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+  if (count === 1) return "1 gra";
+  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+    return `${count} gry`;
+  }
+  return `${count} gier`;
+}
+
 const pl: Translations = {
+  meta: {
+    title: "Showle — Film dnia",
+    description:
+      "Odgadnij film dnia, porównując rok, gatunek, reżysera, budżet i inne cechy. Codziennie nowe wyzwanie!",
+  },
+  common: {
+    genericError: "Coś poszło nie tak. Spróbuj ponownie.",
+    tryAgain: "Spróbuj ponownie",
+    unknown: "Nieznane",
+  },
   // Nav
   nav: {
     home: "Strona główna",
@@ -59,21 +89,23 @@ const pl: Translations = {
 
   // How it works
   howItWorks: {
-    title: "Jak to działa",
+    eyebrow: "Jak gramy",
+    title: "Od pierwszego strzału do zwycięstwa",
     subtitle:
-      "Zgaduj film dnia lub odkryj coś nowego w kilku prostych krokach.",
+      "Cztery proste kroki, jedna filmowa zagadka i codziennie nowa szansa na lepszą serię.",
     step1Title: "Zgaduj film dnia",
     step1Desc:
-      "Codziennie nowy film do odgadnięcia. Wpisz tytuł, a porównamy go z odpowiedzią w 7 parametrach.",
+      "Codziennie czeka nowy film. Wpisz tytuł, a porównamy go z odpowiedzią w 9 kategoriach.",
     step2Title: "Czytaj wskazówki",
     step2Desc:
-      "Każda błędna próba odkrywa nową wskazówkę - inicjały reżysera, gatunek, kraj i więcej.",
+      "Każda błędna próba odkrywa nową wskazówkę — reżysera, gatunek, kraj i więcej.",
     step3Title: "Odkrywaj filmy",
     step3Desc:
       "Wybierz gatunki i preferencje, a dobierzemy 5 filmów idealnie dopasowanych na wieczór.",
     step4Title: "Udostępnij wynik",
     step4Desc:
-      "Udało się? Podziel się swoją siatką wyników ze znajomymi i porównaj serie.",
+      "Udało się? Podziel się siatką wyników ze znajomymi i porównajcie swoje serie zwycięstw.",
+    ready: "Gotowy na seans?",
   },
 
   // Game screen
@@ -116,7 +148,7 @@ const pl: Translations = {
     medium: "Średnia",
     high: "Wysoka",
     veryHigh: "Bardzo wysoka",
-    mega: "Mega",
+    mega: "Ogromna",
   },
 
   // Hints
@@ -128,7 +160,7 @@ const pl: Translations = {
     genresAre: (genres: string) => `Gatunki: ${genres}`,
     fromDecade: (decade: number) => `Film pochodzi z lat ${decade}.`,
     countryIs: (country: string) => `Kraj produkcji: ${country}`,
-    tagline: (tagline: string) => `Tagline: "${tagline}"`,
+    tagline: (tagline: string) => `Hasło: "${tagline}"`,
     overview: (text: string) => `Opis: ${text}...`,
     directorInitials: (initials: string) => `Inicjały reżysera: ${initials}`,
     titleStartsWith: (letter: string) => `Tytuł zaczyna się na: "${letter}"`,
@@ -153,7 +185,7 @@ const pl: Translations = {
     rent: "Wypożycz",
     seeAllProviders: "Pełna lista",
     shareText: (title: string, attempts: number, max: number) =>
-      `Showle - Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
+      `Showle — Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
   },
 
   movieModal: {
@@ -163,9 +195,13 @@ const pl: Translations = {
   },
 
   stats: {
+    gamesPlayed: "Rozegrane gry",
+    currentStreak: "Aktualna seria",
+    bestStreak: "Najlepsza seria",
+    averageGuesses: (average) => `Średnia liczba prób na grę: ${average}`,
     activityTitle: "Aktywność",
     activitySummary: (won, played) =>
-      `${won} odgadniętych z ${played} rozegranych w ostatnim roku`,
+      `Wygrane: ${won} z ${played} w ostatnim roku`,
     legendNone: "Brak gry",
     legendLost: "Pudło",
     legendWonFast: "1-2 próby",
@@ -178,10 +214,11 @@ const pl: Translations = {
 
   // Auth
   auth: {
+    tagline: "Codzienna gra w zgadywanie filmów i seriali",
     signIn: "Zaloguj się",
     signUp: "Zarejestruj się",
     signOut: "Wyloguj się",
-    email: "Email",
+    email: "Adres e-mail",
     password: "Hasło",
     confirmPassword: "Potwierdź hasło",
     name: "Nazwa użytkownika",
@@ -205,7 +242,7 @@ const pl: Translations = {
     selectGenre: "Wybierz gatunek lub opisz, czego szukasz",
     freeformLabel: "Opisz swój nastrój",
     freeformPlaceholder: "np. coś jak Incepcja ale lżejszego...",
-    freeformHint: "Opcjonalnie - opisz własnymi słowami, czego szukasz",
+    freeformHint: "Opcjonalnie — opisz własnymi słowami, czego szukasz",
     yearLabel: "Rok premiery",
     popularityLabel: "Jak popularne?",
     popularityPopular: "Hity",
@@ -215,7 +252,7 @@ const pl: Translations = {
     loading:
       "Nie zjadaj jeszcze całego popcornu... zaraz pojawią się dobrane filmy!",
     noResults:
-      "Hmm, nic nie pasuje. Spróbuj zmienić preferencje - może trafi się coś fajnego!",
+      "Hmm, nic nie pasuje. Spróbuj zmienić preferencje — może trafi się coś fajnego!",
     error: "Coś poszło nie tak. Spróbuj ponownie za chwilę.",
     tryAgain: "Pokaż inne filmy",
     changePreferences: "Zmień preferencje",
@@ -223,7 +260,7 @@ const pl: Translations = {
     director: "Reżyser",
     rating: "Ocena",
     getRecommendations: "Dobierz film",
-    topPick: "Top Pick",
+    topPick: "Najlepszy wybór",
     whyRecommend: "Dlaczego polecamy",
     ctaSubtext:
       "Dobierzemy 5 filmów idealnie dopasowanych do Twoich preferencji",
@@ -232,6 +269,10 @@ const pl: Translations = {
     popularityNicheDesc: "Mało znane perełki do odkrycia",
     yearPresets: "Szybki wybór",
     yearAny: "Dowolny",
+    yearPreset90s: "Lata 90.",
+    yearPreset2000s: "Lata 2000.",
+    yearPreset2010s: "Lata 2010.",
+    yearPresetRecent: "Od 2020",
     dailyLimitReached: "Wykorzystałeś dzienny limit rekomendacji. Wróć jutro po więcej!",
     dailyLimitAnon: "Zaloguj się, aby uzyskać więcej rekomendacji każdego dnia.",
     loginForMore: "Zaloguj się po więcej",
@@ -274,7 +315,7 @@ const pl: Translations = {
     emptyRankings: "Nie masz jeszcze żadnych rankingów. Stwórz swój pierwszy!",
     createList: "Nowy ranking",
     listName: "Nazwa rankingu",
-    listNamePlaceholder: "np. Top 10 Sci-Fi",
+    listNamePlaceholder: "np. 10 najlepszych filmów science fiction",
     listDescription: "Opis (opcjonalnie)",
     deleteList: "Usuń ranking",
     deleteListConfirm: "Czy na pewno chcesz usunąć ten ranking?",
@@ -291,8 +332,7 @@ const pl: Translations = {
     chooseCategory: "Wybierz kategorię",
     watched: "Obejrzane",
     watchlist: "Do obejrzenia",
-    movieCount: (count: number) =>
-      `${count} ${count === 1 ? "film" : count < 5 ? "filmy" : "filmów"}`,
+    movieCount: polishMovieCount,
     confirmAction: "Potwierdź",
     cancel: "Anuluj",
   },
@@ -300,7 +340,7 @@ const pl: Translations = {
   // History
   history: {
     title: "Historia gier",
-    totalGames: "gier",
+    totalGames: polishGameCount,
     filterAll: "Wszystkie",
     filterWon: "Wygrane",
     filterLost: "Przegrane",
@@ -326,7 +366,24 @@ const pl: Translations = {
   lang: {
     label: "Język",
     pl: "Polski",
-    en: "English",
+    en: "Angielski",
+  },
+  genres: {
+    Action: "Akcja",
+    Adventure: "Przygodowy",
+    Animation: "Animacja",
+    Comedy: "Komedia",
+    Crime: "Kryminał",
+    Documentary: "Dokumentalny",
+    Drama: "Dramat",
+    Fantasy: "Fantasy",
+    Horror: "Horror",
+    Mystery: "Tajemnica",
+    Romance: "Romans",
+    "Science Fiction": "Fantastyka naukowa",
+    Thriller: "Thriller",
+    War: "Wojenny",
+    Western: "Western",
   },
 };
 

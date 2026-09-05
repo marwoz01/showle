@@ -6,6 +6,7 @@ import { X, Loader2, Film, Trophy, XCircle } from "lucide-react";
 import { useTranslation } from "@/i18n";
 import { MediaDetails, GuessResult } from "@/types";
 import { compareMedia } from "@/lib/comparer";
+import { localizeGenre } from "@/lib/localization";
 import { MAX_ATTEMPTS } from "@/constants";
 import GuessCard from "@/components/game/GuessCard";
 
@@ -31,7 +32,7 @@ interface GameReviewModalProps {
 }
 
 export default function GameReviewModal({ gameId, onClose }: GameReviewModalProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [data, setData] = useState<GameReviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -41,7 +42,7 @@ export default function GameReviewModal({ gameId, onClose }: GameReviewModalProp
 
     async function fetchReview() {
       try {
-        const res = await fetch(`/api/game/history/${gameId}`);
+        const res = await fetch(`/api/game/history/${gameId}?lang=${locale}`);
         if (!res.ok) throw new Error("Failed to fetch");
         const json = await res.json();
         if (!cancelled) setData(json);
@@ -54,7 +55,7 @@ export default function GameReviewModal({ gameId, onClose }: GameReviewModalProp
 
     fetchReview();
     return () => { cancelled = true; };
-  }, [gameId]);
+  }, [gameId, locale]);
 
   // Close on Escape
   useEffect(() => {
@@ -81,7 +82,7 @@ export default function GameReviewModal({ gameId, onClose }: GameReviewModalProp
       if (movie) {
         guessResults.push({
           guess: movie,
-          comparison: compareMedia(movie, targetMovie, t),
+          comparison: compareMedia(movie, targetMovie, t, locale),
           isCorrect: movie.id === targetMovie.id,
           attemptNumber: i + 1,
         });
@@ -112,7 +113,7 @@ export default function GameReviewModal({ gameId, onClose }: GameReviewModalProp
 
         {error && (
           <div className="py-20 text-center text-sm text-muted">
-            Something went wrong. Please try again.
+            {t.common.genericError}
           </div>
         )}
 
@@ -175,7 +176,7 @@ export default function GameReviewModal({ gameId, onClose }: GameReviewModalProp
                       key={genre}
                       className="rounded-full bg-white/6 px-2.5 py-0.5 text-xs font-medium text-muted"
                     >
-                      {genre}
+                      {localizeGenre(genre, t)}
                     </span>
                   ))}
                 </div>

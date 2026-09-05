@@ -1,4 +1,15 @@
+import type { MovieGenre } from "@/constants/genres";
+
 export interface Translations {
+  meta: {
+    title: string;
+    description: string;
+  };
+  common: {
+    genericError: string;
+    tryAgain: string;
+    unknown: string;
+  };
   nav: {
     home: string;
     play: string;
@@ -43,6 +54,7 @@ export interface Translations {
     comingSoon: string;
   };
   howItWorks: {
+    eyebrow: string;
     title: string;
     subtitle: string;
     step1Title: string;
@@ -53,6 +65,7 @@ export interface Translations {
     step3Desc: string;
     step4Title: string;
     step4Desc: string;
+    ready: string;
   };
   game: {
     back: string;
@@ -127,6 +140,10 @@ export interface Translations {
     previous: string;
   };
   stats: {
+    gamesPlayed: string;
+    currentStreak: string;
+    bestStreak: string;
+    averageGuesses: (average: number) => string;
     activityTitle: string;
     activitySummary: (won: number, played: number) => string;
     legendNone: string;
@@ -138,6 +155,7 @@ export interface Translations {
     tooltipLost: string;
   };
   auth: {
+    tagline: string;
     signIn: string;
     signUp: string;
     signOut: string;
@@ -186,6 +204,10 @@ export interface Translations {
     popularityNicheDesc: string;
     yearPresets: string;
     yearAny: string;
+    yearPreset90s: string;
+    yearPreset2000s: string;
+    yearPreset2010s: string;
+    yearPresetRecent: string;
     dailyLimitReached: string;
     dailyLimitAnon: string;
     loginForMore: string;
@@ -246,7 +268,7 @@ export interface Translations {
   };
   history: {
     title: string;
-    totalGames: string;
+    totalGames: (count: number) => string;
     filterAll: string;
     filterWon: string;
     filterLost: string;
@@ -272,4 +294,5 @@ export interface Translations {
     pl: string;
     en: string;
   };
+  genres: Record<MovieGenre, string>;
 }

@@ -5,7 +5,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { getMovieDetails } from "@/lib/tmdb";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { userId } = await auth();
@@ -19,6 +19,9 @@ export async function GET(
   }
 
   const { id } = await params;
+  const language = request.nextUrl.searchParams.get("lang") === "pl"
+    ? "pl-PL"
+    : "en-US";
 
   const game = await prisma.gameResult.findUnique({ where: { id } });
 
@@ -28,8 +31,8 @@ export async function GET(
 
   // Fetch full movie details for the target and each guess
   const [targetMovie, ...guessMovies] = await Promise.all([
-    getMovieDetails(game.targetMovieId),
-    ...game.guessIds.map((tmdbId) => getMovieDetails(tmdbId)),
+    getMovieDetails(game.targetMovieId, language),
+    ...game.guessIds.map((tmdbId) => getMovieDetails(tmdbId, language)),
   ]);
 
   return NextResponse.json({

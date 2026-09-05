@@ -31,7 +31,6 @@ export default function StatsPage() {
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {
-      setLoading(false);
       return;
     }
 
@@ -42,7 +41,7 @@ export default function StatsPage() {
       .finally(() => setLoading(false));
   }, [isSignedIn, isLoaded]);
 
-  if (!isLoaded || loading) {
+  if (!isLoaded || (isSignedIn && loading)) {
     return (
       <div className="flex min-h-96 items-center justify-center">
         <Loader2 size={32} className="animate-spin text-muted" />
@@ -71,7 +70,7 @@ export default function StatsPage() {
 
   const statCards = [
     {
-      label: t.result.attempts,
+      label: t.stats.gamesPlayed,
       value: stats?.gamesPlayed ?? 0,
       icon: Target,
     },
@@ -81,12 +80,12 @@ export default function StatsPage() {
       icon: Trophy,
     },
     {
-      label: "Streak",
+      label: t.stats.currentStreak,
       value: stats?.currentStreak ?? 0,
       icon: Flame,
     },
     {
-      label: "Max streak",
+      label: t.stats.bestStreak,
       value: stats?.maxStreak ?? 0,
       icon: Flame,
     },
@@ -128,7 +127,7 @@ export default function StatsPage() {
             {t.result.attempts}
           </h2>
           <p className="text-sm text-muted">
-            Avg: {stats.averageGuesses} guesses per game
+            {t.stats.averageGuesses(stats.averageGuesses)}
           </p>
         </div>
       )}

@@ -6,6 +6,7 @@ import { compareMedia } from "@/lib/comparer";
 import { generateHints, getRevealedHints } from "@/lib/hints";
 import { MAX_ATTEMPTS } from "@/constants";
 import { Translations } from "@/i18n/types";
+import type { Locale } from "@/i18n";
 import { getTodayKey } from "@/lib/daily";
 
 interface SavedGameState {
@@ -88,13 +89,18 @@ interface UseGameReturn {
 export function useGame(
   answer: MediaDetails,
   t: Translations,
-  userId?: string
+  locale: Locale,
+  userId?: string,
+  hintAnswer: MediaDetails = answer,
 ): UseGameReturn {
   const [initialized, setInitialized] = useState(false);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [status, setStatus] = useState<GameStatus>("playing");
 
-  const allHints = useMemo(() => generateHints(answer, t), [answer, t]);
+  const allHints = useMemo(
+    () => generateHints(hintAnswer, t),
+    [hintAnswer, t],
+  );
   const attemptCount = guesses.length;
   const revealedHints = useMemo(
     () => getRevealedHints(allHints, attemptCount),
@@ -118,7 +124,7 @@ export function useGame(
           const restoredGuesses: GuessResult[] = [];
           for (const movie of movies) {
             if (movie) {
-              const comparison = compareMedia(movie, answer, t);
+              const comparison = compareMedia(movie, answer, t, locale);
               const isCorrect = movie.id === answer.id;
               restoredGuesses.push({
                 guess: movie,
@@ -155,7 +161,7 @@ export function useGame(
       if (status !== "playing") return;
       if (guesses.some((g) => g.guess.id === guess.id)) return;
 
-      const comparison = compareMedia(guess, answer, t);
+      const comparison = compareMedia(guess, answer, t, locale);
       const isCorrect = guess.id === answer.id;
       const newAttempt = attemptCount + 1;
 
@@ -195,7 +201,16 @@ export function useGame(
         window.dispatchEvent(new Event("game-completed"));
       }
     },
-    [status, guesses, answer, t, attemptCount, userId, allHints]
+    [status, guesses, answer, t, locale, attemptCount, userId, allHints]
+  );
+
+  const localizedGuesses = useMemo(
+    () =>
+      guesses.map((result) => ({
+        ...result,
+        comparison: compareMedia(result.guess, answer, t, locale),
+      })),
+    [guesses, answer, t, locale],
   );
 
   const giveUp = useCallback(() => {
@@ -214,10 +229,10 @@ export function useGame(
         window.dispatchEvent(new Event("game-completed"));
       }
     }
-  }, [status, userId, guesses, revealedHints]);
+  }, [status, userId, guesses, revealedHints, answer]);
 
   return {
-    guesses,
+    guesses: localizedGuesses,
     revealedHints,
     allHints,
     status,

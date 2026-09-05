@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslation } from "@/i18n";
 import { MediaDetails } from "@/types";
 import { X, Search, Loader2, Eye, Bookmark, Check } from "lucide-react";
+import { localizeGenres } from "@/lib/localization";
 
 interface AddMovieModalProps {
   onClose: () => void;
@@ -302,7 +303,10 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
                     <p className="text-xs text-muted">
                       {movie.year}
                       {movie.genres.length > 0 && (
-                        <> · {movie.genres.slice(0, 2).join(", ")}</>
+                        <>
+                          {" · "}
+                          {localizeGenres(movie.genres.slice(0, 2), t).join(", ")}
+                        </>
                       )}
                     </p>
                   </div>

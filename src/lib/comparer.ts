@@ -1,15 +1,22 @@
 import { MediaDetails, ComparisonField, MatchStatus, Direction } from "@/types";
+import type { Locale } from "@/i18n";
 import { Translations } from "@/i18n/types";
+import {
+  localizeCountry,
+  localizeGenres,
+  localizeUnknown,
+} from "@/lib/localization";
 
 export function compareMedia(
   guess: MediaDetails,
   answer: MediaDetails,
-  t: Translations
+  t: Translations,
+  locale: Locale = "en",
 ): ComparisonField[] {
   return [
     compareYear(guess.year, answer.year, t),
     compareGenres(guess.genres, answer.genres, t),
-    compareCountry(guess.country, answer.country, t),
+    compareCountry(guess, answer, t, locale),
     compareDirector(guess.director, answer.director, t),
     compareLeadActor(guess.leadActor, answer.leadActor, t),
     compareRuntime(guess.runtime, answer.runtime, t),
@@ -48,20 +55,37 @@ function compareGenres(guess: string[], answer: string[], t: Translations): Comp
 
   return {
     label: t.comparison.genre,
-    guessValue: guess.join(", "),
-    answerValue: answer.join(", "),
+    guessValue: localizeGenres(guess, t).join(", "),
+    answerValue: localizeGenres(answer, t).join(", "),
     status,
   };
 }
 
-function compareCountry(guess: string, answer: string, t: Translations): ComparisonField {
+function compareCountry(
+  guess: MediaDetails,
+  answer: MediaDetails,
+  t: Translations,
+  locale: Locale,
+): ComparisonField {
   const status: MatchStatus =
-    guess.toLowerCase() === answer.toLowerCase() ? "exact" : "miss";
+    guess.country.toLowerCase() === answer.country.toLowerCase()
+      ? "exact"
+      : "miss";
 
   return {
     label: t.comparison.country,
-    guessValue: guess,
-    answerValue: answer,
+    guessValue: localizeCountry(
+      guess.country,
+      guess.countryCode,
+      locale,
+      t.common.unknown,
+    ),
+    answerValue: localizeCountry(
+      answer.country,
+      answer.countryCode,
+      locale,
+      t.common.unknown,
+    ),
     status,
   };
 }
@@ -72,8 +96,8 @@ function compareDirector(guess: string, answer: string, t: Translations): Compar
 
   return {
     label: t.comparison.director,
-    guessValue: guess,
-    answerValue: answer,
+    guessValue: localizeUnknown(guess, t.common.unknown),
+    answerValue: localizeUnknown(answer, t.common.unknown),
     status,
   };
 }
@@ -84,8 +108,8 @@ function compareLeadActor(guess: string, answer: string, t: Translations): Compa
 
   return {
     label: t.comparison.leadActor,
-    guessValue: guess,
-    answerValue: answer,
+    guessValue: localizeUnknown(guess, t.common.unknown),
+    answerValue: localizeUnknown(answer, t.common.unknown),
     status,
   };
 }

@@ -4,6 +4,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Image from "next/image";
 import { GripVertical, Trash2 } from "lucide-react";
+import { useTranslation } from "@/i18n";
+import { localizeGenre } from "@/lib/localization";
 
 interface RankingItem {
   id: string;
@@ -26,6 +28,7 @@ export default function RankingItemRow({
   item,
   onDelete,
 }: RankingItemRowProps) {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -94,7 +97,7 @@ export default function RankingItemRow({
                 key={genre}
                 className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-muted"
               >
-                {genre}
+                {localizeGenre(genre, t)}
               </span>
             ))}
           </div>

@@ -1,12 +1,13 @@
 import { MediaDetails, Hint } from "@/types";
 import { Translations } from "@/i18n/types";
+import { localizeGenres } from "@/lib/localization";
 
 export function generateHints(answer: MediaDetails, t: Translations): Hint[] {
   return [
     {
       id: 1,
       type: "genre",
-      content: t.hints.genresAre(answer.genres.join(", ")),
+      content: t.hints.genresAre(localizeGenres(answer.genres, t).join(", ")),
       revealedAt: 2,
     },
     {
@@ -20,7 +21,9 @@ export function generateHints(answer: MediaDetails, t: Translations): Hint[] {
       type: "trivia",
       content: answer.tagline
         ? t.hints.tagline(answer.tagline)
-        : t.hints.overview(answer.overview.slice(0, 120)),
+        : answer.overview
+          ? t.hints.overview(answer.overview.slice(0, 120))
+          : t.hints.titleLength(answer.title.length),
       revealedAt: 6,
     },
   ];

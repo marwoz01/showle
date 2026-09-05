@@ -7,6 +7,7 @@ import { useTranslation } from "@/i18n";
 import { Star, Zap } from "lucide-react";
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieDetailsModal from "@/components/movie/MovieDetailsModal";
+import { localizeGenre } from "@/lib/localization";
 
 interface RecommendationCardProps {
   movie: MediaDetails;
@@ -96,13 +97,6 @@ export default function RecommendationCard({
               {movie.title}
             </h3>
 
-            {/* Overview */}
-            {movie.overview && (
-              <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-muted">
-                {movie.overview}
-              </p>
-            )}
-
             {/* Rating + genres */}
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1 rounded bg-yellow-500/15 px-2 py-0.5 text-xs font-semibold text-yellow-400">
@@ -114,7 +108,7 @@ export default function RecommendationCard({
                   key={genre}
                   className="rounded bg-white/5 px-2 py-0.5 text-xs text-muted"
                 >
-                  {genre}
+                  {localizeGenre(genre, t)}
                 </span>
               ))}
             </div>
@@ -208,7 +202,7 @@ export default function RecommendationCard({
                 key={genre}
                 className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-muted"
               >
-                {genre}
+                {localizeGenre(genre, t)}
               </span>
             ))}
           </div>

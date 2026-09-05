@@ -9,6 +9,7 @@ import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieGallery from "@/components/movie/MovieGallery";
 import CastList from "@/components/movie/CastList";
 import WatchProviders from "@/components/movie/WatchProviders";
+import { localizeCountry, localizeGenre } from "@/lib/localization";
 
 interface MovieDetailsModalProps {
   tmdbId: number;
@@ -44,7 +45,7 @@ export default function MovieDetailsModal({
       .catch(() => {});
 
     return () => ac.abort();
-  }, [tmdbId]);
+  }, [tmdbId, locale]);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -79,8 +80,8 @@ export default function MovieDetailsModal({
     rating: initial.rating ?? 0,
     posterPath: initial.posterPath ?? "",
     backdropPath: initial.backdropPath,
-    overview: initial.overview ?? "",
-    tagline: initial.tagline,
+    overview: locale === "en" ? (initial.overview ?? "") : "",
+    tagline: locale === "en" ? initial.tagline : undefined,
   } : null);
 
   return (
@@ -190,7 +191,7 @@ export default function MovieDetailsModal({
                         key={genre}
                         className="rounded-full bg-white/6 px-2.5 py-0.5 text-xs font-medium text-muted"
                       >
-                        {genre}
+                        {localizeGenre(genre, t)}
                       </span>
                     ))}
                   </div>
@@ -206,7 +207,14 @@ export default function MovieDetailsModal({
                   {movie.country && movie.country !== "Unknown" && (
                     <>
                       <dt className="text-muted">{t.comparison.country}</dt>
-                      <dd className="text-foreground">{movie.country}</dd>
+                      <dd className="text-foreground">
+                        {localizeCountry(
+                          movie.country,
+                          movie.countryCode,
+                          locale,
+                          t.common.unknown,
+                        )}
+                      </dd>
                     </>
                   )}
                 </dl>

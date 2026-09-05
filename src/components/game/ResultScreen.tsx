@@ -20,9 +20,11 @@ import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieGallery from "@/components/movie/MovieGallery";
 import CastList from "@/components/movie/CastList";
 import WatchProviders from "@/components/movie/WatchProviders";
+import { localizeCountry, localizeGenre } from "@/lib/localization";
 
 interface ResultScreenProps {
   answer: MediaDetails;
+  localizedAnswer?: MediaDetails | null;
   status: GameStatus;
   guesses: GuessResult[];
   hintsUsed: number;
@@ -30,6 +32,7 @@ interface ResultScreenProps {
 
 export default function ResultScreen({
   answer,
+  localizedAnswer,
   status,
   guesses,
   hintsUsed,
@@ -39,8 +42,6 @@ export default function ResultScreen({
 
   const won = status === "won";
   const [gallery, setGallery] = useState<string[]>([]);
-  const [plOverview, setPlOverview] = useState<string | null>(null);
-  const [plTagline, setPlTagline] = useState<string | null>(null);
 
   // Fetch a handful of cinematic stills once the result is shown.
   useEffect(() => {
@@ -55,19 +56,6 @@ export default function ResultScreen({
       });
     return () => ac.abort();
   }, [answer.id]);
-
-  useEffect(() => {
-    if (locale !== "pl") return;
-    const ac = new AbortController();
-    fetch(`/api/movies/details?id=${answer.id}&lang=pl`, { signal: ac.signal })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.overview) setPlOverview(data.overview);
-        if (data?.tagline) setPlTagline(data.tagline);
-      })
-      .catch(() => {});
-    return () => ac.abort();
-  }, [answer.id, locale]);
 
   useEffect(() => {
     if (
@@ -111,9 +99,18 @@ export default function ResultScreen({
   );
   const totalFields = guesses.reduce((sum, g) => sum + g.comparison.length, 0);
   const accuracy = totalFields > 0 ? Math.round((exactCount / totalFields) * 100) : 0;
+  const displayAnswer = locale === "pl" && localizedAnswer
+    ? localizedAnswer
+    : answer;
+  const localizedTagline = locale === "pl"
+    ? localizedAnswer?.tagline
+    : answer.tagline;
+  const localizedOverview = locale === "pl"
+    ? localizedAnswer?.overview
+    : answer.overview;
 
   async function handleShare() {
-    const text = t.result.shareText(answer.title, attempts, MAX_ATTEMPTS);
+    const text = t.result.shareText(displayAnswer.title, attempts, MAX_ATTEMPTS);
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -133,9 +130,9 @@ export default function ResultScreen({
     <div className="animate-result-reveal overflow-hidden rounded-2xl border border-white/6 bg-card">
       {/* Cinematic hero with backdrop */}
       <div className="relative h-72 overflow-hidden sm:h-96">
-        {answer.backdropPath ? (
+        {displayAnswer.backdropPath ? (
           <Image
-            src={`https://image.tmdb.org/t/p/w1280${answer.backdropPath}`}
+            src={`https://image.tmdb.org/t/p/w1280${displayAnswer.backdropPath}`}
             alt=""
             fill
             priority
@@ -170,30 +167,30 @@ export default function ResultScreen({
         <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-3xl font-bold text-foreground drop-shadow-2xl sm:text-4xl">
-              {answer.title}
+              {displayAnswer.title}
             </h2>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground/80">
-              <span className="font-medium">{answer.year}</span>
-              {answer.runtime > 0 && (
+              <span className="font-medium">{displayAnswer.year}</span>
+              {displayAnswer.runtime > 0 && (
                 <>
                   <span className="text-foreground/40">·</span>
-                  <span>{answer.runtime} min</span>
+                  <span>{displayAnswer.runtime} min</span>
                 </>
               )}
-              {answer.director && answer.director !== "Unknown" && (
+              {displayAnswer.director && displayAnswer.director !== "Unknown" && (
                 <>
                   <span className="text-foreground/40">·</span>
-                  <span>{answer.director}</span>
+                  <span>{displayAnswer.director}</span>
                 </>
               )}
             </div>
           </div>
 
-          {answer.rating > 0 && (
+          {displayAnswer.rating > 0 && (
             <div className="flex shrink-0 items-center gap-1.5 rounded-lg bg-yellow-500/20 px-3 py-1.5 backdrop-blur-md">
               <Star size={14} className="fill-yellow-400 text-yellow-400" />
               <span className="text-sm font-bold text-yellow-100">
-                {answer.rating.toFixed(1)}
+                {displayAnswer.rating.toFixed(1)}
               </span>
             </div>
           )}
@@ -205,10 +202,10 @@ export default function ResultScreen({
         {/* Left — poster + actions */}
         <div className="flex flex-row gap-4 lg:flex-col">
           <div className="aspect-2/3 w-32 shrink-0 overflow-hidden rounded-xl bg-white/5 shadow-lg shadow-black/40 lg:w-full">
-            {answer.posterPath ? (
+            {displayAnswer.posterPath ? (
               <Image
-                src={`https://image.tmdb.org/t/p/w342${answer.posterPath}`}
-                alt={answer.title}
+                src={`https://image.tmdb.org/t/p/w342${displayAnswer.posterPath}`}
+                alt={displayAnswer.title}
                 width={342}
                 height={513}
                 className="h-full w-full object-cover"
@@ -238,53 +235,60 @@ export default function ResultScreen({
 
         {/* Middle — details */}
         <div className="flex min-w-0 flex-col gap-4">
-          {(plTagline ?? answer.tagline) && (
+          {localizedTagline && (
             <p className="text-base italic text-muted/80">
-              &ldquo;{plTagline ?? answer.tagline}&rdquo;
+              &ldquo;{localizedTagline}&rdquo;
             </p>
           )}
 
-          {answer.genres.length > 0 && (
+          {displayAnswer.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {answer.genres.map((genre) => (
+              {displayAnswer.genres.map((genre) => (
                 <span
                   key={genre}
                   className="rounded-full bg-white/6 px-2.5 py-0.5 text-xs font-medium text-muted"
                 >
-                  {genre}
+                  {localizeGenre(genre, t)}
                 </span>
               ))}
             </div>
           )}
 
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-            {answer.director && answer.director !== "Unknown" && (
+            {displayAnswer.director && displayAnswer.director !== "Unknown" && (
               <>
                 <dt className="text-muted">{t.comparison.director}</dt>
-                <dd className="text-foreground">{answer.director}</dd>
+                <dd className="text-foreground">{displayAnswer.director}</dd>
               </>
             )}
-            {answer.country && answer.country !== "Unknown" && (
+            {displayAnswer.country && displayAnswer.country !== "Unknown" && (
               <>
                 <dt className="text-muted">{t.comparison.country}</dt>
-                <dd className="text-foreground">{answer.country}</dd>
+                <dd className="text-foreground">
+                  {localizeCountry(
+                    displayAnswer.country,
+                    displayAnswer.countryCode,
+                    locale,
+                    t.common.unknown,
+                  )}
+                </dd>
               </>
             )}
           </dl>
 
-          {answer.cast && answer.cast.length > 0 && (
+          {displayAnswer.cast && displayAnswer.cast.length > 0 && (
             <div className="border-t border-white/6 pt-4">
-              <CastList cast={answer.cast} label={t.result.cast} />
+              <CastList cast={displayAnswer.cast} label={t.result.cast} />
             </div>
           )}
 
-          {(plOverview ?? answer.overview) && (
+          {localizedOverview && (
             <div className="border-t border-white/6 pt-4">
               <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">
                 {t.result.storyline}
               </h4>
               <p className="text-sm leading-relaxed text-muted">
-                {plOverview ?? answer.overview}
+                {localizedOverview}
               </p>
             </div>
           )}

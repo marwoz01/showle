@@ -1,6 +1,16 @@
 import { Translations } from "./types";
 
 const en: Translations = {
+  meta: {
+    title: "Showle — Daily Movie",
+    description:
+      "Guess the daily movie by comparing its year, genre, director, budget, and more. A new challenge every day!",
+  },
+  common: {
+    genericError: "Something went wrong. Please try again.",
+    tryAgain: "Try again",
+    unknown: "Unknown",
+  },
   // Nav
   nav: {
     home: "Home",
@@ -33,7 +43,7 @@ const en: Translations = {
   home: {
     title: "Play",
     subtitle:
-      "Guess the daily movie or discover your perfect pick for tonight - all in one place.",
+      "Guess the daily movie or discover your perfect pick for tonight — all in one place.",
     filter: "Filter",
     viewGrid: "View: Grid",
   },
@@ -58,21 +68,23 @@ const en: Translations = {
 
   // How it works
   howItWorks: {
-    title: "How It Works",
+    eyebrow: "How to play",
+    title: "From your first guess to the win",
     subtitle:
-      "Guess the daily movie or discover something new - in a few simple steps.",
+      "Four simple steps, one movie mystery, and a fresh chance to build your streak every day.",
     step1Title: "Guess the daily movie",
     step1Desc:
-      "A new movie to guess every day. Type a title and we'll compare it against the answer across 7 parameters.",
-    step2Title: "Read the Clues",
+      "A new movie awaits every day. Enter a title and we'll compare it with the answer across 9 categories.",
+    step2Title: "Read the clues",
     step2Desc:
-      "Each wrong guess reveals a new hint - director initials, genre, country, and more.",
+      "Each wrong guess reveals a new hint — director initials, genre, country, and more.",
     step3Title: "Discover movies",
     step3Desc:
       "Pick your genres and preferences, and we'll find 5 movies perfectly matched for your evening.",
-    step4Title: "Share Your Score",
+    step4Title: "Share your score",
     step4Desc:
       "Nailed it? Share your result grid with friends and compare streaks.",
+    ready: "Ready for movie night?",
   },
 
   // Game screen
@@ -152,7 +164,7 @@ const en: Translations = {
     rent: "Rent",
     seeAllProviders: "Full list",
     shareText: (title: string, attempts: number, max: number) =>
-      `Showle - Daily Movie\n\nI guessed "${title}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
+      `Showle — Daily Movie\n\nI guessed "${title}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
   },
 
   movieModal: {
@@ -162,6 +174,11 @@ const en: Translations = {
   },
 
   stats: {
+    gamesPlayed: "Games played",
+    currentStreak: "Current streak",
+    bestStreak: "Best streak",
+    averageGuesses: (average) =>
+      `Average: ${average} ${average === 1 ? "guess" : "guesses"} per game`,
     activityTitle: "Activity",
     activitySummary: (won, played) =>
       `${won} guessed out of ${played} played in the last year`,
@@ -177,6 +194,7 @@ const en: Translations = {
 
   // Auth
   auth: {
+    tagline: "Daily movie and series guessing game",
     signIn: "Sign In",
     signUp: "Sign Up",
     signOut: "Sign Out",
@@ -197,7 +215,7 @@ const en: Translations = {
   recommend: {
     title: "What to Watch Tonight?",
     subtitle:
-      "Popcorn ready, blanket on - tell us what you're in the mood for and we'll handle the rest.",
+      "Popcorn ready, blanket on — tell us what you're in the mood for and we'll handle the rest.",
     modeTitle: "What to Watch?",
     modeDesc:
       "Got the snacks but no movie? Tell us what you like and we'll pick something perfect for tonight.",
@@ -206,7 +224,7 @@ const en: Translations = {
     freeformLabel: "Describe your mood",
     freeformPlaceholder: "e.g. something like Inception but lighter...",
     freeformHint:
-      "Optional - describe what you're looking for in your own words",
+      "Optional — describe what you're looking for in your own words",
     yearLabel: "Release year",
     popularityLabel: "How well-known?",
     popularityPopular: "Big hits",
@@ -215,10 +233,10 @@ const en: Translations = {
     submit: "Find my movies",
     loading: "Don't eat all the popcorn yet... your picks are almost ready!",
     noResults:
-      "Hmm, nothing fits. Try tweaking your preferences - something great might pop up!",
+      "Hmm, nothing fits. Try tweaking your preferences — something great might pop up!",
     error: "Something went wrong. Give it another try in a moment.",
     tryAgain: "Show me different movies",
-    changePreferences: "Change Preferences",
+    changePreferences: "Change preferences",
     justification: "Why this movie?",
     director: "Director",
     rating: "Rating",
@@ -231,6 +249,10 @@ const en: Translations = {
     popularityNicheDesc: "Hidden gems to discover",
     yearPresets: "Quick pick",
     yearAny: "Any",
+    yearPreset90s: "1990s",
+    yearPreset2000s: "2000s",
+    yearPreset2010s: "2010s",
+    yearPresetRecent: "2020 onwards",
     dailyLimitReached: "You've used your daily recommendation limit. Come back tomorrow!",
     dailyLimitAnon: "Sign in to get more recommendations every day.",
     loginForMore: "Sign in for more",
@@ -298,7 +320,7 @@ const en: Translations = {
   // History
   history: {
     title: "Game History",
-    totalGames: "games",
+    totalGames: (count) => `${count} ${count === 1 ? "game" : "games"}`,
     filterAll: "All",
     filterWon: "Won",
     filterLost: "Lost",
@@ -323,8 +345,25 @@ const en: Translations = {
   // Language
   lang: {
     label: "Language",
-    pl: "Polski",
+    pl: "Polish",
     en: "English",
+  },
+  genres: {
+    Action: "Action",
+    Adventure: "Adventure",
+    Animation: "Animation",
+    Comedy: "Comedy",
+    Crime: "Crime",
+    Documentary: "Documentary",
+    Drama: "Drama",
+    Fantasy: "Fantasy",
+    Horror: "Horror",
+    Mystery: "Mystery",
+    Romance: "Romance",
+    "Science Fiction": "Science Fiction",
+    Thriller: "Thriller",
+    War: "War",
+    Western: "Western",
   },
 };
 

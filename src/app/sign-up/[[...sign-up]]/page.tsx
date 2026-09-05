@@ -1,7 +1,12 @@
+"use client";
+
 import { SignUp } from "@clerk/nextjs";
 import { Clapperboard } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 export default function SignUpPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-[85vh] items-center justify-center">
       <div className="flex w-full max-w-4xl overflow-hidden rounded-2xl border border-[#2a2a32] bg-[#1e1e22] shadow-2xl">
@@ -20,7 +25,7 @@ export default function SignUpPage() {
               Showle
             </h2>
             <p className="text-sm text-white/60">
-              Daily movie & series guessing game
+              {t.auth.tagline}
             </p>
           </div>
         </div>

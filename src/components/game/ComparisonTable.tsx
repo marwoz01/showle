@@ -7,7 +7,7 @@ interface ComparisonTableProps {
 
 export default function ComparisonTable({ comparison }: ComparisonTableProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 2xl:grid-cols-5">
       {comparison.map((field, index) => (
         <ComparisonCell
           key={field.label}
