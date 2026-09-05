@@ -39,22 +39,22 @@ export default function ComparisonCell({
       <div className="comparison-tile-inner grid h-full">
         <div
           aria-hidden="true"
-          className="comparison-tile-face col-start-1 row-start-1 flex h-full w-full flex-col items-start justify-center gap-1 overflow-hidden rounded-2xl bg-white/[.035] px-4 py-3 text-left text-muted/40 shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_9px_22px_rgba(0,0,0,.16)]"
+          className="comparison-tile-face col-start-1 row-start-1 flex h-full w-full flex-col items-start justify-center overflow-hidden rounded-2xl bg-white/[.035] px-4 py-3 text-left text-muted/40"
         >
-          <span className="text-[10px] font-medium uppercase tracking-wider">
+          <span className="flex min-h-7 items-end text-[10px] font-medium uppercase leading-3.5 tracking-wider">
             {label}
           </span>
-          <span className="text-sm font-bold">?</span>
+          <span className="mt-1 min-h-8 text-sm font-bold">?</span>
         </div>
 
         <div
-          className={`comparison-tile-face comparison-tile-back relative col-start-1 row-start-1 flex h-full w-full flex-col items-start justify-center gap-1 overflow-hidden rounded-2xl px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_9px_22px_rgba(0,0,0,.2)] ${statusColors[status]}`}
+          className={`comparison-tile-face comparison-tile-back relative col-start-1 row-start-1 flex h-full w-full flex-col items-start justify-center overflow-hidden rounded-2xl px-4 py-3 text-left ${statusColors[status]}`}
         >
-          <span className="text-[10px] font-medium uppercase tracking-wider opacity-60">
+          <span className="flex min-h-7 items-end text-[10px] font-medium uppercase leading-3.5 tracking-wider opacity-60">
             {label}
           </span>
           <span
-            className="line-clamp-4 min-w-0 w-full max-w-full text-left text-xs font-bold leading-tight [overflow-wrap:anywhere]"
+            className="mt-1 line-clamp-3 min-h-8 min-w-0 w-full max-w-full text-left text-xs font-bold leading-tight [overflow-wrap:anywhere]"
             title={value}
           >
             {value}

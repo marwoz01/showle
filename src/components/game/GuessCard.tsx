@@ -18,8 +18,8 @@ export default function GuessCard({ result }: GuessCardProps) {
 
   return (
     <div className="soft-panel animate-guess-card-in rounded-[2rem] p-2 sm:p-2.5">
-      <div className="grid gap-2 2xl:grid-cols-[minmax(260px,.7fr)_minmax(0,2fr)]">
-        <section className="soft-card rounded-[1.55rem] p-4 sm:p-5">
+      <div className="grid items-stretch gap-2 2xl:grid-cols-[300px_minmax(0,1fr)]">
+        <section className="soft-card flex h-full flex-col rounded-[1.55rem] p-4 sm:p-5">
           <div className="flex items-start gap-3 sm:gap-4">
             <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl bg-white/4 shadow-[0_12px_28px_rgba(0,0,0,.42)]">
               {result.guess.posterPath ? (
@@ -37,43 +37,45 @@ export default function GuessCard({ result }: GuessCardProps) {
               )}
             </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2b2b30] text-xs font-bold text-muted shadow-[inset_0_1px_0_rgba(255,255,255,.07)]">
+            <div className="flex min-h-24 min-w-0 flex-1 items-start gap-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2b2b30] text-xs font-bold text-muted shadow-[inset_0_1px_0_rgba(255,255,255,.07)]">
                   #{result.attemptNumber}
-                </span>
-                <span className="font-display font-semibold text-foreground">
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="line-clamp-3 min-h-15 font-display text-base font-semibold leading-5 text-foreground">
                   {result.guess.title}
-                </span>
-                <span className="text-sm text-muted">({result.guess.year})</span>
-                {result.isCorrect && (
-                  <span className="ml-auto rounded-full bg-match-exact/12 px-2.5 py-1 text-xs font-semibold text-match-exact shadow-[inset_0_1px_0_rgba(255,255,255,.06),0_6px_18px_rgba(0,230,118,.08)]">
-                    {t.game.correct}
-                  </span>
-                )}
-              </div>
-
-              {(hasDirector || cast.length > 0) && (
-                <div className="mt-4 grid gap-2 sm:grid-cols-3 2xl:grid-cols-1">
-                  {hasDirector && (
-                    <PersonChip
-                      label={t.comparison.director}
-                      name={result.guess.director}
-                      profilePath={result.guess.directorProfilePath}
-                    />
+                </h3>
+                <div className="mt-1 flex min-h-6 items-center justify-between gap-2">
+                  <p className="text-sm text-muted">({result.guess.year})</p>
+                  {result.isCorrect && (
+                    <span className="truncate rounded-full bg-match-exact/12 px-2 py-1 text-[10px] font-semibold text-match-exact shadow-[inset_0_1px_0_rgba(255,255,255,.06)]">
+                      {t.game.correct}
+                    </span>
                   )}
-                  {cast.map((member) => (
-                    <PersonChip
-                      key={member.name}
-                      label={t.result.cast}
-                      name={member.name}
-                      profilePath={member.profilePath}
-                    />
-                  ))}
                 </div>
-              )}
+              </div>
             </div>
           </div>
+
+          {(hasDirector || cast.length > 0) && (
+            <div className="mt-4 grid gap-2 sm:grid-cols-3 2xl:grid-cols-1">
+              {hasDirector && (
+                <PersonChip
+                  label={t.comparison.director}
+                  name={result.guess.director}
+                  profilePath={result.guess.directorProfilePath}
+                />
+              )}
+              {cast.map((member) => (
+                <PersonChip
+                  key={member.name}
+                  label={t.result.cast}
+                  name={member.name}
+                  profilePath={member.profilePath}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="soft-card relative overflow-hidden rounded-[1.55rem] p-4 sm:p-5">
@@ -105,7 +107,7 @@ function PersonChip({
   profilePath?: string;
 }) {
   return (
-    <div className="flex min-w-0 w-full items-center gap-2 rounded-full bg-[#2a2a2f] py-1 pl-1 pr-3 shadow-[inset_0_1px_0_rgba(255,255,255,.065),0_7px_16px_rgba(0,0,0,.18)]">
+    <div className="flex h-10 min-w-0 w-full items-center gap-2 rounded-full bg-[#2a2a2f] pl-1 pr-3 shadow-[inset_0_1px_0_rgba(255,255,255,.065),0_5px_12px_rgba(0,0,0,.12)]">
       <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-white/6 shadow-inner">
         {profilePath ? (
           <Image
