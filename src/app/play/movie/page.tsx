@@ -166,7 +166,6 @@ function GameView({ dailyAnswer }: { dailyAnswer: MediaDetails }) {
           guesses={guesses}
           hintsUsed={revealedHints.length}
           localizedAnswer={translatedAnswer}
-          signedIn={Boolean(userId)}
         />
       )}
 

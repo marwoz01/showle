@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { getTodayKey, shiftDateKey } from "@/lib/daily";
 
+function getTodayKey(): string {
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}${m}${d}`;
+}
+
+function getYesterdayKey(): string {
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
+  now.setDate(now.getDate() - 1);
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}${m}${d}`;
+}
 
 export async function GET() {
   const { userId } = await auth();
@@ -18,7 +33,7 @@ export async function GET() {
   }
 
   const today = getTodayKey();
-  const yesterday = shiftDateKey(today, -1);
+  const yesterday = getYesterdayKey();
 
   // Played today or yesterday → streak is fine
   if (stats.lastPlayedDate === today || stats.lastPlayedDate === yesterday) {
@@ -29,7 +44,7 @@ export async function GET() {
   const todayGame = await prisma.gameResult.findUnique({
     where: { userId_dateKey_mode: { userId, dateKey: today, mode: "daily-movie" } },
   });
-  if (todayGame && ["won", "lost"].includes(todayGame.status)) {
+  if (todayGame) {
     return NextResponse.json({ status: "ok" });
   }
 
