@@ -424,7 +424,13 @@ export default function ResultScreen({
 
         {/* Shared lower row — uses the space beneath both details and trailer */}
         <div className="min-w-0 border-t border-white/6 pt-5 lg:col-start-2 lg:row-start-3 xl:col-span-2 xl:row-start-2">
-          <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(260px,0.75fr)] xl:gap-10">
+          <div
+            className={`grid min-w-0 gap-6 xl:gap-8 ${
+              won
+                ? "xl:grid-cols-[minmax(0,1fr)_360px]"
+                : "xl:grid-cols-[minmax(0,1fr)_180px]"
+            }`}
+          >
             {localizedOverview && (
               <section className="min-w-0">
                 <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">
