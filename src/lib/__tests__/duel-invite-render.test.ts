@@ -63,6 +63,9 @@ describe("invitation entry screens", () => {
     expect(html).toContain(pl.duel.copyInviteLink);
     expect(html).toContain('id="duel-invite-link"');
     expect(html).toContain('readOnly=""');
+    expect(html).toContain('type="text"');
+    expect(html).toContain('inputMode="url"');
+    expect(html).toContain('text-base');
     expect(html).toContain('role="status"');
     expect(html).toContain("ABCDEF");
   });

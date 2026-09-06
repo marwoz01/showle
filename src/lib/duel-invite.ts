@@ -32,25 +32,44 @@ interface InviteNavigator {
   share?: (data: ShareData) => Promise<void>;
 }
 
-export async function copyDuelInvite(url: string, browser: InviteNavigator): Promise<"copied" | "manual"> {
+export const INVITE_COPY_TIMEOUT_MS = 2000;
+type CopyFallback = () => boolean;
+
+export async function copyDuelInvite(
+  url: string, browser: InviteNavigator, fallback?: CopyFallback, preferFallback = false,
+): Promise<"copied" | "manual"> {
+  let fallbackAttempted = false;
+  const tryFallback = () => {
+    if (fallbackAttempted) return false;
+    fallbackAttempted = true;
+    try { return fallback?.() === true; } catch { return false; }
+  };
+  // Touch browsers can lose the copy gesture after an asynchronous rejection.
+  if (preferFallback && tryFallback()) return "copied";
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    if (!browser.clipboard) return "manual";
-    await browser.clipboard.writeText(url);
-    return "copied";
-  } catch {
-    return "manual";
-  }
+    if (browser.clipboard) {
+      // Start the write inside the tap handler, before any asynchronous work.
+      const write = browser.clipboard.writeText(url);
+      await Promise.race([write, new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("clipboard_timeout")), INVITE_COPY_TIMEOUT_MS);
+      })]);
+      return "copied";
+    }
+  } catch { /* WebViews and non-HTTPS mobile previews may block the modern API. */ }
+  finally { clearTimeout(timer); }
+  return tryFallback() ? "copied" : "manual";
 }
 
 export async function shareDuelInvite(
-  url: string, title: string, browser: InviteNavigator,
+  url: string, title: string, browser: InviteNavigator, fallback?: CopyFallback,
 ): Promise<"shared" | "cancelled" | "copied" | "manual"> {
   try {
-    if (!browser.share) return copyDuelInvite(url, browser);
+    if (!browser.share) return copyDuelInvite(url, browser, fallback);
     await browser.share({ title, url });
     return "shared";
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") return "cancelled";
-    return copyDuelInvite(url, browser);
+    return copyDuelInvite(url, browser, fallback);
   }
 }

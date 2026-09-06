@@ -100,7 +100,7 @@ const en: Translations = {
     shareInvitation: "Send invitation",
     inviteLinkCopied: "Link copied. Send it to your friend.",
     inviteShared: "Invitation shared.",
-    copyInviteManually: "The link could not be copied automatically. Copy the selected address and send it to your friend.",
+    copyInviteManually: "Automatic copying failed. Try again, or press and hold the selected address and choose “Copy”.",
     invalidInvitation: "This invitation link is invalid. Ask for a new link or enter the room code below.",
     otherRoom: "Back to room selection",
     inviteCode: "Invite code",

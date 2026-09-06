@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Clipboard } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { buildDuelInviteUrl, copyDuelInvite, shareDuelInvite } from "@/lib/duel-invite";
+import { copySelectedDuelInvite, selectDuelInvite } from "@/lib/duel-invite-selection";
 
 export default function DuelRoomInvite({ code }: { code: string }) {
   const { t } = useTranslation();
@@ -31,13 +32,14 @@ export default function DuelRoomInvite({ code }: { code: string }) {
     busy.current = true;
     setPending(true);
     try {
+      const fallback = () => copySelectedDuelInvite(input.current);
+      const preferSelection = navigator.maxTouchPoints > 0 || status === "manual";
       const result = method === "copy"
-        ? await copyDuelInvite(url, navigator)
-        : await shareDuelInvite(url, t.duel.invitationTitle, navigator);
+        ? await copyDuelInvite(url, navigator, fallback, preferSelection)
+        : await shareDuelInvite(url, t.duel.invitationTitle, navigator, fallback);
       setStatus(result === "cancelled" ? "idle" : result);
       if (result === "manual") {
-        input.current?.focus();
-        input.current?.select();
+        selectDuelInvite(input.current);
       }
     } finally {
       busy.current = false;
@@ -53,13 +55,17 @@ export default function DuelRoomInvite({ code }: { code: string }) {
       <input
         ref={input}
         id="duel-invite-link"
-        type="url"
+        type="text"
+        inputMode="url"
+        autoComplete="off"
+        autoCapitalize="none"
+        spellCheck={false}
         readOnly
         value={url}
-        onFocus={(event) => event.currentTarget.select()}
-        onClick={(event) => event.currentTarget.select()}
+        onFocus={(event) => selectDuelInvite(event.currentTarget)}
+        onClick={(event) => selectDuelInvite(event.currentTarget)}
         aria-describedby="duel-invite-status"
-        className="min-h-12 w-full min-w-0 rounded-xl bg-white/5 px-4 text-sm text-muted outline-accent-purple"
+        className="min-h-12 w-full min-w-0 select-text rounded-xl bg-white/5 px-4 text-base text-muted outline-accent-purple sm:text-sm"
       />
       <div className={`grid gap-3 ${canShare ? "sm:grid-cols-2" : ""}`}>
         <button

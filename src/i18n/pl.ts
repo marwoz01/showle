@@ -121,7 +121,7 @@ const pl: Translations = {
     shareInvitation: "Wyślij zaproszenie",
     inviteLinkCopied: "Link skopiowany. Wyślij go znajomemu.",
     inviteShared: "Zaproszenie udostępnione.",
-    copyInviteManually: "Nie udało się skopiować linku automatycznie. Skopiuj zaznaczony adres i wyślij go znajomemu.",
+    copyInviteManually: "Nie udało się skopiować automatycznie. Spróbuj ponownie lub przytrzymaj zaznaczony adres i wybierz „Kopiuj”.",
     invalidInvitation: "Link zaproszenia jest nieprawidłowy. Poproś o nowy link lub wpisz kod pokoju poniżej.",
     otherRoom: "Wróć do wyboru pokoju",
     inviteCode: "Kod zaproszenia",
