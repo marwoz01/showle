@@ -12,7 +12,7 @@ Scope: implement the six improvements agreed in the recommendation review, verif
 - [x] Apply additive schema changes and metadata import safely; preserve legacy/game data.
 - [ ] Finish vector expansion after the provider quota is restored. Current coverage: 1968/3187; 980 new vectors checkpointed before HTTP 429.
 - [ ] Activate scheduled refresh after authorization to configure GitHub Secrets. Workflow is ready but explicitly gated off.
-- [ ] Commit and push the verified implementation.
+- [x] Commit and push the verified implementation (969eee0 on master).
 
 Guardrails: no changes to game pools, no new dependencies, no personal viewing history sent to AI, no fabricated match percentages, no silent relaxation of hard constraints, no automatic quota refunds after provider work. Catalog jobs are bounded and resumable. Existing MovieEmbedding data remains intact.
 
