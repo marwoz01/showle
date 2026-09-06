@@ -6,6 +6,6 @@ Ikony są importowane przez `src/components/ui/icons.tsx`. Adapter utrzymuje ist
 
 Nie należy mieszać bezpośrednich importów `lucide-react` z adapterem w elementach interfejsu.
 
-Punkty pojedynku animuje GSAP `useGSAP` z lokalnymi referencjami i cleanupem: naliczanie zdobytych punktów, przelot do wyniku danego gracza i krótkie podbicie licznika. Animacja ma około 1,2 s, mieści się w istniejącym czasie podsumowania i nie wpływa na wynik zapisany przez serwer. Przy ograniczeniu ruchu lub spóźnionym odtworzeniu rundy wynik pojawia się od razu.
+Punkty pojedynku animuje GSAP `useGSAP` z lokalnymi referencjami i cleanupem: własny przyrost nalicza się dużą liczbą na środku kadru, przelatuje do własnego wyniku i krótko podbija licznik. Warstwa nad całym polem gry zapobiega przycinaniu przelotu przez zaokrągloną kartę. Przyrost przeciwnika pozostaje przy jego liczniku. Animacja ma około 1,2 s, mieści się w istniejącym czasie podsumowania i nie wpływa na wynik zapisany przez serwer. Przy ograniczeniu ruchu lub spóźnionym odtworzeniu rundy wynik pojawia się od razu; zmiana rozmiaru okna lub ukrycie karty kończą trwający przelot.
 
 Odpowiedzi są utrwalane w `DuelRoom.hostAnswerIndex` i `guestAnswerIndex` (migracja `20260906_duel_answer_choices`). API ujawnia wybór przeciwnika dopiero po obu odpowiedziach lub upływie czasu. Do tego momentu ukrywa także przyrost punktów — zmiana licznika nie może podpowiadać poprawnej odpowiedzi. Własny wybór można przywrócić po odświeżeniu strony.

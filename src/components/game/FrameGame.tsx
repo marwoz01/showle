@@ -53,6 +53,8 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
   const [failedKey, setFailedKey] = useState("");
   const [imageRetry, setImageRetry] = useState(0);
   const [now, setNow] = useState(Date.now());
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [rewardLayer, setRewardLayer] = useState<HTMLDivElement | null>(null);
   const clockOffset = useRef(0);
   const busy = useRef(false);
   const scope = useRef(0);
@@ -527,8 +529,17 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
           </div>
         </section>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
-          <FrameScoreboard room={room} />
+        <div className="relative flex min-h-0 flex-1 flex-col gap-3">
+          <FrameScoreboard
+            room={room}
+            frameRef={frameRef}
+            rewardLayer={rewardLayer}
+          />
+          <div
+            ref={setRewardLayer}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-30"
+          />
           <section className="frame-stage soft-panel overflow-hidden rounded-3xl p-2">
             {room.nextFramePath && (
               <Image
@@ -543,7 +554,10 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
               />
             )}
             <div className="frame-stage__inner overflow-hidden rounded-[1.25rem] bg-[#121214]">
-              <div className="frame-stage__image relative h-[clamp(14rem,45vh,28rem)] bg-black">
+              <div
+                ref={frameRef}
+                className="frame-stage__image relative h-[clamp(14rem,45vh,28rem)] bg-black"
+              >
                 {room.question && (
                   <Image
                     key={`${roundKey}:${imageRetry}`}

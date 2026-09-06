@@ -1,15 +1,26 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useTranslation } from "@/i18n";
 import experience from "@/i18n/experience";
 import type { DuelPlayerView, DuelRoomView } from "@/types/duel";
+import { scoreFlight } from "@/lib/score-flight";
 
 gsap.registerPlugin(useGSAP);
 
-export default function FrameScoreboard({ room }: { room: DuelRoomView }) {
+type RewardPosition = {
+  frameRef: RefObject<HTMLDivElement | null>;
+  rewardLayer: HTMLDivElement | null;
+};
+
+export default function FrameScoreboard({
+  room,
+  frameRef,
+  rewardLayer,
+}: { room: DuelRoomView } & RewardPosition) {
   const { t, locale } = useTranslation();
   const copy = experience[locale];
   const own = room.players.find((player) => player.role === room.you)!;
@@ -30,8 +41,22 @@ export default function FrameScoreboard({ room }: { room: DuelRoomView }) {
         )}
       </div>
       <div className={`grid gap-2 ${opponent ? "grid-cols-2" : "grid-cols-1"}`}>
-        <PlayerScore player={own} own room={room} />
-        {opponent && <PlayerScore player={opponent} own={false} room={room} />}
+        <PlayerScore
+          player={own}
+          own
+          room={room}
+          frameRef={frameRef}
+          rewardLayer={rewardLayer}
+        />
+        {opponent && (
+          <PlayerScore
+            player={opponent}
+            own={false}
+            room={room}
+            frameRef={frameRef}
+            rewardLayer={rewardLayer}
+          />
+        )}
       </div>
     </div>
   );
@@ -41,11 +66,13 @@ function PlayerScore({
   player,
   own,
   room,
+  frameRef,
+  rewardLayer,
 }: {
   player: DuelPlayerView;
   own: boolean;
   room: DuelRoomView;
-}) {
+} & RewardPosition) {
   const { t, locale } = useTranslation();
   const copy = experience[locale];
   const root = useRef<HTMLDivElement>(null);
@@ -85,12 +112,36 @@ function PlayerScore({
             Date.parse(serverNow) - Date.parse(resolvedAt) > 1200
           )
             return;
+          // Measure the final total before counting up; crossing 999 → 1 000
+          // changes its width and therefore the center of the landing target.
+          const to = counter.getBoundingClientRect();
           counter.textContent = format(score - gain);
           flying.textContent = "+0";
-          const from = flying.getBoundingClientRect();
-          const to = counter.getBoundingClientRect();
-          const x = to.x + to.width / 2 - (from.x + from.width / 2);
-          const y = to.y + to.height / 2 - (from.y + from.height / 2);
+          let x: number;
+          let y: number;
+          if (own) {
+            if (!frameRef.current || !rewardLayer) {
+              settle();
+              return;
+            }
+            const flight = scoreFlight(
+              frameRef.current.getBoundingClientRect(),
+              rewardLayer.getBoundingClientRect(),
+              to,
+            );
+            gsap.set(flying, {
+              left: flight.left,
+              top: flight.top,
+              xPercent: -50,
+              yPercent: -50,
+            });
+            x = flight.x;
+            y = flight.y;
+          } else {
+            const from = flying.getBoundingClientRect();
+            x = to.x + to.width / 2 - (from.x + from.width / 2);
+            y = to.y + to.height / 2 - (from.y + from.height / 2);
+          }
           const values = { gain: 0, total: score - gain };
           const timeline = gsap.timeline({ defaults: { ease: "power2.out" } });
           timeline
@@ -109,7 +160,13 @@ function PlayerScore({
             )
             .to(
               flying,
-              { x, y, scale: 0.6, duration: 0.45, ease: "power2.inOut" },
+              {
+                x,
+                y,
+                scale: own ? 0.35 : 0.6,
+                duration: 0.45,
+                ease: "power2.inOut",
+              },
               0.58,
             )
             .to(flying, { autoAlpha: 0, duration: 0.12 }, 0.93)
@@ -130,7 +187,17 @@ function PlayerScore({
               { scale: 1.14, duration: 0.13, repeat: 1, yoyo: true },
               0.95,
             );
+          const finish = () => {
+            timeline.progress(1);
+          };
+          const onVisibility = () => {
+            if (document.hidden) finish();
+          };
+          window.addEventListener("resize", finish);
+          document.addEventListener("visibilitychange", onVisibility);
           return () => {
+            window.removeEventListener("resize", finish);
+            document.removeEventListener("visibilitychange", onVisibility);
             counter.textContent = format(score);
           };
         },
@@ -139,7 +206,16 @@ function PlayerScore({
     },
     {
       scope: root,
-      dependencies: [roundKey, resolvedAt, score, gain, locale],
+      dependencies: [
+        roundKey,
+        resolvedAt,
+        score,
+        gain,
+        locale,
+        own,
+        frameRef,
+        rewardLayer,
+      ],
       revertOnUpdate: true,
     },
   );
@@ -179,18 +255,33 @@ function PlayerScore({
           {copy.pointsShort}
         </span>
       </div>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-full z-30 mt-6 flex justify-center sm:mt-8"
-      >
-        <span
-          ref={token}
-          className={`invisible rounded-full px-4 py-2 text-2xl font-bold tabular-nums shadow-sm ${own ? "bg-[#2d1c52] text-[#bb9dff]" : "bg-[#10383f] text-cyan-200"}`}
-          data-testid={`gain-${player.role}`}
+      {own ? (
+        rewardLayer &&
+        createPortal(
+          <span
+            ref={token}
+            aria-hidden="true"
+            className="invisible absolute left-0 top-0 min-w-[6ch] whitespace-nowrap rounded-2xl bg-[#2d1c52]/95 px-5 py-3 text-center text-4xl font-bold tabular-nums text-[#d4c2ff] shadow-sm sm:text-5xl"
+            data-testid={`gain-${player.role}`}
+          >
+            +{format(gain)}
+          </span>,
+          rewardLayer,
+        )
+      ) : (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-full z-30 mt-6 flex justify-center sm:mt-8"
         >
-          +{format(gain)}
-        </span>
-      </div>
+          <span
+            ref={token}
+            className={`invisible rounded-full px-4 py-2 text-2xl font-bold tabular-nums shadow-sm ${own ? "bg-[#2d1c52] text-[#bb9dff]" : "bg-[#10383f] text-cyan-200"}`}
+            data-testid={`gain-${player.role}`}
+          >
+            +{format(gain)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
