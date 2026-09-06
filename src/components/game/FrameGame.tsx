@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -33,6 +34,7 @@ function storageSet(key: string, value: string) {
 }
 
 export default function FrameGame({ solo = false }: { solo?: boolean }) {
+  const router = useRouter();
   const { t, locale } = useTranslation();
   const copy = experience[locale];
   const [playerId, setPlayerId] = useState("");
@@ -263,6 +265,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     setCode("");
     setError("");
     setSelected(null);
+    router.push("/play");
   }
   async function shareInvite() {
     if (!room) return;
