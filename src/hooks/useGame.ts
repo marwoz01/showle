@@ -1,243 +1,110 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { MediaDetails, GuessResult, Hint, GameStatus } from "@/types";
-import { compareMedia } from "@/lib/comparer";
-import { generateHints, getRevealedHints } from "@/lib/hints";
-import { MAX_ATTEMPTS } from "@/constants";
-import { Translations } from "@/i18n/types";
-import type { Locale } from "@/i18n";
-import { getTodayKey } from "@/lib/daily";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { useTranslation } from "@/i18n";
+import { getTodayKey } from "@/lib/game-date";
+import type { DailyGameView } from "@/types/daily-game";
 
-interface SavedGameState {
-  dateKey: string;
-  guessIds: number[];
-  status: GameStatus;
-}
+export function useGame() {
+  const { userId, isLoaded } = useAuth();
+  const { locale } = useTranslation();
+  const [game, setGame] = useState<DailyGameView | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
+  const busy = useRef(false);
+  const version = useRef(0);
 
-const STORAGE_KEY = "showle-daily-movie";
+  const remember = useCallback((view: DailyGameView) => {
+    setGame(view);
+    try {
+      localStorage.setItem(`showle-progress:${userId ?? "guest"}`, JSON.stringify({
+        dateKey: view.dateKey, status: view.status, attempts: view.guesses.length,
+      }));
+    } catch { /* Storage may be disabled; the server remains authoritative. */ }
+    window.dispatchEvent(new Event("game-progress"));
+  }, [userId]);
 
-function loadSavedState(): SavedGameState | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const saved: SavedGameState = JSON.parse(raw);
-    if (saved.dateKey !== getTodayKey()) return null;
-    return saved;
-  } catch {
-    return null;
-  }
-}
-
-function saveState(guessIds: number[], status: GameStatus) {
-  try {
-    const state: SavedGameState = {
-      dateKey: getTodayKey(),
-      guessIds,
-      status,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    // localStorage unavailable
-  }
-}
-
-async function syncToServer(
-  status: GameStatus,
-  guessIds: number[],
-  hintsUsed: number,
-  isComplete: boolean,
-  answer?: MediaDetails
-) {
-  const dateKey = getTodayKey();
-  const endpoint = isComplete ? "/api/game/complete" : "/api/game/state";
-  const method = isComplete ? "POST" : "PUT";
-
-  try {
-    await fetch(endpoint, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dateKey,
-        mode: "daily-movie",
-        status,
-        guessIds,
-        attemptCount: guessIds.length,
-        hintsUsed,
-        targetMovieId: answer?.id ?? 0,
-        targetTitle: answer?.title ?? "",
-        targetYear: answer?.year ?? 0,
-        targetPoster: answer?.posterPath ?? "",
-      }),
-    });
-  } catch {
-    // Silently fail — localStorage is the primary store
-  }
-}
-
-interface UseGameReturn {
-  guesses: GuessResult[];
-  revealedHints: Hint[];
-  allHints: Hint[];
-  status: GameStatus;
-  attemptCount: number;
-  submitGuess: (guess: MediaDetails) => void;
-  giveUp: () => void;
-}
-
-export function useGame(
-  answer: MediaDetails,
-  t: Translations,
-  locale: Locale,
-  userId?: string,
-  hintAnswer: MediaDetails = answer,
-): UseGameReturn {
-  const [initialized, setInitialized] = useState(false);
-  const [guesses, setGuesses] = useState<GuessResult[]>([]);
-  const [status, setStatus] = useState<GameStatus>("playing");
-
-  const allHints = useMemo(
-    () => generateHints(hintAnswer, t),
-    [hintAnswer, t],
-  );
-  const attemptCount = guesses.length;
-  const revealedHints = useMemo(
-    () => getRevealedHints(allHints, attemptCount),
-    [allHints, attemptCount]
-  );
-
-  // Restore game from localStorage on first render
-  useEffect(() => {
-    async function restore() {
-      const saved = loadSavedState();
-      if (saved && saved.guessIds.length > 0) {
-        try {
-          const movies = await Promise.all(
-            saved.guessIds.map(async (id) => {
-              const res = await fetch(`/api/movies/details?id=${id}`);
-              if (!res.ok) return null;
-              return (await res.json()) as MediaDetails;
-            })
-          );
-
-          const restoredGuesses: GuessResult[] = [];
-          for (const movie of movies) {
-            if (movie) {
-              const comparison = compareMedia(movie, answer, t, locale);
-              const isCorrect = movie.id === answer.id;
-              restoredGuesses.push({
-                guess: movie,
-                comparison,
-                isCorrect,
-                attemptNumber: restoredGuesses.length + 1,
-              });
-            }
+  const refresh = useCallback(async () => {
+    const current = ++version.current;
+    setError(false);
+    try {
+      const response = await fetch(`/api/game/state?lang=${locale}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("load");
+      let view: DailyGameView = await response.json();
+      // One-time migration of old anonymous local progress. Replay IDs, not trusted outcomes.
+      if (!userId && !view.guesses.length && view.status === "playing") {
+        let saved;
+        try { saved = JSON.parse(localStorage.getItem("showle-daily-movie") ?? "null"); } catch { /* no legacy state */ }
+        if (saved?.dateKey === view.dateKey && Array.isArray(saved.guessIds)) {
+          const ids = [...new Set(saved.guessIds)].filter((id) => Number.isSafeInteger(id) && Number(id) > 0).slice(0, 7);
+          const actions = ids.map((movieId) => ({ type: "guess", movieId }));
+          if (saved.status === "lost") actions.push({ type: "give-up", movieId: 0 });
+          for (const action of actions) {
+            const migrated = await fetch(`/api/game/state?lang=${locale}&dateKey=${view.dateKey}`, {
+              method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action),
+            });
+            if (!migrated.ok) throw new Error("migration");
+            view = await migrated.json();
+            if (view.status !== "playing") break;
           }
-          setGuesses(restoredGuesses.reverse());
-          setStatus(saved.status);
-        } catch {
-          // Ignore restore errors, start fresh
+          try { localStorage.removeItem("showle-daily-movie"); } catch { /* optional storage */ }
         }
       }
-      setInitialized(true);
+      if (current === version.current) remember(view);
+    } catch {
+      if (current === version.current) setError(true);
+    } finally {
+      if (current === version.current) setLoading(false);
     }
+  }, [locale, userId, remember]);
 
-    restore();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Persist state changes to localStorage
   useEffect(() => {
-    if (!initialized) return;
-    const ids = guesses
-      .slice()
-      .reverse()
-      .map((g) => g.guess.id);
-    saveState(ids, status);
-  }, [guesses, status, initialized]);
+    if (!isLoaded) return;
+    setLoading(true);
+    setCelebrate(false);
+    void refresh();
+    return () => { version.current++; };
+  }, [isLoaded, refresh]);
 
-  const submitGuess = useCallback(
-    (guess: MediaDetails) => {
-      if (status !== "playing") return;
-      if (guesses.some((g) => g.guess.id === guess.id)) return;
+  useEffect(() => {
+    const focus = () => { if (!busy.current) void refresh(); };
+    const timer = window.setInterval(() => {
+      if (game && game.dateKey !== getTodayKey() && !busy.current) { setCelebrate(false); void refresh(); }
+    }, 15000);
+    window.addEventListener("focus", focus);
+    return () => { clearInterval(timer); window.removeEventListener("focus", focus); };
+  }, [game, refresh]);
 
-      const comparison = compareMedia(guess, answer, t, locale);
-      const isCorrect = guess.id === answer.id;
-      const newAttempt = attemptCount + 1;
-
-      const result: GuessResult = {
-        guess,
-        comparison,
-        isCorrect,
-        attemptNumber: newAttempt,
-      };
-
-      const newGuesses = [result, ...guesses];
-      setGuesses(newGuesses);
-
-      const newStatus = isCorrect
-        ? "won"
-        : newAttempt >= MAX_ATTEMPTS
-          ? "lost"
-          : "playing";
-
-      if (isCorrect) setStatus("won");
-      else if (newAttempt >= MAX_ATTEMPTS) setStatus("lost");
-
-      // Sync to server for logged-in users
-      if (userId) {
-        const ids = newGuesses
-          .slice()
-          .reverse()
-          .map((g) => g.guess.id);
-        const hintsCount = getRevealedHints(allHints, newAttempt).length;
-        const isComplete = newStatus === "won" || newStatus === "lost";
-        syncToServer(newStatus, ids, hintsCount, isComplete, answer).then(() => {
-          if (isComplete) {
-            window.dispatchEvent(new Event("game-completed"));
-          }
-        });
-      } else if (newStatus === "won" || newStatus === "lost") {
-        window.dispatchEvent(new Event("game-completed"));
-      }
-    },
-    [status, guesses, answer, t, locale, attemptCount, userId, allHints]
-  );
-
-  const localizedGuesses = useMemo(
-    () =>
-      guesses.map((result) => ({
-        ...result,
-        comparison: compareMedia(result.guess, answer, t, locale),
-      })),
-    [guesses, answer, t, locale],
-  );
-
-  const giveUp = useCallback(() => {
-    if (status === "playing") {
-      setStatus("lost");
-
-      if (userId) {
-        const ids = guesses
-          .slice()
-          .reverse()
-          .map((g) => g.guess.id);
-        syncToServer("lost", ids, revealedHints.length, true, answer).then(() => {
-          window.dispatchEvent(new Event("game-completed"));
-        });
-      } else {
-        window.dispatchEvent(new Event("game-completed"));
-      }
+  const act = useCallback(async (action: { type: string; movieId?: number }) => {
+    if (busy.current || loading || !game || game.status !== "playing") return;
+    busy.current = true;
+    setPending(true);
+    setError(false);
+    const current = ++version.current;
+    try {
+      const response = await fetch(`/api/game/state?lang=${locale}&dateKey=${game.dateKey}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action),
+      });
+      if (response.status === 409) { await refresh(); return; }
+      if (!response.ok) throw new Error("save");
+      const view: DailyGameView = await response.json();
+      if (current !== version.current) return;
+      remember(view);
+      setCelebrate(view.status === "won");
+      if (view.status !== "playing") window.dispatchEvent(new Event("game-completed"));
+    } catch {
+      if (current === version.current) setError(true);
+    } finally {
+      busy.current = false;
+      setPending(false);
     }
-  }, [status, userId, guesses, revealedHints, answer]);
+  }, [game, loading, locale, refresh, remember]);
 
-  return {
-    guesses: localizedGuesses,
-    revealedHints,
-    allHints,
-    status,
-    attemptCount,
-    submitGuess,
-    giveUp,
+  return { game, loading, pending, error, celebrate, refresh,
+    submitGuess: (movie: { id: number }) => act({ type: "guess", movieId: movie.id }),
+    giveUp: () => act({ type: "give-up" }),
   };
 }

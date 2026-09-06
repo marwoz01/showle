@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getTimeUntilReset } from "@/lib/daily";
+import { getTimeUntilReset } from "@/lib/game-date";
 import { Clock } from "lucide-react";
 import { useTranslation } from "@/i18n";
 

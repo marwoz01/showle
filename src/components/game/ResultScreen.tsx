@@ -35,6 +35,8 @@ interface ResultScreenProps {
   status: GameStatus;
   guesses: GuessResult[];
   hintsUsed: number;
+  celebrate?: boolean;
+  dateKey?: string;
 }
 
 interface TrailerState {
@@ -49,6 +51,7 @@ export default function ResultScreen({
   status,
   guesses,
   hintsUsed,
+  celebrate = false,
 }: ResultScreenProps) {
   const { t, locale } = useTranslation();
   const resultRef = useRef<HTMLDivElement>(null);
@@ -86,7 +89,7 @@ export default function ResultScreen({
         setTrailerState({
           requestKey: trailerRequestKey,
           trailer,
-          autoplay: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+          autoplay: celebrate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
         });
       })
       .catch(() => {
@@ -94,11 +97,11 @@ export default function ResultScreen({
       });
 
     return () => ac.abort();
-  }, [answer.id, locale, trailerRequestKey, won]);
+  }, [answer.id, locale, trailerRequestKey, won, celebrate]);
 
   useEffect(() => {
     if (
-      !won ||
+      !won || !celebrate ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       return;
@@ -139,11 +142,11 @@ export default function ResultScreen({
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [won]);
+  }, [won, celebrate]);
 
   useGSAP(
     () => {
-      if (!won) return;
+      if (!won || !celebrate) return;
 
       const revealTargets = gsap.utils.toArray<HTMLElement>(
         "[data-result-reveal]",
@@ -188,7 +191,7 @@ export default function ResultScreen({
     },
     {
       scope: resultRef,
-      dependencies: [answer.id, won],
+      dependencies: [answer.id, won, celebrate],
       revertOnUpdate: true,
     },
   );

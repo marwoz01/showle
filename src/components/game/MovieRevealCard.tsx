@@ -7,7 +7,7 @@ import { Film, UserRound } from "lucide-react";
 
 interface MovieRevealCardProps {
   guesses: GuessResult[];
-  answer: MediaDetails;
+  answer: Pick<MediaDetails, "directorProfilePath" | "cast">;
 }
 
 export default function MovieRevealCard({

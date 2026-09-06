@@ -29,6 +29,15 @@ model GameResult {
   @@index([userId, completedAt])
 }
 
+model DailyMovieSnapshot {
+  dateKey String
+  tmdbId  Int
+  locale  String
+  details Json
+
+  @@id([dateKey, tmdbId, locale])
+}
+
 model UserStats {
   id             String  @id @default(cuid())
   userId         String  @unique

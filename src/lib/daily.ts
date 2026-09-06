@@ -1,6 +1,8 @@
 import eligibleMovies from "@/data/eligible-movies.json";
 import { getMovieDetails } from "./tmdb";
 import { MediaDetails } from "@/types";
+import { getTodayKey } from "./game-date";
+export { getTodayKey, getTimeUntilReset } from "./game-date";
 
 const POOL_SIZE = eligibleMovies.length;
 const NO_REPEAT_DAYS = 90;
@@ -8,20 +10,10 @@ const NO_REPEAT_DAYS = 90;
 /**
  * Returns today's date key in YYYY-MM-DD format (Europe/Warsaw timezone).
  */
-export function getTodayKey(): string {
-  return new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
-}
 
 /**
  * Returns milliseconds until next midnight in Europe/Warsaw timezone.
  */
-export function getTimeUntilReset(): number {
-  const now = new Date();
-  const warsawNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
-  const midnight = new Date(warsawNow);
-  midnight.setHours(24, 0, 0, 0);
-  return midnight.getTime() - warsawNow.getTime();
-}
 
 /**
  * Simple deterministic hash: date string -> number.
@@ -74,4 +66,8 @@ export async function getDailyMovie(dateKey?: string): Promise<MediaDetails | nu
   const index = getDailyIndex(today);
   const movie = eligibleMovies[index];
   return getMovieDetails(movie.id);
+}
+
+export function getDailyMovieId(dateKey: string): number {
+  return eligibleMovies[getDailyIndex(dateKey)].id;
 }

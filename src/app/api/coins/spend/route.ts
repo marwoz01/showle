@@ -21,6 +21,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
 
+  // Daily games currently have a fixed, equal seven-attempt limit for everyone.
+  // Do not sell benefits the game does not implement or reopen completed games.
+  if (action !== "buy_freeze") {
+    return NextResponse.json({ error: "feature_not_available" }, { status: 400 });
+  }
+
   if ((action === "buy_hint" || action === "buy_attempt") && !dateKey) {
     return NextResponse.json({ error: "dateKey required" }, { status: 400 });
   }
@@ -29,6 +35,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
       // Check balance
       const wallet = await tx.userWallet.findUnique({ where: { userId } });
       if (!wallet || wallet.balance < cost) {
@@ -82,7 +89,7 @@ export async function POST(request: NextRequest) {
 
       return {
         balance: updatedWallet.balance,
-        streakFreezes: action === "buy_freeze" ? updatedWallet.streakFreezes + 1 : updatedWallet.streakFreezes,
+        streakFreezes: updatedWallet.streakFreezes,
         success: true,
       };
     });
