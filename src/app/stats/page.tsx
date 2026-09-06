@@ -11,7 +11,7 @@ import {
   Flame,
   BarChart3,
   Loader2,
-} from "lucide-react";
+} from "@/components/ui/icons";
 import GameHeatmap from "@/components/stats/GameHeatmap";
 import experience from "@/i18n/experience";
 

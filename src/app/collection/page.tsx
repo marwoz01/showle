@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
-import { Plus, Loader2, Film, User } from "lucide-react";
+import { Plus, Loader2, Film, User } from "@/components/ui/icons";
 import CollectionTabs, {
   type CollectionTab,
 } from "@/components/collection/CollectionTabs";

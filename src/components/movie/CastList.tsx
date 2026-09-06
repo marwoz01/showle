@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { User } from "lucide-react";
+import { User } from "@/components/ui/icons";
 import { CastMember } from "@/types";
 
 interface CastListProps {

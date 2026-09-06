@@ -3,7 +3,7 @@ import GameModeCard from "@/components/home/GameModeCard";
 import DailyEntry from "@/components/home/DailyEntry";
 import HowItWorks from "@/components/home/HowItWorks";
 import { useTranslation } from "@/i18n";
-import { Sparkles, Swords, Film } from "lucide-react";
+import { Sparkles, Swords, Film } from "@/components/ui/icons";
 import experience from "@/i18n/experience";
 
 export default function Home() {
@@ -19,7 +19,7 @@ export default function Home() {
           <DailyEntry />
         </div>
         <GameModeCard
-          icon={<Swords size={22} />}
+          icon={<Swords size={22} idle />}
           title={t.duel.modeTitle}
           description={t.duel.modeDesc}
           href="/play/duel"
@@ -29,7 +29,7 @@ export default function Home() {
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         <GameModeCard
-          icon={<Film size={22} />}
+          icon={<Film size={22} idle />}
           title={experience[locale].practiceTitle}
           description={experience[locale].practiceDesc}
           href="/play/practice"
@@ -37,7 +37,7 @@ export default function Home() {
           badge={t.modes.new}
         />
         <GameModeCard
-          icon={<Sparkles size={22} />}
+          icon={<Sparkles size={22} idle />}
           title={t.recommend.modeTitle}
           description={t.recommend.modeDesc}
           href="/recommend"

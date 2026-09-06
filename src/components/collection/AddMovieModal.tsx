@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useTranslation } from "@/i18n";
 import { MediaDetails } from "@/types";
 import type { MovieSuggestion } from "@/types/movie-suggestion";
-import { X, Search, Loader2, Eye, Bookmark, Check } from "lucide-react";
+import { X, Search, Loader2, Eye, Bookmark, Check } from "@/components/ui/icons";
 import { localizeGenres } from "@/lib/localization";
 
 interface AddMovieModalProps {

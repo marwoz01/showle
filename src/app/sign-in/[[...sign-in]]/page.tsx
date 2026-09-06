@@ -1,7 +1,7 @@
 "use client";
 
 import { SignIn } from "@clerk/nextjs";
-import { Clapperboard } from "lucide-react";
+import { Clapperboard } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 
 export default function SignInPage() {

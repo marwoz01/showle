@@ -75,9 +75,14 @@ export function serializeRoom(room: DuelRoom, playerId: string): DuelRoomView {
       {
         role: "host",
         name: room.hostName,
-        score: room.hostScore,
+        score: room.hostScore - (!resolved ? room.hostRoundPoints : 0),
         roundPoints: resolved ? room.hostRoundPoints : 0,
         answered: room.hostAnsweredRound === room.currentRound,
+        answerIndex:
+          room.hostAnsweredRound === room.currentRound &&
+          (resolved || you === "host")
+            ? (room.hostAnswerIndex ?? null)
+            : null,
         ready: room.hostReadyRound === room.currentRound,
         rematch: room.hostRematch,
       },
@@ -86,9 +91,14 @@ export function serializeRoom(room: DuelRoom, playerId: string): DuelRoomView {
             {
               role: "guest" as const,
               name: room.guestName,
-              score: room.guestScore,
+              score: room.guestScore - (!resolved ? room.guestRoundPoints : 0),
               roundPoints: resolved ? room.guestRoundPoints : 0,
               answered: room.guestAnsweredRound === room.currentRound,
+              answerIndex:
+                room.guestAnsweredRound === room.currentRound &&
+                (resolved || you === "guest")
+                  ? (room.guestAnswerIndex ?? null)
+                  : null,
               ready: room.guestReadyRound === room.currentRound,
               rematch: room.guestRematch,
             },

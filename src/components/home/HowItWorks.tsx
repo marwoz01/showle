@@ -1,8 +1,8 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import type { LucideIcon } from "lucide-react";
-import { ArrowUpRight, Clapperboard, Lightbulb, Sparkles, Trophy } from "lucide-react";
+import type { LucideIcon } from "@/components/ui/icons";
+import { ArrowUpRight, Clapperboard, Lightbulb, Sparkles, Trophy } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 
 interface Step {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import type { WatchProvider, WatchProvidersResult } from "@/lib/tmdb";
 

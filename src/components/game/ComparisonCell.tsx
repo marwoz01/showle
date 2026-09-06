@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { MatchStatus, Direction } from "@/types";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp } from "@/components/ui/icons";
 
 interface ComparisonCellProps {
   label: string;

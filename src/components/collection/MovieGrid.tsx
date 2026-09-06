@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/i18n";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "@/components/ui/icons";
 import CollectionCard from "@/components/collection/CollectionCard";
 
 interface SavedMovie {

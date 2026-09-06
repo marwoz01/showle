@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
-import { ArrowRight, Clapperboard } from "lucide-react";
+import { ArrowRight, Clapperboard } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import experience from "@/i18n/experience";
 import { getTodayKey } from "@/lib/game-date";
@@ -76,7 +76,7 @@ export default function DailyEntry() {
       <div className="relative">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-purple/15">
-            <Clapperboard className="text-accent-purple" size={22} />
+            <Clapperboard className="text-accent-purple" size={22} idle />
           </div>
           <span className="rounded-md bg-accent-purple/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent-purple">
             {experience[locale].dailyEyebrow}

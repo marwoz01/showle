@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useTranslation } from "@/i18n";
 import { MOVIE_GENRES } from "@/constants/genres";
 import { localizeGenre } from "@/lib/localization";
-import { Sparkles, Flame, Target, FlaskConical } from "lucide-react";
+import { Sparkles, Flame, Target, FlaskConical } from "@/components/ui/icons";
 
 interface PreferenceFormProps {
   onSubmit: (preferences: {

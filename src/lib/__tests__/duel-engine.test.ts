@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { DuelRoom } from "@prisma/client";
 import { transitionRoom } from "@/lib/duel-engine";
 import { createDuelQuestions } from "@/lib/duel";
+import { serializeRoom } from "@/lib/duel-room";
+vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 const questions = createDuelQuestions(
   Array.from({ length: 12 }, (_, id) => ({
     id,
@@ -35,6 +37,8 @@ function room(mode = "duel"): DuelRoom {
     guestRoundPoints: 0,
     hostAnsweredRound: -1,
     guestAnsweredRound: -1,
+    hostAnswerIndex: null,
+    guestAnswerIndex: null,
     hostReadyRound: -1,
     guestReadyRound: -1,
     hostRematch: false,
@@ -67,6 +71,85 @@ function start(original: DuelRoom) {
       );
 }
 describe("frame-game server state machine", () => {
+  it("persists both choices but hides opponents' answers and new points until resolution", () => {
+    const index = questions[0].correctIndex;
+    const host = transitionRoom(
+      start(room()),
+      "host-1234",
+      { type: "answer", round: 0, match: 1, answerIndex: index },
+      now + 4000,
+    );
+    expect(host.hostAnswerIndex).toBe(index);
+    const ownView = serializeRoom(host, "host-1234");
+    const rivalView = serializeRoom(host, "guest-1234");
+    expect(ownView.players[0].answerIndex).toBe(index);
+    expect(rivalView.players[0].answerIndex).toBeNull();
+    expect(rivalView.players[0].score).toBe(0);
+    expect(ownView.players[0].score).toBe(0);
+    expect(rivalView.players[0].roundPoints).toBe(0);
+    expect(rivalView.question?.correctIndex).toBeUndefined();
+    const wrong = (index + 1) % 4;
+    const finished = transitionRoom(
+      host,
+      "guest-1234",
+      { type: "answer", round: 0, match: 1, answerIndex: wrong },
+      now + 4500,
+    );
+    for (const id of ["host-1234", "guest-1234"]) {
+      const view = serializeRoom(finished, id);
+      expect(view.players.map((player) => player.answerIndex)).toEqual([
+        index,
+        wrong,
+      ]);
+      expect(view.players.map((player) => player.score)).toEqual([950, 0]);
+      expect(view.question?.correctIndex).toBe(index);
+    }
+    const next = transitionRoom(
+      finished,
+      "host-1234",
+      { type: "tick" },
+      now + 7000,
+    );
+    expect(next.hostAnswerIndex).toBeNull();
+    expect(next.guestAnswerIndex).toBeNull();
+    expect(serializeRoom(next, "guest-1234").players[0].score).toBe(950);
+  });
+
+  it("reveals the submitted answer at timeout and distinguishes a missing answer", () => {
+    const selected = transitionRoom(
+      start(room()),
+      "host-1234",
+      { type: "answer", round: 0, match: 1, answerIndex: 2 },
+      now + 4000,
+    );
+    const expired = transitionRoom(
+      selected,
+      "guest-1234",
+      { type: "tick" },
+      now + 13000,
+    );
+    const view = serializeRoom(expired, "guest-1234");
+    expect(view.players[0].answerIndex).toBe(2);
+    expect(view.players[1].answerIndex).toBeNull();
+    expect(view.players[1].answered).toBe(false);
+  });
+
+  it("does not let repeated answers replace the original choice", () => {
+    const selected = transitionRoom(
+      start(room()),
+      "host-1234",
+      { type: "answer", round: 0, match: 1, answerIndex: 1 },
+      now + 4000,
+    );
+    const repeated = transitionRoom(
+      selected,
+      "host-1234",
+      { type: "answer", round: 0, match: 1, answerIndex: 3 },
+      now + 4500,
+    );
+    expect(repeated.hostAnswerIndex).toBe(1);
+    expect(repeated.hostScore).toBe(selected.hostScore);
+  });
   it("waits for both players, then gives a 3-second countdown and full 10-second round", () => {
     const waiting = transitionRoom(
       room(),
@@ -151,6 +234,8 @@ describe("frame-game server state machine", () => {
     expect(next.code).toBe("ABCDEF");
     expect(next.matchNumber).toBe(2);
     expect(next.hostScore).toBe(0);
+    expect(next.hostAnswerIndex).toBeNull();
+    expect(next.guestAnswerIndex).toBeNull();
     const stale = transitionRoom(
       next,
       "host-1234",

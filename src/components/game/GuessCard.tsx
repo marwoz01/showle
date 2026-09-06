@@ -4,7 +4,7 @@ import Image from "next/image";
 import { GuessResult } from "@/types";
 import { useTranslation } from "@/i18n";
 import ComparisonTable from "@/components/game/ComparisonTable";
-import { Film, UserRound } from "lucide-react";
+import { Film, UserRound } from "@/components/ui/icons";
 
 interface GuessCardProps {
   result: GuessResult;

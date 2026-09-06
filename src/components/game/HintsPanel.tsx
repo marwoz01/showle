@@ -3,7 +3,7 @@
 import { Hint } from "@/types";
 import { MAX_ATTEMPTS } from "@/constants";
 import { useTranslation } from "@/i18n";
-import { Lightbulb, Lock } from "lucide-react";
+import { Lightbulb, Lock } from "@/components/ui/icons";
 
 interface HintsPanelProps {
   revealedHints: Hint[];

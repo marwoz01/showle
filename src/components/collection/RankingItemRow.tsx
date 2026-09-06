@@ -3,7 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Image from "next/image";
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2 } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { localizeGenre } from "@/lib/localization";
 

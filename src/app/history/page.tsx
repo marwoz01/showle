@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
-import { Loader2, Film, User } from "lucide-react";
+import { Loader2, Film, User } from "@/components/ui/icons";
 import Link from "next/link";
 import HistoryTable, { type HistoryItem } from "@/components/history/HistoryTable";
 import HistoryFilters from "@/components/history/HistoryFilters";

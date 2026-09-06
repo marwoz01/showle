@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Film } from "lucide-react";
+import { Film } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { MAX_ATTEMPTS } from "@/constants";
 

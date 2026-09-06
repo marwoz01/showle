@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { X, Loader2, Film, Trophy, XCircle } from "lucide-react";
+import { X, Loader2, Film, Trophy, XCircle } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { MediaDetails, GuessResult } from "@/types";
 import { compareMedia } from "@/lib/comparer";

@@ -7,6 +7,7 @@ export interface DuelPlayerView {
   score: number;
   roundPoints: number;
   answered: boolean;
+  answerIndex: number | null;
   ready: boolean;
   rematch: boolean;
 }

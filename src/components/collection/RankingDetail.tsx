@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useTranslation } from "@/i18n";
-import { ArrowLeft, Plus, Loader2, Search, X, Library, Eye, Bookmark } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, Search, X, Library, Eye, Bookmark } from "@/components/ui/icons";
 import Image from "next/image";
 import { MediaDetails } from "@/types";
 import type { MovieSuggestion } from "@/types/movie-suggestion";

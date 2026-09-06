@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useTranslation } from "@/i18n";
-import { X, Star } from "lucide-react";
+import { X, Star } from "@/components/ui/icons";
 import { MediaDetails } from "@/types";
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieGallery from "@/components/movie/MovieGallery";

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getTimeUntilReset } from "@/lib/game-date";
-import { Clock } from "lucide-react";
+import { Clock } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 
 export default function CountdownTimer() {

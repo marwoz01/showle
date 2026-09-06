@@ -1,5 +1,59 @@
 @import "tailwindcss";
 
+/* Fit the live frame and all four answers below the mobile navigation. */
+@media (max-width: 63.999rem) {
+  .frame-game--playing {
+    height: calc(100svh - 5.5rem);
+    min-height: 28rem;
+  }
+  .frame-game--playing .frame-stage {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+  .frame-game--playing .frame-stage__inner {
+    display: grid;
+    grid-template-rows: minmax(6rem, 1fr) auto auto;
+    width: 100%;
+  }
+  .frame-game--playing .frame-stage__image {
+    height: auto;
+    min-height: 6rem;
+  }
+  .frame-game--playing .frame-answer {
+    min-height: 5.5rem;
+    padding: 0.625rem 0.75rem;
+  }
+}
+
+@media screen and (max-width: 63.999rem) and (max-height: 39.999rem) {
+  .frame-game--playing .frame-stage__intro {
+    gap: 0.5rem;
+  }
+  .frame-game--playing .frame-stage__intro h2 {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+  .frame-game--playing .frame-stage__instructions {
+    display: none;
+  }
+  .frame-game--playing .frame-stage__intro button {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .frame-game--playing .frame-stage__inner {
+    grid-template-rows: minmax(4.5rem, 1fr) auto auto;
+  }
+  .frame-game--playing .frame-stage__image {
+    min-height: 4.5rem;
+  }
+  .frame-game--playing .frame-answer {
+    min-height: 4.5rem;
+    padding: 0.5rem 0.625rem;
+    gap: 0.25rem;
+  }
+}
+
 @theme inline {
   --color-background: #101012;
   --color-foreground: #f0f0f5;

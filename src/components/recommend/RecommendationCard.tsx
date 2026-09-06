@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { MediaDetails } from "@/types";
 import { useTranslation } from "@/i18n";
-import { Star, Zap } from "lucide-react";
+import { Star, Zap } from "@/components/ui/icons";
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieDetailsModal from "@/components/movie/MovieDetailsModal";
 import { localizeGenre } from "@/lib/localization";

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
-import { Bookmark, BookmarkCheck, Eye, Loader2 } from "lucide-react";
+import { Bookmark, BookmarkCheck, Eye, Loader2 } from "@/components/ui/icons";
 import { MediaDetails } from "@/types";
 
 interface SaveMovieButtonProps {

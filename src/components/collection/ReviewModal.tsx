@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "@/i18n";
-import { X } from "lucide-react";
+import { X } from "@/components/ui/icons";
 
 interface ReviewModalProps {
   movieTitle: string;

@@ -18,7 +18,7 @@ import {
   LogOut,
   Flame,
   History,
-} from "lucide-react";
+} from "@/components/ui/icons";
 
 interface NavItem {
   key: string;
@@ -133,6 +133,7 @@ export default function Sidebar() {
         {/* Close button — mobile only */}
         <button
           onClick={() => setOpen(false)}
+          aria-label={locale === "pl" ? "Zamknij menu" : "Close menu"}
           className="rounded-lg p-1.5 text-muted transition-colors hover:bg-white/4 hover:text-foreground lg:hidden"
         >
           <X size={20} />
@@ -258,6 +259,7 @@ export default function Sidebar() {
       <div className="fixed left-0 right-0 top-0 z-50 flex items-center gap-3 border-b border-white/6 bg-background px-4 py-3 lg:hidden">
         <button
           onClick={() => setOpen(true)}
+          aria-label={locale === "pl" ? "Otwórz menu" : "Open menu"}
           className="rounded-lg p-1.5 text-muted transition-colors hover:bg-white/4 hover:text-foreground"
         >
           <Menu size={22} />

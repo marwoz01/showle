@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "@/i18n";
-import { ArrowLeft, Loader2, RefreshCw, ArrowRight } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, ArrowRight } from "@/components/ui/icons";
 import Link from "next/link";
 import PreferenceForm from "@/components/recommend/PreferenceForm";
 import RecommendationCard from "@/components/recommend/RecommendationCard";

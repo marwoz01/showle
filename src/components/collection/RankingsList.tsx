@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useTranslation } from "@/i18n";
-import { Plus, Loader2, Trash2, Trophy } from "lucide-react";
+import { Plus, Loader2, Trash2, Trophy } from "@/components/ui/icons";
 import EmptyState from "@/components/collection/EmptyState";
 import RankingDetail from "@/components/collection/RankingDetail";
 import ConfirmModal from "@/components/collection/ConfirmModal";

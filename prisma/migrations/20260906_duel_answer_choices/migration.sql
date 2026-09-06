@@ -1,0 +1,3 @@
+ALTER TABLE "DuelRoom"
+  ADD COLUMN IF NOT EXISTS "hostAnswerIndex" INTEGER,
+  ADD COLUMN IF NOT EXISTS "guestAnswerIndex" INTEGER;

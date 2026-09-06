@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/i18n";
-import { Eye, Bookmark, Trophy } from "lucide-react";
+import { Eye, Bookmark, Trophy } from "@/components/ui/icons";
 
 export type CollectionTab = "watched" | "watchlist" | "rankings";
 

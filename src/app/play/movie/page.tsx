@@ -10,7 +10,7 @@ import MovieRevealCard from "@/components/game/MovieRevealCard";
 import HintsPanel from "@/components/game/HintsPanel";
 import ResultScreen from "@/components/game/ResultScreen";
 import CountdownTimer from "@/components/game/CountdownTimer";
-import { ChevronLeft, Flag, Loader2, Search } from "lucide-react";
+import { ChevronLeft, Flag, Loader2, Search } from "@/components/ui/icons";
 import experience from "@/i18n/experience";
 
 export default function PlayMoviePage() {

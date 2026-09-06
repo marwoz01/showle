@@ -20,7 +20,7 @@ import {
   Star,
   Play,
   ExternalLink,
-} from "lucide-react";
+} from "@/components/ui/icons";
 import SaveMovieButton from "@/components/collection/SaveMovieButton";
 import MovieGallery from "@/components/movie/MovieGallery";
 import CastList from "@/components/movie/CastList";

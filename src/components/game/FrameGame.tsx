@@ -13,10 +13,11 @@ import {
   LoaderCircle,
   Swords,
   Trophy,
-} from "lucide-react";
+} from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import experience from "@/i18n/experience";
 import type { DuelRoomView } from "@/types/duel";
+import FrameScoreboard from "@/components/game/FrameScoreboard";
 
 function storageGet(key: string) {
   try {
@@ -300,17 +301,30 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     loadedKey === roundKey &&
     !resolved,
   );
-  const selectedIndex = selected?.key === roundKey ? selected.index : null;
+  const selectedIndex =
+    me?.answerIndex ?? (selected?.key === roundKey ? selected.index : null);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
-      <Link
-        href="/play"
-        className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground"
-      >
-        <ArrowLeft size={16} />
-        {t.duel.back}
-      </Link>
+    <div
+      className={`mx-auto max-w-6xl ${room?.status === "playing" ? "frame-game--playing flex flex-col gap-3" : "space-y-5"}`}
+    >
+      {room?.status === "playing" ? (
+        <button
+          onClick={leave}
+          className="inline-flex w-fit shrink-0 items-center gap-2 text-sm text-muted hover:text-foreground"
+        >
+          <ArrowLeft size={16} />
+          {t.duel.back}
+        </button>
+      ) : (
+        <Link
+          href="/play"
+          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground"
+        >
+          <ArrowLeft size={16} />
+          {t.duel.back}
+        </Link>
+      )}
       {error && (
         <div
           role="alert"
@@ -513,17 +527,9 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
           </div>
         </section>
       ) : (
-        <div className="space-y-4">
-          <div
-            className={`grid items-center gap-3 ${solo ? "sm:grid-cols-[1fr_auto]" : "sm:grid-cols-[1fr_auto_1fr]"}`}
-          >
-            <Score player={room.players[0]} />
-            <p className="text-center text-sm font-semibold text-muted">
-              {t.duel.round(room.currentRound + 1, room.totalRounds)}
-            </p>
-            {!solo && <Score player={room.players[1]} />}
-          </div>
-          <section className="soft-panel overflow-hidden rounded-3xl p-2">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          <FrameScoreboard room={room} />
+          <section className="frame-stage soft-panel overflow-hidden rounded-3xl p-2">
             {room.nextFramePath && (
               <Image
                 unoptimized
@@ -536,8 +542,8 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                 className="absolute h-px w-px opacity-0 pointer-events-none"
               />
             )}
-            <div className="overflow-hidden rounded-[1.25rem] bg-[#121214]">
-              <div className="relative h-[clamp(14rem,45vh,28rem)] bg-black">
+            <div className="frame-stage__inner overflow-hidden rounded-[1.25rem] bg-[#121214]">
+              <div className="frame-stage__image relative h-[clamp(14rem,45vh,28rem)] bg-black">
                 {room.question && (
                   <Image
                     key={`${roundKey}:${imageRetry}`}
@@ -556,7 +562,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                   />
                 )}
                 {(!startsAt || countdown > 0) && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#141418] px-6 text-center">
+                  <div className="frame-stage__intro absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#141418] px-6 text-center">
                     {countdown > 0 ? (
                       <p
                         role="status"
@@ -611,7 +617,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                         <h2 className="text-2xl font-semibold">
                           {copy.prepare}
                         </h2>
-                        <p className="max-w-md text-sm text-muted">
+                        <p className="frame-stage__instructions max-w-md text-sm text-muted">
                           {solo ? copy.practiceDesc : copy.readyHint}
                         </p>
                         <button
@@ -626,9 +632,9 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                   </div>
                 )}
               </div>
-              <div className="px-5 pt-5">
+              <div className="px-3 pt-3 sm:px-5 sm:pt-4">
                 <div
-                  className="mb-3 flex items-center justify-between gap-3 text-sm"
+                  className="mb-2 flex items-center justify-between gap-2 text-xs sm:text-sm"
                   role="status"
                 >
                   <p>
@@ -647,6 +653,19 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                     {Math.ceil(remaining / 1000)}s
                   </span>
                 </div>
+                {resolved &&
+                  !solo &&
+                  room.players.some((player) => !player.answered) && (
+                    <p className="mb-2 text-[11px] text-muted">
+                      {room.players
+                        .filter((player) => !player.answered)
+                        .map((player) =>
+                          player.role === room.you ? copy.you : player.name,
+                        )
+                        .join(", ")}{" "}
+                      · {copy.noAnswer}
+                    </p>
+                  )}
                 <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                   <div
                     className="h-full bg-accent-purple transition-[width] duration-100 motion-reduce:transition-none"
@@ -654,10 +673,23 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                   />
                 </div>
               </div>
-              <div className="grid auto-rows-fr gap-3 p-5 sm:grid-cols-2">
+              <div
+                className="grid grid-cols-2 auto-rows-fr gap-2 p-3 sm:gap-3 sm:p-5"
+                data-testid="frame-answers"
+              >
                 {room.question?.options.map((option, index) => (
                   <button
                     key={index}
+                    title={
+                      startsAt && countdown === 0
+                        ? `${option.title} (${option.year})`
+                        : undefined
+                    }
+                    aria-label={
+                      !startsAt || countdown > 0
+                        ? String.fromCharCode(65 + index)
+                        : undefined
+                    }
                     disabled={!playable || Boolean(me?.answered) || pending}
                     onClick={() => {
                       setSelected({ key: roundKey, index });
@@ -667,44 +699,46 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                         match: room.matchNumber,
                       });
                     }}
-                    className={`min-h-20 rounded-2xl px-4 py-4 text-left text-sm font-semibold transition-colors ${resolved && room.question?.correctIndex === index ? "bg-match-exact/15 text-match-exact" : selectedIndex === index ? (resolved ? "bg-match-miss/15 text-match-miss" : "bg-accent-purple/20 text-foreground") : "bg-white/5 text-foreground hover:enabled:bg-white/10"}`}
+                    className={`frame-answer flex min-h-24 min-w-0 flex-col justify-between gap-2 rounded-2xl px-3 py-3 text-left text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-purple sm:px-4 sm:text-sm ${resolved && room.question?.correctIndex === index ? "bg-match-exact/15 text-match-exact" : selectedIndex === index ? (resolved ? "bg-match-miss/15 text-match-miss" : "bg-accent-purple/20 text-foreground") : "bg-white/5 text-foreground hover:enabled:bg-white/10"}`}
                   >
                     {startsAt && countdown === 0 ? (
-                      <>
-                        {option.title}
-                        <span className="ml-2 text-xs font-normal text-muted">
+                      <span className="line-clamp-3 leading-snug">
+                        {option.title}{" "}
+                        <span className="text-[10px] font-normal text-muted sm:text-xs">
                           ({option.year})
                         </span>
-                      </>
+                      </span>
                     ) : (
                       <span aria-hidden="true" className="text-muted/30">
                         {String.fromCharCode(65 + index)}
                       </span>
                     )}
+                    <span
+                      className="flex min-h-4 w-full gap-1"
+                      data-testid={`answer-players-${index}`}
+                    >
+                      {resolved &&
+                        room.players
+                          .filter((player) => player.answerIndex === index)
+                          .map((player) => (
+                            <span
+                              key={player.role}
+                              title={player.name}
+                              className={`min-w-0 truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${player.role === room.you ? "bg-accent-purple/20 text-[#bb9dff]" : "bg-cyan-400/15 text-cyan-200"}`}
+                            >
+                              {player.role === room.you
+                                ? copy.you
+                                : player.name}
+                            </span>
+                          ))}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
           </section>
-          <button onClick={leave} className="text-xs text-muted underline">
-            {t.duel.backToModes}
-          </button>
         </div>
       )}
-    </div>
-  );
-}
-
-function Score({ player }: { player?: DuelRoomView["players"][number] }) {
-  const { t } = useTranslation();
-  return (
-    <div className="soft-card flex min-w-0 items-center justify-between gap-3 rounded-2xl p-4">
-      <span className="truncate text-sm font-semibold">
-        {player?.name ?? "—"}
-      </span>
-      <span className="shrink-0 text-sm text-accent-purple">
-        {t.duel.points(player?.score ?? 0)}
-      </span>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useId } from "react";
 import type { MovieSuggestion } from "@/types/movie-suggestion";
 import { useTranslation } from "@/i18n";
 import experience from "@/i18n/experience";
-import { Film, Search, Loader2 } from "lucide-react";
+import { Film, Search, Loader2 } from "@/components/ui/icons";
 
 interface SearchBarProps {
   onSelect: (movie: MovieSuggestion) => void;

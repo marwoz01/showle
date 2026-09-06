@@ -154,6 +154,8 @@ model DuelRoom {
   guestRoundPoints      Int       @default(0)
   hostAnsweredRound     Int       @default(-1)
   guestAnsweredRound    Int       @default(-1)
+  hostAnswerIndex       Int?
+  guestAnswerIndex      Int?
   roundWinnerId         String?
   roundStartedAt        DateTime?
   roundEndsAt           DateTime?

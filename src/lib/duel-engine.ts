@@ -26,9 +26,9 @@ export function answerWindowOpen(
     !room.roundResolvedAt &&
     Boolean(
       room.roundStartedAt &&
-        room.roundEndsAt &&
-        room.roundStartedAt.getTime() <= now &&
-        room.roundEndsAt.getTime() > now,
+      room.roundEndsAt &&
+      room.roundStartedAt.getTime() <= now &&
+      room.roundEndsAt.getTime() > now,
     )
   );
 }
@@ -75,6 +75,8 @@ function advance(room: DuelRoom, now: number) {
     room.currentRound++;
     room.hostRoundPoints = 0;
     room.guestRoundPoints = 0;
+    room.hostAnswerIndex = null;
+    room.guestAnswerIndex = null;
     room.roundWinnerId = null;
     room.roundResolvedAt = null;
     room.roundStartedAt = null;
@@ -135,10 +137,12 @@ export function transitionRoom(
           : 0;
       if (host) {
         room.hostAnsweredRound = room.currentRound;
+        room.hostAnswerIndex = action.answerIndex;
         room.hostRoundPoints = points;
         room.hostScore += points;
       } else {
         room.guestAnsweredRound = room.currentRound;
+        room.guestAnswerIndex = action.answerIndex;
         room.guestRoundPoints = points;
         room.guestScore += points;
       }
@@ -159,6 +163,8 @@ export function transitionRoom(
       room.guestRoundPoints = 0;
       room.hostAnsweredRound = -1;
       room.guestAnsweredRound = -1;
+      room.hostAnswerIndex = null;
+      room.guestAnswerIndex = null;
       room.hostReadyRound = -1;
       room.guestReadyRound = -1;
       room.hostRematch = false;

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useTranslation } from "@/i18n";
-import { MoreVertical, Eye, Bookmark, Trash2, MessageSquare } from "lucide-react";
+import { MoreVertical, Eye, Bookmark, Trash2, MessageSquare } from "@/components/ui/icons";
 import StarRating from "@/components/collection/StarRating";
 import ConfirmModal from "@/components/collection/ConfirmModal";
 import MovieDetailsModal from "@/components/movie/MovieDetailsModal";

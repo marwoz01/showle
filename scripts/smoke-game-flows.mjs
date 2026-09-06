@@ -54,6 +54,7 @@ async function playFrames(mode) {
   }
   assert.equal(view.roundEndsAt, null);
   for (let round = 0; round < 6; round++) {
+    const previousScore = view.players[0].score;
     const action = { type: "ready", round, match: view.matchNumber };
     view = await api(`${path}/action`, host, action);
     if (mode === "duel") {
@@ -99,10 +100,26 @@ async function playFrames(mode) {
         null,
         "First answer cannot end the round",
       );
+      assert.equal(one.players[0].answerIndex, 0, "Restore my own choice");
+      const waiting = await api(path, guest);
+      assert.equal(
+        waiting.players[0].answerIndex,
+        null,
+        "Do not reveal the opponent's choice early",
+      );
+      assert.equal(
+        waiting.players[0].score,
+        previousScore,
+        "Do not leak correctness via points",
+      );
       view = await api(`${path}/answer`, guest, answer);
     } else view = two;
     assert.notEqual(view.roundResolvedAt, null);
     assert(Number.isInteger(view.question.correctIndex));
+    assert(
+      view.players.every((player) => player.answerIndex === 0),
+      "Reveal both players on the same answer",
+    );
     const nextFrame = view.nextFramePath;
     if (round < 5)
       assert.equal(

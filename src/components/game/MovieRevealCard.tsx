@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { GuessResult, MediaDetails } from "@/types";
 import { useTranslation } from "@/i18n";
-import { Film, UserRound } from "lucide-react";
+import { Film, UserRound } from "@/components/ui/icons";
 
 interface MovieRevealCardProps {
   guesses: GuessResult[];
