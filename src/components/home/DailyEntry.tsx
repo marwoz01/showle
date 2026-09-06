@@ -74,9 +74,11 @@ export default function DailyEntry() {
     >
       <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-accent-purple/10 blur-3xl" />
       <div className="relative">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <Clapperboard className="text-accent-purple" size={26} />
-          <span className="text-xs text-muted">
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-purple/15">
+            <Clapperboard className="text-accent-purple" size={22} />
+          </div>
+          <span className="rounded-md bg-accent-purple/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent-purple">
             {experience[locale].dailyEyebrow}
           </span>
         </div>
@@ -86,20 +88,12 @@ export default function DailyEntry() {
         <p className="max-w-lg text-sm leading-relaxed text-muted">
           {t.modes.dailyMovieDesc}
         </p>
-        <p className="mt-4 text-xs text-muted">
-          {experience[locale].dailyFootnote}
-        </p>
       </div>
       <div className="relative mt-8 flex flex-wrap items-center justify-between gap-4">
         <span className="inline-flex items-center gap-2 rounded-xl bg-accent-purple px-5 py-3 text-sm font-semibold text-white">
           {action}
           <ArrowRight size={16} />
         </span>
-        {current && (
-          <span className="text-xs text-muted">
-            {experience[locale].progress(current.attempts)}
-          </span>
-        )}
       </div>
     </Link>
   );

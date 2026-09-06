@@ -8,7 +8,7 @@ import {
   normalizePlayerId,
   normalizePlayerName,
 } from "@/lib/duel-room";
-import { getDuelMoviePool } from "@/lib/tmdb";
+import { getFrameMoviePool } from "@/lib/frame-catalog";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
@@ -21,7 +21,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
-  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const body = (await request.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null;
   const action = body?.action;
   const playerId = normalizePlayerId(body?.playerId);
   const name = normalizePlayerName(body?.name);
@@ -32,7 +35,7 @@ export async function POST(request: NextRequest) {
   try {
     if (action === "create") {
       const locale = body?.locale === "pl" ? "pl-PL" : "en-US";
-      const questions = createDuelQuestions(await getDuelMoviePool(locale));
+      const questions = createDuelQuestions(getFrameMoviePool(locale));
       let code = createRoomCode();
       for (let attempt = 0; attempt < 5; attempt += 1) {
         const exists = await prisma.duelRoom.findUnique({ where: { code } });
@@ -68,7 +71,11 @@ export async function POST(request: NextRequest) {
       if (existing.hostId === playerId || existing.guestId === playerId) {
         return NextResponse.json(await getDuelRoomView(code, playerId));
       }
-      if (existing.mode !== "duel" || existing.status !== "waiting" || existing.guestId) {
+      if (
+        existing.mode !== "duel" ||
+        existing.status !== "waiting" ||
+        existing.guestId
+      ) {
         return NextResponse.json({ error: "room_full" }, { status: 409 });
       }
 

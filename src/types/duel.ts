@@ -23,7 +23,12 @@ export interface DuelRoomView {
   matchNumber: number;
   serverNow: string;
   roundStartsAt: string | null;
-  history: { title: string; year: number; hostPoints: number; guestPoints: number }[];
+  history: {
+    title: string;
+    year: number;
+    hostPoints: number;
+    guestPoints: number;
+  }[];
   status: DuelStatus;
   you: DuelRole;
   players: DuelPlayerView[];
@@ -34,4 +39,5 @@ export interface DuelRoomView {
   roundWinner: DuelRole | null;
   winner: DuelRole | "draw" | null;
   question: DuelQuestionView | null;
+  nextFramePath: string | null;
 }

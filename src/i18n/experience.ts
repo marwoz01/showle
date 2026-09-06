@@ -3,9 +3,7 @@ const experience = {
   pl: {
     continueGame: "Kontynuuj grę",
     viewResult: "Zobacz wynik",
-    dailyEyebrow: "Jedna zagadka. Każdego dnia.",
-    dailyFootnote: "7 prób · wskazówki po 2., 4. i 6. próbie",
-    progress: (n: number) => `Wykorzystane próby: ${n}/7`,
+    dailyEyebrow: "Codzienna zagadka",
     searchLoading: "Szukanie filmów…",
     searchEmpty:
       "Brak wyników. Spróbuj tytułu oryginalnego lub krótszej nazwy.",
@@ -26,6 +24,7 @@ const experience = {
     loadingFrame: "Wczytywanie kadru…",
     readyWaiting: "Gotowe — czekamy na drugiego gracza",
     prepare: "Przygotowanie rundy",
+    countdown: "Odliczanie przed rundą",
     frameError: "Nie udało się wczytać kadru. Spróbuj ponownie.",
     rematch: "Zagraj rewanż",
     rematchWaiting: "Rewanż zaproponowany — czekamy na drugiego gracza",
@@ -44,9 +43,7 @@ const experience = {
   en: {
     continueGame: "Continue game",
     viewResult: "View result",
-    dailyEyebrow: "One mystery. Every day.",
-    dailyFootnote: "7 guesses · hints after guesses 2, 4 and 6",
-    progress: (n: number) => `Guesses used: ${n}/7`,
+    dailyEyebrow: "Daily challenge",
     searchLoading: "Searching movies…",
     searchEmpty: "No results. Try the original title or a shorter name.",
     searchError: "Could not search movies.",
@@ -66,6 +63,7 @@ const experience = {
     loadingFrame: "Loading frame…",
     readyWaiting: "Ready — waiting for the other player",
     prepare: "Preparing round",
+    countdown: "Round countdown",
     frameError: "Could not load the frame. Please try again.",
     rematch: "Play a rematch",
     rematchWaiting: "Rematch requested — waiting for the other player",

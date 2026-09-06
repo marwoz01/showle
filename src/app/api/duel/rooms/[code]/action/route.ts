@@ -5,7 +5,7 @@ import {
   normalizePlayerId,
 } from "@/lib/duel-room";
 import { createDuelQuestions } from "@/lib/duel";
-import { getDuelMoviePool } from "@/lib/tmdb";
+import { getFrameMoviePool } from "@/lib/frame-catalog";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(
@@ -37,7 +37,7 @@ export async function POST(
     }
     if (body.type === "rematch" && current.status === "finished") {
       const questions = createDuelQuestions(
-        await getDuelMoviePool(body.locale === "pl" ? "pl-PL" : "en-US"),
+        getFrameMoviePool(body.locale === "pl" ? "pl-PL" : "en-US"),
       );
       return NextResponse.json(
         await getDuelRoomView(code, playerId, {

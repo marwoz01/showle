@@ -105,6 +105,12 @@ export function serializeRoom(room: DuelRoom, playerId: string): DuelRoomView {
         : "guest"
       : null,
     winner,
+    // Warm the next image during feedback, never send future answer options.
+    nextFramePath:
+      resolved && room.status === "playing"
+        ? ((room.questions as unknown as DuelQuestion[])[room.currentRound + 1]
+            ?.imagePath ?? null)
+        : null,
     question:
       room.status === "waiting" || !question
         ? null

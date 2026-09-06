@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "catalog:sync": "node scripts/sync-frame-catalog.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

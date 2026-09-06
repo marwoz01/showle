@@ -65,6 +65,11 @@ async function playFrames(mode) {
       10000,
     );
     assert.equal(view.question.correctIndex, undefined);
+    assert.equal(
+      view.nextFramePath,
+      null,
+      "Do not send next frames before round feedback",
+    );
     if (round === 0) {
       const early = await api(`${path}/answer`, host, {
         answerIndex: 0,
@@ -98,10 +103,19 @@ async function playFrames(mode) {
     } else view = two;
     assert.notEqual(view.roundResolvedAt, null);
     assert(Number.isInteger(view.question.correctIndex));
+    const nextFrame = view.nextFramePath;
+    if (round < 5)
+      assert.equal(
+        typeof nextFrame,
+        "string",
+        "Preload the next frame during feedback",
+      );
+    else assert.equal(nextFrame, null);
     await pause(
       Math.max(0, Date.parse(view.roundResolvedAt) + 2550 - Date.now()),
     );
     view = await api(path, host);
+    if (round < 5) assert.equal(view.question.imagePath, nextFrame);
     console.log(`${mode}: round ${round + 1}/6 verified`);
   }
   assert.equal(view.status, "finished");

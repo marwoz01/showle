@@ -1,0 +1,23 @@
+{
+  "350": {
+    "relatedMovieIds": [257211, 8835, 20048, 38357]
+  },
+  "257211": {
+    "relatedMovieIds": [350, 38357, 3525]
+  },
+  "8835": {
+    "relatedMovieIds": [350, 20048, 6557]
+  },
+  "8960": {
+    "frames": [
+      "/o0YtDNgeabRViiLLHOWa0HlRg7r.jpg",
+      "/qndvrOXGyoOxkhc12SqfLi9Hr31.jpg"
+    ]
+  },
+  "20048": {
+    "relatedMovieIds": [350, 8835, 6557]
+  },
+  "38357": {
+    "relatedMovieIds": [350, 257211, 3525]
+  }
+}

@@ -180,6 +180,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
         if (!response.ok || !data?.code)
           throw new Error(data?.error ?? "server_error");
         if (currentScope === scope.current) accept(data);
+        return true;
       } catch (issue) {
         if (currentScope !== scope.current) return;
         const key = issue instanceof Error ? issue.message : "server_error";
@@ -192,6 +193,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
         };
         setError(messages[key] ?? t.duel.serverError);
         setSelected(null);
+        return false;
       } finally {
         busy.current = false;
         setPending(false);
@@ -204,13 +206,14 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     ? `${room.code}:${room.matchNumber}:${room.currentRound}`
     : "";
   const me = room?.players.find((player) => player.role === room.you);
-  const ready = useCallback(() => {
+  const ready = useCallback(async () => {
     if (!room || loadedKey !== roundKey || me?.ready) return;
-    void request(`/api/duel/rooms/${room.code}/action`, {
+    const success = await request(`/api/duel/rooms/${room.code}/action`, {
       type: "ready",
       round: room.currentRound,
       match: room.matchNumber,
     });
+    if (!success) autoReady.current = "";
   }, [room, loadedKey, roundKey, me?.ready, request]);
   useEffect(() => {
     if (
@@ -292,10 +295,10 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     : 10000;
   const playable = Boolean(
     startsAt &&
-      countdown === 0 &&
-      remaining > 0 &&
-      loadedKey === roundKey &&
-      !resolved,
+    countdown === 0 &&
+    remaining > 0 &&
+    loadedKey === roundKey &&
+    !resolved,
   );
   const selectedIndex = selected?.key === roundKey ? selected.index : null;
 
@@ -521,6 +524,18 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
             {!solo && <Score player={room.players[1]} />}
           </div>
           <section className="soft-panel overflow-hidden rounded-3xl p-2">
+            {room.nextFramePath && (
+              <Image
+                unoptimized
+                src={`https://image.tmdb.org/t/p/w1280${room.nextFramePath}`}
+                alt=""
+                aria-hidden="true"
+                width={1}
+                height={1}
+                loading="eager"
+                className="absolute h-px w-px opacity-0 pointer-events-none"
+              />
+            )}
             <div className="overflow-hidden rounded-[1.25rem] bg-[#121214]">
               <div className="relative h-[clamp(14rem,45vh,28rem)] bg-black">
                 {room.question && (
@@ -563,6 +578,24 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                           {t.common.tryAgain}
                         </button>
                       </>
+                    ) : room.currentRound > 0 ? (
+                      error ? (
+                        <button
+                          disabled={pending || loadedKey !== roundKey}
+                          onClick={ready}
+                          className={actionClass}
+                        >
+                          {t.common.tryAgain}
+                        </button>
+                      ) : (
+                        <p
+                          role="status"
+                          aria-label={copy.countdown}
+                          className="text-7xl font-bold tabular-nums text-accent-purple"
+                        >
+                          3
+                        </p>
+                      )
                     ) : loadedKey !== roundKey ? (
                       <>
                         <LoaderCircle
