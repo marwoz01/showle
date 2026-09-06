@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -128,7 +129,7 @@ export default function MovieDetailsModal({
               <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4">
                 <div className="min-w-0">
                   <h2 className="text-2xl font-bold text-foreground drop-shadow-2xl sm:text-3xl">
-                    {movie.title}
+                    {normalizeDisplayText(movie.title)}
                   </h2>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-foreground/80">
                     {movie.year > 0 && <span className="font-medium">{movie.year}</span>}
@@ -141,7 +142,7 @@ export default function MovieDetailsModal({
                     {movie.director && movie.director !== "Unknown" && (
                       <>
                         <span className="text-foreground/40">·</span>
-                        <span>{movie.director}</span>
+                        <span>{normalizeDisplayText(movie.director)}</span>
                       </>
                     )}
                   </div>
@@ -165,7 +166,7 @@ export default function MovieDetailsModal({
                   {movie.posterPath ? (
                     <Image
                       src={`https://image.tmdb.org/t/p/w342${movie.posterPath}`}
-                      alt={movie.title}
+                      alt={normalizeDisplayText(movie.title)}
                       width={342}
                       height={513}
                       className="h-full w-full object-cover"
@@ -180,7 +181,7 @@ export default function MovieDetailsModal({
               <div className="flex min-w-0 flex-col gap-4">
                 {movie.tagline && (
                   <p className="text-base italic text-muted/80">
-                    &ldquo;{movie.tagline}&rdquo;
+                    &ldquo;{normalizeDisplayText(movie.tagline)}&rdquo;
                   </p>
                 )}
 
@@ -201,7 +202,7 @@ export default function MovieDetailsModal({
                   {movie.director && movie.director !== "Unknown" && (
                     <>
                       <dt className="text-muted">{t.comparison.director}</dt>
-                      <dd className="text-foreground">{movie.director}</dd>
+                      <dd className="text-foreground">{normalizeDisplayText(movie.director)}</dd>
                     </>
                   )}
                   {movie.country && movie.country !== "Unknown" && (
@@ -231,7 +232,7 @@ export default function MovieDetailsModal({
                       {t.result.storyline}
                     </h4>
                     <p className="text-sm leading-relaxed text-muted">
-                      {movie.overview}
+                      {normalizeDisplayText(movie.overview)}
                     </p>
                   </div>
                 )}

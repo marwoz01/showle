@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import Image from "next/image";
 import { GuessResult, MediaDetails } from "@/types";
@@ -162,7 +163,7 @@ function RevealPerson({
         {name && profilePath ? (
           <Image
             src={`https://image.tmdb.org/t/p/w185${profilePath}`}
-            alt={name}
+            alt={normalizeDisplayText(name)}
             fill
             sizes="40px"
             className="object-cover"
@@ -180,7 +181,7 @@ function RevealPerson({
         <span
           className={`block truncate text-xs font-semibold ${name ? "text-match-exact" : "text-muted/40"}`}
         >
-          {name ?? "?"}
+          {normalizeDisplayText(name ?? "?")}
         </span>
       </span>
     </div>
@@ -199,9 +200,9 @@ function InfoSlot({ label, value }: { label: string; value: string | undefined }
       </span>
       <span
         className={`line-clamp-2 w-full max-w-full text-xs font-semibold leading-tight [overflow-wrap:break-word] ${value ? "text-match-exact" : "text-muted/40"}`}
-        title={value}
+        title={normalizeDisplayText(value)}
       >
-        {value ?? "?"}
+        {normalizeDisplayText(value ?? "?")}
       </span>
     </div>
   );

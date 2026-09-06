@@ -224,7 +224,7 @@ export default function PreferenceForm({
               {t.recommend.yearLabel}
             </label>
             <span className="text-sm font-bold text-foreground">
-              {yearFrom} – {yearTo}
+              {yearFrom} - {yearTo}
             </span>
           </div>
 

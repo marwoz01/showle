@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -68,7 +69,7 @@ export default function RankingItemRow({
       {item.posterPath ? (
         <Image
           src={`https://image.tmdb.org/t/p/w92${item.posterPath}`}
-          alt={item.title}
+          alt={normalizeDisplayText(item.title)}
           width={56}
           height={84}
           className="h-21 w-14 shrink-0 rounded object-cover"
@@ -82,11 +83,11 @@ export default function RankingItemRow({
       {/* Info */}
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
-          {item.title}
+          {normalizeDisplayText(item.title)}
         </p>
         <p className="text-xs text-muted">
           {item.year}
-          {item.director && <> · {item.director}</>}
+          {item.director && <> · {normalizeDisplayText(item.director)}</>}
         </p>
 
         {/* Genre badges */}

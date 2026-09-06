@@ -18,11 +18,11 @@ const experience = {
     matchingFields: "Trafione cechy",
     comparisonTitle: "Co oznaczają kolory?",
     comparisonHelp:
-      "Zielony: ta sama wartość. Żółty: wspólny gatunek lub blisko — rok ±3, czas ±15 min, budżet i głosy do 25% większej wartości, ocena ±1. Strzałka wskazuje, czy szukana liczba jest wyższa, czy niższa. Oceny porównujemy do jednego miejsca po przecinku. Brak budżetu oznaczamy znakiem ?.",
+      "Zielony: ta sama wartość. Żółty: wspólny gatunek lub blisko - rok ±3, czas ±15 min, budżet i głosy do 25% większej wartości, ocena ±1. Strzałka wskazuje, czy szukana liczba jest wyższa, czy niższa. Oceny porównujemy do jednego miejsca po przecinku. Brak budżetu oznaczamy znakiem ?.",
     inviteLink: "Kopiuj link zaproszenia",
     ready: "Jestem gotowy",
     loadingFrame: "Wczytywanie kadru…",
-    readyWaiting: "Gotowe — czekamy na drugiego gracza",
+    readyWaiting: "Gotowe - czekamy na drugiego gracza",
     prepare: "Przygotowanie rundy",
     countdown: "Odliczanie przed rundą",
     you: "Ty",
@@ -34,7 +34,7 @@ const experience = {
     noAnswer: "brak odpowiedzi",
     frameError: "Nie udało się wczytać kadru. Spróbuj ponownie.",
     rematch: "Zagraj rewanż",
-    rematchWaiting: "Rewanż zaproponowany — czekamy na drugiego gracza",
+    rematchWaiting: "Rewanż zaproponowany - czekamy na drugiego gracza",
     rematchRequested: "Przeciwnik chce rewanżu",
     guestWaiting: "Czekamy na znajomego",
     seconds: "sekund",
@@ -45,7 +45,7 @@ const experience = {
     newPractice: "Nowy trening",
     unavailable: "Rozgrywka wygasła. Utwórz nową.",
     readyHint:
-      "Gdy oboje będziecie gotowi, ruszy odliczanie 3–2–1. Kadr i odpowiedzi odsłonią się na starcie rundy.",
+      "Gdy oboje będziecie gotowi, ruszy odliczanie 3-2-1. Kadr i odpowiedzi odsłonią się na starcie rundy.",
   },
   en: {
     continueGame: "Continue game",
@@ -64,11 +64,11 @@ const experience = {
     matchingFields: "Matching clues",
     comparisonTitle: "What do the colours mean?",
     comparisonHelp:
-      "Green: the same value. Yellow: a shared genre or close — year ±3, runtime ±15 min, budget and votes within 25% of the larger value, rating ±1. The arrow shows whether the answer's value is higher or lower. Ratings are compared to one decimal place. Unknown budgets are marked ?.",
+      "Green: the same value. Yellow: a shared genre or close - year ±3, runtime ±15 min, budget and votes within 25% of the larger value, rating ±1. The arrow shows whether the answer's value is higher or lower. Ratings are compared to one decimal place. Unknown budgets are marked ?.",
     inviteLink: "Copy invitation link",
     ready: "I'm ready",
     loadingFrame: "Loading frame…",
-    readyWaiting: "Ready — waiting for the other player",
+    readyWaiting: "Ready - waiting for the other player",
     prepare: "Preparing round",
     countdown: "Round countdown",
     you: "You",
@@ -80,7 +80,7 @@ const experience = {
     noAnswer: "no answer",
     frameError: "Could not load the frame. Please try again.",
     rematch: "Play a rematch",
-    rematchWaiting: "Rematch requested — waiting for the other player",
+    rematchWaiting: "Rematch requested - waiting for the other player",
     rematchRequested: "Your opponent wants a rematch",
     guestWaiting: "Waiting for your friend",
     seconds: "seconds",
@@ -91,7 +91,7 @@ const experience = {
     newPractice: "New practice",
     unavailable: "This game has expired. Start a new one.",
     readyHint:
-      "When both players are ready, the 3–2–1 countdown begins. The frame and answers are revealed when the round starts.",
+      "When both players are ready, the 3-2-1 countdown begins. The frame and answers are revealed when the round starts.",
   },
 };
 export default experience;

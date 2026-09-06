@@ -90,7 +90,7 @@ export default function StarRating({
             );
           })}
           <span className="ml-2 text-sm font-semibold text-yellow-400/80">
-            {hover ?? displayValue ?? "—"} / 10
+            {hover ?? displayValue ?? "-"} / 10
           </span>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function StarRating({
         }`}
       >
         <Star size={size} fill={displayValue ? "currentColor" : "none"} strokeWidth={displayValue ? 0 : 1.5} />
-        {displayValue ?? "—"}
+        {displayValue ?? "-"}
       </button>
 
       {/* Picker: 10 clickable stars with half-star support */}
@@ -171,7 +171,7 @@ export default function StarRating({
               })}
             </div>
             <div className="mt-1.5 text-center text-xs font-semibold text-yellow-400/80">
-              {hover ?? displayValue ?? "—"} / 10
+              {hover ?? displayValue ?? "-"} / 10
             </div>
           </div>
         </div>

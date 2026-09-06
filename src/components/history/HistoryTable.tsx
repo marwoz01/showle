@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import Image from "next/image";
 import { Film } from "@/components/ui/icons";
@@ -75,7 +76,7 @@ export default function HistoryTable({ items, onReview }: HistoryTableProps) {
                       {item.targetPoster ? (
                         <Image
                           src={`https://image.tmdb.org/t/p/w92${item.targetPoster}`}
-                          alt={item.targetTitle}
+                          alt={normalizeDisplayText(item.targetTitle)}
                           width={32}
                           height={48}
                           className="h-12 w-8 rounded object-cover"
@@ -87,7 +88,7 @@ export default function HistoryTable({ items, onReview }: HistoryTableProps) {
                       )}
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-foreground">
-                          {item.targetTitle || "—"}
+                          {normalizeDisplayText(item.targetTitle || "-")}
                         </p>
                         {item.targetYear > 0 && (
                           <p className="text-xs text-muted">{item.targetYear}</p>
@@ -152,7 +153,7 @@ export default function HistoryTable({ items, onReview }: HistoryTableProps) {
                 {item.targetPoster ? (
                   <Image
                     src={`https://image.tmdb.org/t/p/w92${item.targetPoster}`}
-                    alt={item.targetTitle}
+                    alt={normalizeDisplayText(item.targetTitle)}
                     width={40}
                     height={60}
                     className="h-15 w-10 shrink-0 rounded object-cover"
@@ -166,7 +167,7 @@ export default function HistoryTable({ items, onReview }: HistoryTableProps) {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">
-                        {item.targetTitle || "—"}
+                        {normalizeDisplayText(item.targetTitle || "-")}
                       </p>
                       {item.targetYear > 0 && (
                         <p className="text-xs text-muted">{item.targetYear}</p>

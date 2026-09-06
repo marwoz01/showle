@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -271,9 +272,9 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
           <ArrowLeft size={20} />
         </button>
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-bold text-foreground">{list.name}</h2>
+          <h2 className="text-lg font-bold text-foreground">{normalizeDisplayText(list.name)}</h2>
           {list.description && (
-            <p className="text-xs text-muted">{list.description}</p>
+            <p className="text-xs text-muted">{normalizeDisplayText(list.description)}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -390,14 +391,14 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
                   {movie.posterPath && (
                     <Image
                       src={`https://image.tmdb.org/t/p/w92${movie.posterPath}`}
-                      alt={movie.title}
+                      alt={normalizeDisplayText(movie.title)}
                       width={24}
                       height={36}
                       className="rounded"
                     />
                   )}
                   <span className="text-sm font-medium text-foreground">
-                    {movie.title}
+                    {normalizeDisplayText(movie.title)}
                   </span>
                   <span className="text-xs text-muted">({movie.year})</span>
                 </button>

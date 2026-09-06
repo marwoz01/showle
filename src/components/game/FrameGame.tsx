@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -6,10 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Check,
-  Clipboard,
   Clock3,
-  Film,
   LoaderCircle,
   Swords,
   Trophy,
@@ -18,6 +16,9 @@ import { useTranslation } from "@/i18n";
 import experience from "@/i18n/experience";
 import type { DuelRoomView } from "@/types/duel";
 import FrameScoreboard from "@/components/game/FrameScoreboard";
+import FrameGameEntry from "@/components/game/FrameGameEntry";
+import DuelRoomInvite from "@/components/game/DuelRoomInvite";
+import { getDuelResumeCode, NO_DUEL_INVITATION, type DuelInvitation } from "@/lib/duel-invite";
 
 function storageGet(key: string) {
   try {
@@ -34,17 +35,22 @@ function storageSet(key: string, value: string) {
   }
 }
 
-export default function FrameGame({ solo = false }: { solo?: boolean }) {
+interface FrameGameProps {
+  solo?: boolean;
+  invitation?: DuelInvitation;
+}
+
+export default function FrameGame({ solo = false, invitation = NO_DUEL_INVITATION }: FrameGameProps) {
   const router = useRouter();
   const { t, locale } = useTranslation();
   const copy = experience[locale];
   const [playerId, setPlayerId] = useState("");
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(!solo && invitation.status === "valid" ? invitation.code : "");
   const [room, setRoom] = useState<DuelRoomView | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [restoring, setRestoring] = useState(true);
   const [selected, setSelected] = useState<{
     key: string;
     index: number;
@@ -82,16 +88,11 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     storageSet("showle-duel-player", id);
     setPlayerId(id);
     setName(storageGet("showle-duel-name") ?? "");
-    const invite = new URLSearchParams(window.location.search)
-      .get("code")
-      ?.trim()
-      .toUpperCase();
-    const savedCode = storageGet(storageKey);
-    if (!solo && invite && /^[A-Z0-9]{6}$/.test(invite)) {
-      setCode(invite);
-      if (savedCode !== invite) return;
+    const savedCode = getDuelResumeCode(solo ? NO_DUEL_INVITATION : invitation, storageGet(storageKey));
+    if (!savedCode) {
+      setRestoring(false);
+      return;
     }
-    if (!savedCode) return;
     const ac = new AbortController();
     fetch(`/api/duel/rooms/${savedCode}`, {
       headers: { "x-duel-player": id },
@@ -107,9 +108,12 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
       })
       .catch(() => {
         if (!ac.signal.aborted) storageSet(storageKey, "");
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setRestoring(false);
       });
     return () => ac.abort();
-  }, [accept, solo, storageKey]);
+  }, [accept, invitation, solo, storageKey]);
 
   useEffect(() => {
     if (!room?.code || !playerId || (solo && room.status === "finished"))
@@ -292,19 +296,6 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     setSelected(null);
     router.push("/play");
   }
-  async function shareInvite() {
-    if (!room) return;
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/play/duel?code=${room.code}`,
-      );
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-      setError(t.common.genericError);
-    }
-  }
   const actionClass =
     "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-accent-purple px-5 py-3 text-sm font-semibold text-white hover:brightness-110 disabled:cursor-default disabled:opacity-50";
   const resolved = Boolean(room?.roundResolvedAt);
@@ -361,104 +352,25 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
         </div>
       )}
       {!room ? (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <section className="soft-card rounded-3xl p-8 sm:p-10">
-            {solo ? (
-              <Film className="mb-6 text-accent-purple" size={32} />
-            ) : (
-              <Swords className="mb-6 text-accent-purple" size={32} />
-            )}
-            <h1 className="text-4xl font-semibold sm:text-5xl">
-              {solo ? copy.practiceTitle : t.duel.title}
-            </h1>
-            <p className="mt-5 max-w-xl leading-relaxed text-muted">
-              {solo ? copy.practiceDesc : t.duel.subtitle}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-2">
-              {[t.duel.sixRounds, t.duel.fourAnswers, `10 ${copy.seconds}`].map(
-                (label) => (
-                  <span
-                    key={label}
-                    className="rounded-full bg-white/5 px-3 py-2 text-xs text-muted"
-                  >
-                    {label}
-                  </span>
-                ),
-              )}
-            </div>
-          </section>
-          <section className="soft-panel flex flex-col justify-center gap-4 rounded-3xl p-7">
-            {!solo && (
-              <>
-                <label htmlFor="player-name" className="text-sm text-muted">
-                  {t.duel.nameLabel}
-                </label>
-                <input
-                  id="player-name"
-                  maxLength={24}
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder={t.duel.namePlaceholder}
-                  className="rounded-xl bg-white/5 p-3.5 outline-accent-purple"
-                />
-              </>
-            )}
-            <button
-              disabled={pending || !playerId}
-              onClick={() => enter("create")}
-              className={actionClass}
-            >
-              {pending ? (
-                <LoaderCircle size={18} className="animate-spin" />
-              ) : null}
-              {solo ? copy.practiceAction : t.duel.createRoom}
-            </button>
-            {!solo && (
-              <>
-                <p className="text-center text-xs text-muted">{t.duel.or}</p>
-                <label htmlFor="room-code" className="text-sm text-muted">
-                  {t.duel.roomCode}
-                </label>
-                <input
-                  id="room-code"
-                  maxLength={6}
-                  value={code}
-                  onChange={(event) =>
-                    setCode(
-                      event.target.value
-                        .toUpperCase()
-                        .replace(/[^A-Z0-9]/g, ""),
-                    )
-                  }
-                  className="rounded-xl bg-white/5 p-3.5 text-center text-lg tracking-widest outline-accent-purple"
-                />
-                <button
-                  disabled={pending || !playerId}
-                  onClick={() => enter("join")}
-                  className="min-h-12 rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold disabled:opacity-50"
-                >
-                  {t.duel.joinRoom}
-                </button>
-              </>
-            )}
-          </section>
-        </div>
+        <FrameGameEntry
+          solo={solo}
+          invitation={invitation}
+          name={name}
+          code={code}
+          pending={pending}
+          initialized={Boolean(playerId) && !restoring}
+          onNameChange={setName}
+          onCodeChange={setCode}
+          onEnter={enter}
+        />
       ) : room.status === "waiting" ? (
         <section className="soft-panel mx-auto max-w-2xl rounded-3xl p-8 text-center sm:p-12">
           <Swords className="mx-auto mb-6 text-accent-purple" size={36} />
           <h1 className="text-3xl font-semibold">{t.duel.waitingTitle}</h1>
           <p className="mt-3 text-muted">{t.duel.waitingDesc}</p>
-          <p className="mt-8 text-xs text-muted">{t.duel.inviteCode}</p>
-          <p className="mt-2 text-4xl font-bold tracking-[.2em]">{room.code}</p>
-          <button
-            onClick={() => void shareInvite()}
-            className={`${actionClass} mt-6`}
-          >
-            {copied ? <Check size={17} /> : <Clipboard size={17} />}
-            {copied ? t.duel.copied : copy.inviteLink}
-          </button>
+          <DuelRoomInvite key={room.code} code={room.code} />
           <p className="mt-6 text-sm text-muted">
-            {room.players[0].name} · {copy.guestWaiting}
+            {normalizeDisplayText(room.players[0].name)} · {copy.guestWaiting}
           </p>
           <button onClick={leave} className="mt-5 text-xs text-muted underline">
             {t.duel.backToModes}
@@ -486,7 +398,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
           <div className={`mt-7 grid gap-4 ${solo ? "" : "sm:grid-cols-2"}`}>
             {room.players.map((player) => (
               <div key={player.role} className="soft-card rounded-2xl p-5">
-                <p className="text-sm text-muted">{player.name}</p>
+                <p className="text-sm text-muted">{normalizeDisplayText(player.name)}</p>
                 <p className="mt-2 text-3xl font-bold text-accent-purple">
                   {t.duel.points(player.score)}
                 </p>
@@ -503,7 +415,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                 className="flex items-center justify-between gap-4 border-t border-white/5 py-3 text-sm"
               >
                 <span className="min-w-0">
-                  {index + 1}. {round.title}{" "}
+                  {index + 1}. {normalizeDisplayText(round.title)}{" "}
                   <span className="text-muted">({round.year})</span>
                 </span>
                 <b className="shrink-0 text-accent-purple">
@@ -674,7 +586,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                       {room.players
                         .filter((player) => !player.answered)
                         .map((player) =>
-                          player.role === room.you ? copy.you : player.name,
+                          player.role === room.you ? copy.you : normalizeDisplayText(player.name),
                         )
                         .join(", ")}{" "}
                       · {copy.noAnswer}
@@ -696,7 +608,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                     key={index}
                     title={
                       room.question && startsAt && countdown === 0
-                        ? `${option.title} (${option.year})`
+                        ? `${normalizeDisplayText(option.title)} (${option.year})`
                         : undefined
                     }
                     aria-label={
@@ -717,7 +629,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                   >
                     {room.question && startsAt && countdown === 0 ? (
                       <span className="line-clamp-3 leading-snug">
-                        {option.title}{" "}
+                        {normalizeDisplayText(option.title)}{" "}
                         <span className="text-[10px] font-normal text-muted sm:text-xs">
                           ({option.year})
                         </span>
@@ -737,12 +649,12 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                           .map((player) => (
                             <span
                               key={player.role}
-                              title={player.name}
+                              title={normalizeDisplayText(player.name)}
                               className={`min-w-0 truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${player.role === room.you ? "bg-accent-purple/20 text-[#bb9dff]" : "bg-cyan-400/15 text-cyan-200"}`}
                             >
                               {player.role === room.you
                                 ? copy.you
-                                : player.name}
+                                : normalizeDisplayText(player.name)}
                             </span>
                           ))}
                     </span>

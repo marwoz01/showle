@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -59,14 +60,14 @@ export default function RecommendationCard({
               {movie.posterPath ? (
                 <Image
                   src={`https://image.tmdb.org/t/p/w342${movie.posterPath}`}
-                  alt={movie.title}
+                  alt={normalizeDisplayText(movie.title)}
                   width={342}
                   height={513}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:w-48"
                 />
               ) : (
                 <div className="flex aspect-3/4 items-center justify-center bg-white/5 p-4 text-center text-sm text-muted sm:w-48">
-                  {movie.title}
+                  {normalizeDisplayText(movie.title)}
                 </div>
               )}
               <div className="absolute right-2 top-2" onClick={stopPropagation}>
@@ -94,7 +95,7 @@ export default function RecommendationCard({
 
             {/* Title */}
             <h3 className="mb-3 text-xl font-bold text-foreground sm:text-2xl">
-              {movie.title}
+              {normalizeDisplayText(movie.title)}
             </h3>
 
             {/* Rating + genres */}
@@ -120,7 +121,7 @@ export default function RecommendationCard({
                 {t.recommend.whyRecommend}
               </div>
               <p className="text-sm leading-relaxed text-muted">
-                {justification}
+                {normalizeDisplayText(justification)}
               </p>
             </div>
           </div>
@@ -157,14 +158,14 @@ export default function RecommendationCard({
             {movie.posterPath ? (
               <Image
                 src={`https://image.tmdb.org/t/p/w185${movie.posterPath}`}
-                alt={movie.title}
+                alt={normalizeDisplayText(movie.title)}
                 fill
                 sizes="(max-width: 640px) 45vw, 185px"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
             ) : (
               <div className="flex h-full items-center justify-center bg-white/5 p-3 text-center text-xs text-muted">
-                {movie.title}
+                {normalizeDisplayText(movie.title)}
               </div>
             )}
             <div className="absolute right-1.5 top-1.5" onClick={stopPropagation}>
@@ -177,7 +178,7 @@ export default function RecommendationCard({
         <div className="flex flex-1 flex-col p-2.5">
           {/* Title */}
           <h3 className="mb-0.5 text-sm font-bold leading-tight text-foreground">
-            {movie.title}
+            {normalizeDisplayText(movie.title)}
           </h3>
 
           {/* Meta */}
@@ -212,7 +213,7 @@ export default function RecommendationCard({
             <div className="flex items-start gap-1">
               <Zap size={8} className="mt-0.5 shrink-0 text-accent-purple" />
               <p className="line-clamp-4 text-[10px] leading-snug text-accent-purple">
-                {justification}
+                {normalizeDisplayText(justification)}
               </p>
             </div>
           </div>

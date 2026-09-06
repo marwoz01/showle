@@ -20,13 +20,13 @@ const siteUrl = "https://showle.vercel.app";
 
 const metadataCopy = {
   pl: {
-    title: "Showle — Film dnia",
+    title: "Showle · Film dnia",
     description:
       "Odgadnij film dnia, porównując rok, gatunek, reżysera, budżet i inne cechy. Codziennie nowe wyzwanie!",
     locale: "pl_PL",
   },
   en: {
-    title: "Showle — Daily Movie",
+    title: "Showle · Daily Movie",
     description:
       "Guess the daily movie by comparing its year, genre, director, budget, and more. A new challenge every day!",
     locale: "en_US",

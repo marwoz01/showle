@@ -1,3 +1,4 @@
+import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 
 function polishMovieCount(count: number): string {
@@ -22,7 +23,7 @@ function polishGameCount(count: number): string {
 
 const pl: Translations = {
   meta: {
-    title: "Showle — Film dnia",
+    title: "Showle · Film dnia",
     description:
       "Odgadnij film dnia, porównując rok, gatunek, reżysera, budżet i inne cechy. Codziennie nowe wyzwanie!",
   },
@@ -110,14 +111,24 @@ const pl: Translations = {
     joinRoom: "Dołącz do pokoju",
     connecting: "Łączenie...",
     waitingTitle: "Czekamy na drugiego gracza",
-    waitingDesc: "Przekaż znajomemu poniższy kod. Gra ruszy automatycznie, gdy dołączy.",
+    waitingDesc: "Wyślij znajomemu link. Wystarczy, że wpisze swoją nazwę i dołączy. Pierwsza runda ruszy, gdy oboje będziecie gotowi.",
+    invitationTitle: "Zaproszenie do pojedynku",
+    invitationDesc: "Pokój jest już wybrany. Wpisz swoją nazwę, dołącz i sprawdźcie, kto lepiej zna filmy.",
+    invitationLink: "Link do pokoju",
+    copyInviteLink: "Kopiuj link",
+    shareInvitation: "Wyślij zaproszenie",
+    inviteLinkCopied: "Link skopiowany. Wyślij go znajomemu.",
+    inviteShared: "Zaproszenie udostępnione.",
+    copyInviteManually: "Nie udało się skopiować linku automatycznie. Skopiuj zaznaczony adres i wyślij go znajomemu.",
+    invalidInvitation: "Link zaproszenia jest nieprawidłowy. Poproś o nowy link lub wpisz kod pokoju poniżej.",
+    otherRoom: "Wróć do wyboru pokoju",
     inviteCode: "Kod zaproszenia",
     copyCode: "Kopiuj kod",
     copied: "Skopiowano",
     round: (current, total) => `Runda ${current} z ${total}`,
     points: (count) => `${count} pkt`,
     chooseAnswer: "Który to film?",
-    answerLocked: "Odpowiedź zapisana — czekamy na wynik",
+    answerLocked: "Odpowiedź zapisana - czekamy na wynik",
     correctAnswer: (points) => `Dobra odpowiedź! +${points} pkt`,
     wrongAnswer: "Niestety, to nie ten film",
     timeUp: "Czas minął",
@@ -167,10 +178,10 @@ const pl: Translations = {
     emptyState: "Wpisz tytuł filmu, żeby zacząć zgadywanie",
     won: "Brawo!",
     wonMessage: (title: string, attempts: number) =>
-      `Odgadłeś "${title}" w ${attempts} ${attempts === 1 ? "próbie" : "próbach"}!`,
+      `Odgadłeś "${normalizeDisplayText(title)}" w ${attempts} ${attempts === 1 ? "próbie" : "próbach"}!`,
     lost: "Koniec gry",
     lostMessage: (title: string, year: number) =>
-      `Prawidłowa odpowiedź: ${title} (${year})`,
+      `Prawidłowa odpowiedź: ${normalizeDisplayText(title)} (${year})`,
     correct: "Trafione!",
     nextIn: "Następny za",
     loadError: "Nie udało się załadować filmu. Spróbuj ponownie później.",
@@ -227,7 +238,7 @@ const pl: Translations = {
     rent: "Wypożycz",
     seeAllProviders: "Pełna lista",
     shareText: (title: string, attempts: number, max: number) =>
-      `Showle — Film dnia\n\nOdgadłem "${title}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
+      `Showle · Film dnia\n\nOdgadłem "${normalizeDisplayText(title)}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
   },
 
   movieModal: {
@@ -284,7 +295,7 @@ const pl: Translations = {
     selectGenre: "Wybierz gatunek lub opisz, czego szukasz",
     freeformLabel: "Opisz swój nastrój",
     freeformPlaceholder: "np. coś jak Incepcja ale lżejszego...",
-    freeformHint: "Opcjonalnie — opisz własnymi słowami, czego szukasz",
+    freeformHint: "Opcjonalnie - opisz własnymi słowami, czego szukasz",
     yearLabel: "Rok premiery",
     popularityLabel: "Jak popularne?",
     popularityPopular: "Hity",
@@ -294,7 +305,7 @@ const pl: Translations = {
     loading:
       "Nie zjadaj jeszcze całego popcornu... zaraz pojawią się dobrane filmy!",
     noResults:
-      "Hmm, nic nie pasuje. Spróbuj zmienić preferencje — może trafi się coś fajnego!",
+      "Hmm, nic nie pasuje. Spróbuj zmienić preferencje - może trafi się coś fajnego!",
     error: "Coś poszło nie tak. Spróbuj ponownie za chwilę.",
     tryAgain: "Pokaż inne filmy",
     changePreferences: "Zmień preferencje",

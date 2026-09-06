@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState } from "react";
 import { useTranslation } from "@/i18n";
@@ -32,7 +33,7 @@ export default function ReviewModal({
             <h3 className="text-base font-semibold text-foreground">
               {initialReview ? t.collection.editReview : t.collection.writeReview}
             </h3>
-            <p className="text-xs text-muted">{movieTitle}</p>
+            <p className="text-xs text-muted">{normalizeDisplayText(movieTitle)}</p>
           </div>
           <button
             onClick={onClose}

@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import Image from "next/image";
 import { User } from "@/components/ui/icons";
@@ -24,7 +25,7 @@ export default function CastList({ cast, label }: CastListProps) {
               {member.profilePath ? (
                 <Image
                   src={`https://image.tmdb.org/t/p/w185${member.profilePath}`}
-                  alt={member.name}
+                  alt={normalizeDisplayText(member.name)}
                   fill
                   sizes="40px"
                   className="object-cover"
@@ -36,12 +37,12 @@ export default function CastList({ cast, label }: CastListProps) {
               )}
             </div>
             <div className="min-w-0">
-              <p title={member.name} className="line-clamp-2 text-xs font-semibold text-foreground">
-                {member.name}
+              <p title={normalizeDisplayText(member.name)} className="line-clamp-2 text-xs font-semibold text-foreground">
+                {normalizeDisplayText(member.name)}
               </p>
               {member.character && (
-                <p title={member.character} className="truncate text-[10px] text-muted">
-                  {member.character}
+                <p title={normalizeDisplayText(member.character)} className="truncate text-[10px] text-muted">
+                  {normalizeDisplayText(member.character)}
                 </p>
               )}
             </div>

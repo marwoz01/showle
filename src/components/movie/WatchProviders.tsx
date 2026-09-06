@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -73,11 +74,11 @@ function ProviderLogo({ provider, size }: { provider: WatchProvider; size: numbe
     <div
       className="relative overflow-hidden rounded-lg bg-white/5"
       style={{ width: size, height: size }}
-      title={provider.provider_name}
+      title={normalizeDisplayText(provider.provider_name)}
     >
       <Image
         src={`https://image.tmdb.org/t/p/w92${provider.logo_path}`}
-        alt={provider.provider_name}
+        alt={normalizeDisplayText(provider.provider_name)}
         fill
         sizes={`${size}px`}
         className="object-cover"

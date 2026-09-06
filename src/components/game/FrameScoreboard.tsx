@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
@@ -234,14 +235,14 @@ function PlayerScore({
         </p>
         <p
           className="truncate text-xs font-medium sm:text-sm"
-          title={player.name}
+          title={normalizeDisplayText(player.name)}
         >
-          {player.name}
+          {normalizeDisplayText(player.name)}
         </p>
       </div>
       <div
         className={`shrink-0 text-right ${own ? "text-accent-purple" : "text-cyan-300"}`}
-        aria-label={`${player.name}: ${t.duel.points(score)}`}
+        aria-label={`${normalizeDisplayText(player.name)}: ${t.duel.points(score)}`}
       >
         <span
           ref={total}

@@ -163,9 +163,9 @@ export default function GameHeatmap() {
                   key={`${col}-${dow}`}
                   title={`${cell.iso}${
                     cell.outcome === "won"
-                      ? ` — ${t.stats.tooltipWon(cell.attemptCount)}`
+                      ? ` - ${t.stats.tooltipWon(cell.attemptCount)}`
                       : cell.outcome === "lost"
-                        ? ` — ${t.stats.tooltipLost}`
+                        ? ` - ${t.stats.tooltipLost}`
                         : ""
                   }`}
                   className={`aspect-square rounded-[3px] ${cellClass(cell)}`}

@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -254,7 +255,7 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
                   onClick={() => toggleCheck(movie)}
                   className="flex items-center gap-1 rounded-full bg-accent-purple/15 px-2.5 py-1 text-xs font-medium text-accent-purple transition-colors hover:bg-accent-purple/25"
                 >
-                  {movie.title}
+                  {normalizeDisplayText(movie.title)}
                   <X size={12} />
                 </button>
               ))}
@@ -297,7 +298,7 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
                   {movie.posterPath && (
                     <Image
                       src={`https://image.tmdb.org/t/p/w92${movie.posterPath}`}
-                      alt={movie.title}
+                      alt={normalizeDisplayText(movie.title)}
                       width={32}
                       height={48}
                       className="shrink-0 rounded"
@@ -305,7 +306,7 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {movie.title}
+                      {normalizeDisplayText(movie.title)}
                     </p>
                     <p className="text-xs text-muted">
                       {movie.year}

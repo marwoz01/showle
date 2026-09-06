@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import Image from "next/image";
 import { GuessResult } from "@/types";
@@ -25,7 +26,7 @@ export default function GuessCard({ result }: GuessCardProps) {
               {result.guess.posterPath ? (
                 <Image
                   src={`https://image.tmdb.org/t/p/w185${result.guess.posterPath}`}
-                  alt={result.guess.title}
+                  alt={normalizeDisplayText(result.guess.title)}
                   fill
                   sizes="64px"
                   className="object-cover"
@@ -43,7 +44,7 @@ export default function GuessCard({ result }: GuessCardProps) {
               </span>
               <div className="min-w-0 flex-1">
                 <h3 className="line-clamp-3 min-h-15 font-display text-base font-semibold leading-5 text-foreground">
-                  {result.guess.title}
+                  {normalizeDisplayText(result.guess.title)}
                 </h3>
                 <div className="mt-1 flex min-h-6 items-center justify-between gap-2">
                   <p className="text-sm text-muted">({result.guess.year})</p>
@@ -112,7 +113,7 @@ function PersonChip({
         {profilePath ? (
           <Image
             src={`https://image.tmdb.org/t/p/w185${profilePath}`}
-            alt={name}
+            alt={normalizeDisplayText(name)}
             fill
             sizes="32px"
             className="object-cover"
@@ -128,7 +129,7 @@ function PersonChip({
           {label}
         </span>
         <span className="block truncate text-[11px] font-semibold text-foreground/90">
-          {name}
+          {normalizeDisplayText(name)}
         </span>
       </span>
     </div>

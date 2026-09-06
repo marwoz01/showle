@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -66,14 +67,14 @@ export default function CollectionCard({
           {movie.posterPath ? (
             <Image
               src={`https://image.tmdb.org/t/p/w342${movie.posterPath}`}
-              alt={movie.title}
+              alt={normalizeDisplayText(movie.title)}
               fill
               sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 200px"
               className="object-cover"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-white/5 p-3 text-center text-xs text-muted">
-              {movie.title}
+              {normalizeDisplayText(movie.title)}
             </div>
           )}
 
@@ -146,13 +147,13 @@ export default function CollectionCard({
       {/* Info */}
       <div className="flex flex-1 flex-col p-2.5">
         <h3 className="mb-0.5 text-sm font-bold leading-tight text-foreground">
-          {movie.title}
+          {normalizeDisplayText(movie.title)}
         </h3>
 
         {/* Year + Director */}
         <p className="mb-1 text-[10px] text-muted">
           {movie.year}
-          {movie.director && <> · {movie.director}</>}
+          {movie.director && <> · {normalizeDisplayText(movie.director)}</>}
         </p>
 
         {/* Rating + Genre badges */}
@@ -178,7 +179,7 @@ export default function CollectionCard({
         {/* Review snippet */}
         {movie.review && (
           <p className="mt-auto line-clamp-2 rounded-md bg-white/3 px-2 py-1.5 text-[10px] leading-snug text-muted">
-            {movie.review}
+            {normalizeDisplayText(movie.review)}
           </p>
         )}
       </div>

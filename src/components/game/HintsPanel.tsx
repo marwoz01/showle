@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { Hint } from "@/types";
 import { MAX_ATTEMPTS } from "@/constants";
@@ -44,7 +45,7 @@ export default function HintsPanel({
               <span className="animate-hint-bulb mt-0.5 text-accent-purple">
                 <Lightbulb size={16} />
               </span>
-              <span className="leading-relaxed text-foreground/90">{hint.content}</span>
+              <span className="leading-relaxed text-foreground/90">{normalizeDisplayText(hint.content)}</span>
             </div>
           ))}
 

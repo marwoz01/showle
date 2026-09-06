@@ -75,6 +75,16 @@ export interface Translations {
     connecting: string;
     waitingTitle: string;
     waitingDesc: string;
+    invitationTitle: string;
+    invitationDesc: string;
+    invitationLink: string;
+    copyInviteLink: string;
+    shareInvitation: string;
+    inviteLinkCopied: string;
+    inviteShared: string;
+    copyInviteManually: string;
+    invalidInvitation: string;
+    otherRoom: string;
     inviteCode: string;
     copyCode: string;
     copied: string;

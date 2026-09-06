@@ -1,8 +1,9 @@
+import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 
 const en: Translations = {
   meta: {
-    title: "Showle — Daily Movie",
+    title: "Showle · Daily Movie",
     description:
       "Guess the daily movie by comparing its year, genre, director, budget, and more. A new challenge every day!",
   },
@@ -43,7 +44,7 @@ const en: Translations = {
   home: {
     title: "Play",
     subtitle:
-      "Guess the daily movie or discover your perfect pick for tonight — all in one place.",
+      "Guess the daily movie or discover your perfect pick for tonight - all in one place.",
     filter: "Filter",
     viewGrid: "View: Grid",
   },
@@ -89,14 +90,24 @@ const en: Translations = {
     joinRoom: "Join room",
     connecting: "Connecting...",
     waitingTitle: "Waiting for player two",
-    waitingDesc: "Share the code below. The game starts automatically when they join.",
+    waitingDesc: "Send your friend the link. They just enter their name and join. The first round starts when you are both ready.",
+    invitationTitle: "You're invited to a duel",
+    invitationDesc: "Your room is already selected. Enter your name, join and find out who knows movies best.",
+    invitationLink: "Room link",
+    copyInviteLink: "Copy link",
+    shareInvitation: "Send invitation",
+    inviteLinkCopied: "Link copied. Send it to your friend.",
+    inviteShared: "Invitation shared.",
+    copyInviteManually: "The link could not be copied automatically. Copy the selected address and send it to your friend.",
+    invalidInvitation: "This invitation link is invalid. Ask for a new link or enter the room code below.",
+    otherRoom: "Back to room selection",
     inviteCode: "Invite code",
     copyCode: "Copy code",
     copied: "Copied",
     round: (current, total) => `Round ${current} of ${total}`,
     points: (count) => `${count} pts`,
     chooseAnswer: "Which movie is it?",
-    answerLocked: "Answer locked — waiting for the result",
+    answerLocked: "Answer locked - waiting for the result",
     correctAnswer: (points) => `Correct! +${points} pts`,
     wrongAnswer: "That wasn't the right movie",
     timeUp: "Time's up",
@@ -146,10 +157,10 @@ const en: Translations = {
     emptyState: "Type a movie title to start guessing",
     won: "Well done!",
     wonMessage: (title: string, attempts: number) =>
-      `You guessed "${title}" in ${attempts} ${attempts === 1 ? "attempt" : "attempts"}!`,
+      `You guessed "${normalizeDisplayText(title)}" in ${attempts} ${attempts === 1 ? "attempt" : "attempts"}!`,
     lost: "Game Over",
     lostMessage: (title: string, year: number) =>
-      `The answer was: ${title} (${year})`,
+      `The answer was: ${normalizeDisplayText(title)} (${year})`,
     correct: "Correct!",
     nextIn: "Next in",
     loadError: "Failed to load the movie. Please try again later.",
@@ -206,7 +217,7 @@ const en: Translations = {
     rent: "Rent",
     seeAllProviders: "Full list",
     shareText: (title: string, attempts: number, max: number) =>
-      `Showle — Daily Movie\n\nI guessed "${title}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
+      `Showle · Daily Movie\n\nI guessed "${normalizeDisplayText(title)}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
   },
 
   movieModal: {
@@ -257,7 +268,7 @@ const en: Translations = {
   recommend: {
     title: "What to Watch Tonight?",
     subtitle:
-      "Popcorn ready, blanket on — tell us what you're in the mood for and we'll handle the rest.",
+      "Popcorn ready, blanket on - tell us what you're in the mood for and we'll handle the rest.",
     modeTitle: "What to Watch?",
     modeDesc:
       "Got the snacks but no movie? Tell us what you like and we'll pick something perfect for tonight.",
@@ -266,7 +277,7 @@ const en: Translations = {
     freeformLabel: "Describe your mood",
     freeformPlaceholder: "e.g. something like Inception but lighter...",
     freeformHint:
-      "Optional — describe what you're looking for in your own words",
+      "Optional - describe what you're looking for in your own words",
     yearLabel: "Release year",
     popularityLabel: "How well-known?",
     popularityPopular: "Big hits",
@@ -275,7 +286,7 @@ const en: Translations = {
     submit: "Find my movies",
     loading: "Don't eat all the popcorn yet... your picks are almost ready!",
     noResults:
-      "Hmm, nothing fits. Try tweaking your preferences — something great might pop up!",
+      "Hmm, nothing fits. Try tweaking your preferences - something great might pop up!",
     error: "Something went wrong. Give it another try in a moment.",
     tryAgain: "Show me different movies",
     changePreferences: "Change preferences",

@@ -1,3 +1,4 @@
+import { normalizeDisplayText } from "@/lib/typography";
 import type { CSSProperties } from "react";
 import { MatchStatus, Direction } from "@/types";
 import { ArrowUp } from "@/components/ui/icons";
@@ -55,9 +56,9 @@ export default function ComparisonCell({
           </span>
           <span
             className="mt-1 line-clamp-3 min-h-8 min-w-0 w-full max-w-full text-left text-xs font-bold leading-tight [overflow-wrap:break-word]"
-            title={value}
+            title={normalizeDisplayText(value)}
           >
-            {value}
+            {normalizeDisplayText(value)}
           </span>
           {direction && (
             <ArrowUp

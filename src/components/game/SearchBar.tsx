@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import Image from "next/image";
 import { useState, useRef, useEffect, useId } from "react";
@@ -205,12 +206,12 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
                 </span>
                 <span className="min-w-0">
                   <span className="block font-medium text-foreground">
-                    {movie.title}
+                    {normalizeDisplayText(movie.title)}
                   </span>
                   <span className="block text-xs text-muted">
                     {movie.year}
                     {movie.originalTitle !== movie.title
-                      ? ` · ${movie.originalTitle}`
+                      ? ` · ${normalizeDisplayText(movie.originalTitle)}`
                       : ""}
                   </span>
                 </span>

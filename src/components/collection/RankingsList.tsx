@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -194,11 +195,11 @@ export default function RankingsList() {
               {/* Info */}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-foreground">
-                  {list.name}
+                  {normalizeDisplayText(list.name)}
                 </p>
                 {list.description && (
                   <p className="truncate text-xs text-muted">
-                    {list.description}
+                    {normalizeDisplayText(list.description)}
                   </p>
                 )}
                 <p className="text-xs text-muted">

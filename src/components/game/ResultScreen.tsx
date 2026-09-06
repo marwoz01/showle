@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
@@ -312,7 +313,7 @@ export default function ResultScreen({
         <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-3xl font-bold text-foreground drop-shadow-2xl sm:text-4xl">
-              {displayAnswer.title}
+              {normalizeDisplayText(displayAnswer.title)}
             </h2>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground/80">
               <span className="font-medium">{displayAnswer.year}</span>
@@ -326,7 +327,7 @@ export default function ResultScreen({
                 displayAnswer.director !== "Unknown" && (
                   <>
                     <span className="text-foreground/40">·</span>
-                    <span>{displayAnswer.director}</span>
+                    <span>{normalizeDisplayText(displayAnswer.director)}</span>
                   </>
                 )}
             </div>
@@ -360,7 +361,7 @@ export default function ResultScreen({
             {displayAnswer.posterPath ? (
               <Image
                 src={`https://image.tmdb.org/t/p/w342${displayAnswer.posterPath}`}
-                alt={displayAnswer.title}
+                alt={normalizeDisplayText(displayAnswer.title)}
                 width={342}
                 height={513}
                 className="h-full w-full object-cover"
@@ -395,7 +396,7 @@ export default function ResultScreen({
         >
           {localizedTagline && (
             <p className="text-base italic text-muted/80">
-              &ldquo;{localizedTagline}&rdquo;
+              &ldquo;{normalizeDisplayText(localizedTagline)}&rdquo;
             </p>
           )}
 
@@ -416,7 +417,7 @@ export default function ResultScreen({
             {displayAnswer.director && displayAnswer.director !== "Unknown" && (
               <>
                 <dt className="text-muted">{t.comparison.director}</dt>
-                <dd className="text-foreground">{displayAnswer.director}</dd>
+                <dd className="text-foreground">{normalizeDisplayText(displayAnswer.director)}</dd>
               </>
             )}
             {displayAnswer.country && displayAnswer.country !== "Unknown" && (
@@ -478,7 +479,7 @@ export default function ResultScreen({
                 {youtubeEmbedUrl ? (
                   <iframe
                     src={youtubeEmbedUrl}
-                    title={`${t.result.trailer}: ${displayAnswer.title}`}
+                    title={`${t.result.trailer}: ${normalizeDisplayText(displayAnswer.title)}`}
                     className="h-full w-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
@@ -544,7 +545,7 @@ export default function ResultScreen({
                   {t.result.storyline}
                 </h4>
                 <p className="text-sm leading-relaxed text-muted">
-                  {localizedOverview}
+                  {normalizeDisplayText(localizedOverview)}
                 </p>
               </section>
             )}

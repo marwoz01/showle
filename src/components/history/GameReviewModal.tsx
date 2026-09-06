@@ -1,4 +1,5 @@
 "use client";
+import { normalizeDisplayText } from "@/lib/typography";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -153,7 +154,7 @@ export default function GameReviewModal({ gameId, onClose }: GameReviewModalProp
               {targetMovie.posterPath ? (
                 <Image
                   src={`https://image.tmdb.org/t/p/w185${targetMovie.posterPath}`}
-                  alt={targetMovie.title}
+                  alt={normalizeDisplayText(targetMovie.title)}
                   width={185}
                   height={278}
                   className="h-36 w-24 shrink-0 rounded-lg object-cover"
@@ -165,10 +166,10 @@ export default function GameReviewModal({ gameId, onClose }: GameReviewModalProp
               )}
               <div className="min-w-0">
                 <h3 className="text-lg font-bold text-foreground">
-                  {targetMovie.title}
+                  {normalizeDisplayText(targetMovie.title)}
                 </h3>
                 <p className="mt-0.5 text-sm text-muted">
-                  {targetMovie.year} · {targetMovie.director} · {targetMovie.runtime} min
+                  {targetMovie.year} · {normalizeDisplayText(targetMovie.director)} · {targetMovie.runtime} min
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {targetMovie.genres.map((genre) => (
