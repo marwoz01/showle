@@ -72,9 +72,13 @@ describe("Warsaw day boundary", () => {
     expect(getTodayKey(new Date("2026-09-06T22:30:00Z"))).toBe("2026-09-07");
   });
   it("counts down to midnight across the spring DST change", () => {
-    expect(getTimeUntilReset(new Date("2026-03-28T23:00:00Z"))).toBe(23 * 3600000);
+    expect(getTimeUntilReset(new Date("2026-03-28T23:00:00Z"))).toBe(
+      23 * 3600000,
+    );
   });
   it("counts down to midnight across the autumn DST change", () => {
-    expect(getTimeUntilReset(new Date("2026-10-24T22:00:00Z"))).toBe(25 * 3600000);
+    expect(getTimeUntilReset(new Date("2026-10-24T22:00:00Z"))).toBe(
+      25 * 3600000,
+    );
   });
 });

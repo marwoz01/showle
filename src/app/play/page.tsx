@@ -1,11 +1,12 @@
 "use client";
 
-import { Clapperboard, Swords } from "lucide-react";
+import { Clapperboard, Swords, Film } from "lucide-react";
 import GameModeCard from "@/components/home/GameModeCard";
 import { useTranslation } from "@/i18n";
+import experience from "@/i18n/experience";
 
 export default function PlayModePage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   return (
     <div className="mx-auto max-w-5xl py-6 sm:py-12">
@@ -21,7 +22,7 @@ export default function PlayModePage() {
         </p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-3">
         <GameModeCard
           icon={<Clapperboard size={22} />}
           title={t.modes.dailyMovie}
@@ -37,6 +38,14 @@ export default function PlayModePage() {
           href="/play/duel"
           actionLabel={t.duel.modeAction}
           badge={t.duel.badge}
+        />
+        <GameModeCard
+          icon={<Film size={22} />}
+          title={experience[locale].practiceTitle}
+          description={experience[locale].practiceDesc}
+          href="/play/practice"
+          actionLabel={experience[locale].practiceAction}
+          badge={t.modes.new}
         />
       </div>
     </div>

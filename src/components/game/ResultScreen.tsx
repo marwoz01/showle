@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import confetti from "canvas-confetti";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -26,6 +27,9 @@ import CastList from "@/components/movie/CastList";
 import WatchProviders from "@/components/movie/WatchProviders";
 import { localizeCountry, localizeGenre } from "@/lib/localization";
 import type { MovieTrailer } from "@/lib/trailers";
+import { buildShareResult } from "@/lib/share-result";
+import { getTodayKey } from "@/lib/game-date";
+import experience from "@/i18n/experience";
 
 gsap.registerPlugin(useGSAP);
 
@@ -52,10 +56,12 @@ export default function ResultScreen({
   guesses,
   hintsUsed,
   celebrate = false,
+  dateKey = getTodayKey(),
 }: ResultScreenProps) {
   const { t, locale } = useTranslation();
   const resultRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [shareFallback, setShareFallback] = useState("");
 
   const won = status === "won";
   const [gallery, setGallery] = useState<string[]>([]);
@@ -89,7 +95,9 @@ export default function ResultScreen({
         setTrailerState({
           requestKey: trailerRequestKey,
           trailer,
-          autoplay: celebrate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+          autoplay:
+            celebrate &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
         });
       })
       .catch(() => {
@@ -101,7 +109,8 @@ export default function ResultScreen({
 
   useEffect(() => {
     if (
-      !won || !celebrate ||
+      !won ||
+      !celebrate ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       return;
@@ -202,16 +211,14 @@ export default function ResultScreen({
     0,
   );
   const totalFields = guesses.reduce((sum, g) => sum + g.comparison.length, 0);
-  const accuracy = totalFields > 0 ? Math.round((exactCount / totalFields) * 100) : 0;
-  const displayAnswer = locale === "pl" && localizedAnswer
-    ? localizedAnswer
-    : answer;
-  const localizedTagline = locale === "pl"
-    ? localizedAnswer?.tagline
-    : answer.tagline;
-  const localizedOverview = locale === "pl"
-    ? localizedAnswer?.overview
-    : answer.overview;
+  const accuracy =
+    totalFields > 0 ? Math.round((exactCount / totalFields) * 100) : 0;
+  const displayAnswer =
+    locale === "pl" && localizedAnswer ? localizedAnswer : answer;
+  const localizedTagline =
+    locale === "pl" ? localizedAnswer?.tagline : answer.tagline;
+  const localizedOverview =
+    locale === "pl" ? localizedAnswer?.overview : answer.overview;
   const activeTrailer =
     won && trailerState?.requestKey === trailerRequestKey
       ? trailerState.trailer
@@ -224,20 +231,39 @@ export default function ResultScreen({
   const trailerPending = won && trailerState?.requestKey !== trailerRequestKey;
 
   async function handleShare() {
-    const text = t.result.shareText(displayAnswer.title, attempts, MAX_ATTEMPTS);
+    const text = buildShareResult(
+      dateKey,
+      won,
+      guesses,
+      window.location.origin,
+      locale,
+    );
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
+      setShareFallback("");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback: do nothing
+      setShareFallback(text);
     }
   }
 
   const stats = [
-    { icon: <Target size={16} />, label: t.result.attempts, value: `${attempts}/${MAX_ATTEMPTS}` },
-    { icon: <Lightbulb size={16} />, label: t.result.hintsUsed, value: `${hintsUsed}` },
-    { icon: <BarChart3 size={16} />, label: t.result.accuracy, value: `${accuracy}%` },
+    {
+      icon: <Target size={16} />,
+      label: t.result.attempts,
+      value: `${attempts}/${MAX_ATTEMPTS}`,
+    },
+    {
+      icon: <Lightbulb size={16} />,
+      label: t.result.hintsUsed,
+      value: `${hintsUsed}`,
+    },
+    {
+      icon: <BarChart3 size={16} />,
+      label: experience[locale].matchingFields,
+      value: `${accuracy}%`,
+    },
   ];
 
   return (
@@ -268,7 +294,9 @@ export default function ResultScreen({
         <div className="animate-result-badge absolute right-5 top-5 flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 backdrop-blur-md">
           <span
             className={`flex h-7 w-7 items-center justify-center rounded-full ${
-              won ? "bg-match-exact/30 text-match-exact" : "bg-match-miss/30 text-match-miss"
+              won
+                ? "bg-match-exact/30 text-match-exact"
+                : "bg-match-miss/30 text-match-miss"
             }`}
           >
             {won ? <Trophy size={16} /> : <XCircle size={16} />}
@@ -294,12 +322,13 @@ export default function ResultScreen({
                   <span>{displayAnswer.runtime} min</span>
                 </>
               )}
-              {displayAnswer.director && displayAnswer.director !== "Unknown" && (
-                <>
-                  <span className="text-foreground/40">·</span>
-                  <span>{displayAnswer.director}</span>
-                </>
-              )}
+              {displayAnswer.director &&
+                displayAnswer.director !== "Unknown" && (
+                  <>
+                    <span className="text-foreground/40">·</span>
+                    <span>{displayAnswer.director}</span>
+                  </>
+                )}
             </div>
           </div>
 
@@ -362,9 +391,7 @@ export default function ResultScreen({
         {/* Middle — details */}
         <div
           data-result-reveal="details"
-          className={`flex min-w-0 flex-col gap-4 lg:col-start-2 ${
-            won ? "lg:row-start-2 xl:row-start-1" : "lg:row-start-1"
-          }`}
+          className={`flex min-w-0 flex-col gap-4 lg:col-start-2 ${"lg:row-start-1"}`}
         >
           {localizedTagline && (
             <p className="text-base italic text-muted/80">
@@ -412,15 +439,14 @@ export default function ResultScreen({
               <CastList cast={displayAnswer.cast} label={t.result.cast} />
             </div>
           )}
-
         </div>
 
-        {/* Right — trailer first on mobile, with compact stats underneath */}
+        {/* Trailer follows the poster and cast on narrow screens. */}
         <aside
           data-result-reveal="trailer"
           className={`min-w-0 lg:col-start-2 ${
             won
-              ? "order-first lg:order-none lg:row-start-1 xl:col-start-3"
+              ? "lg:row-start-2 xl:row-start-1 xl:col-start-3"
               : "order-none lg:row-start-2 xl:col-start-3 xl:row-start-1"
           }`}
         >
@@ -487,7 +513,7 @@ export default function ResultScreen({
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                    className="flex flex-col items-center gap-1 rounded-xl bg-white/3 px-3 py-4 xl:items-start xl:bg-transparent xl:px-0 xl:py-0"
+                  className="flex flex-col items-center gap-1 rounded-xl bg-white/3 px-3 py-4 xl:items-start xl:bg-transparent xl:px-0 xl:py-0"
                 >
                   <span className="text-muted">{stat.icon}</span>
                   <span className="text-2xl font-bold text-foreground">
@@ -538,28 +564,60 @@ export default function ResultScreen({
         </div>
       )}
 
+      {shareFallback && (
+        <div className="px-6 pb-5">
+          <p role="alert" className="mb-2 text-sm text-muted">
+            {experience[locale].shareError}
+          </p>
+          <textarea
+            readOnly
+            value={shareFallback}
+            aria-label={t.result.share}
+            onFocus={(event) => event.target.select()}
+            className="h-40 w-full rounded-xl bg-black/20 p-3 text-sm"
+          />
+        </div>
+      )}
       {/* Footer — emoji grid */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/6 px-6 py-5">
+        <div>
+          <h3 className="font-semibold">{experience[locale].practiceTitle}</h3>
+          <p className="mt-1 max-w-xl text-sm text-muted">
+            {experience[locale].practiceDesc}
+          </p>
+        </div>
+        <Link
+          href="/play/practice"
+          className="shrink-0 rounded-xl bg-accent-purple/15 px-5 py-3 text-sm font-semibold text-accent-purple hover:bg-accent-purple/25"
+        >
+          {experience[locale].practiceAction}
+        </Link>
+      </div>
       <div className="border-t border-white/6 bg-white/2 px-6 py-4">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          {guesses.map((g, i) => (
-            <div key={i} className="flex items-center gap-1.5">
-              <span className="text-[10px] font-medium text-muted">#{i + 1}</span>
-              <div className="flex gap-0.5">
-                {g.comparison.map((c, j) => (
-                  <div
-                    key={j}
-                    className={`h-3 w-3 rounded-sm ${
-                      c.status === "exact"
-                        ? "bg-match-exact"
-                        : c.status === "partial"
-                          ? "bg-match-partial"
-                          : "bg-match-miss"
-                    }`}
-                  />
-                ))}
+          {[...guesses]
+            .sort((a, b) => a.attemptNumber - b.attemptNumber)
+            .map((g, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <span className="text-[10px] font-medium text-muted">
+                  #{i + 1}
+                </span>
+                <div className="flex gap-0.5">
+                  {g.comparison.map((c, j) => (
+                    <div
+                      key={j}
+                      className={`h-3 w-3 rounded-sm ${
+                        c.status === "exact"
+                          ? "bg-match-exact"
+                          : c.status === "partial"
+                            ? "bg-match-partial"
+                            : "bg-match-miss"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>
