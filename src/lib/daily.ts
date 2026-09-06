@@ -8,17 +8,9 @@ const POOL_SIZE = eligibleMovies.length;
 const NO_REPEAT_DAYS = 90;
 
 /**
- * Returns today's date key in YYYY-MM-DD format (Europe/Warsaw timezone).
- */
-
-/**
- * Returns milliseconds until next midnight in Europe/Warsaw timezone.
- */
-
-/**
  * Simple deterministic hash: date string -> number.
  */
-function hashDate(dateStr: string): number {
+export function hashDate(dateStr: string): number {
   let hash = 0;
   for (let i = 0; i < dateStr.length; i++) {
     hash = (hash * 31 + dateStr.charCodeAt(i)) | 0;
@@ -29,14 +21,14 @@ function hashDate(dateStr: string): number {
 /**
  * Get the pool index for a given date, avoiding repeats within the last N days.
  */
-function getDailyIndex(dateStr: string): number {
+export function getDailyIndex(dateStr: string): number {
   // Compute indices for the previous NO_REPEAT_DAYS to build exclusion set
   const recentIndices = new Set<number>();
-  const date = new Date(dateStr + "T00:00:00");
+  const date = new Date(dateStr + "T12:00:00Z");
 
   for (let d = 1; d <= NO_REPEAT_DAYS; d++) {
     const prev = new Date(date);
-    prev.setDate(prev.getDate() - d);
+    prev.setUTCDate(prev.getUTCDate() - d);
     const prevStr = prev.toISOString().slice(0, 10);
     const prevHash = hashDate(prevStr);
     // Use raw modulo for previous days (no collision avoidance needed for history)

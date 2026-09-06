@@ -66,7 +66,8 @@ export function useGame() {
     setLoading(true);
     setCelebrate(false);
     void refresh();
-    return () => { version.current++; };
+    const invalidate = () => { version.current++; };
+    return invalidate;
   }, [isLoaded, refresh]);
 
   useEffect(() => {

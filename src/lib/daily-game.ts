@@ -5,7 +5,7 @@ import { getMovieSnapshot } from "@/lib/movie-snapshot";
 import { compareMedia } from "@/lib/comparer";
 import { generateHints, getRevealedHints } from "@/lib/hints";
 import { getWinReward, STREAK_MILESTONES } from "@/lib/coins";
-import { previousDateKey } from "@/lib/game-date";
+import { previousDateKey, normalizeStoredDate } from "@/lib/game-date";
 import pl from "@/i18n/pl";
 import en from "@/i18n/en";
 import type { DailyGameView } from "@/types/daily-game";
@@ -47,7 +47,7 @@ export async function applyDailyAction(actorId: string, dateKey: string, action:
 
     const stats = await tx.userStats.findUnique({ where: { userId: actorId } });
     const wallet = await tx.userWallet.upsert({ where: { userId: actorId }, update: {}, create: { userId: actorId } });
-    const previousStreak = stats?.lastPlayedDate === previousDateKey(dateKey) ? stats.currentStreak : 0;
+    const previousStreak = normalizeStoredDate(stats?.lastPlayedDate) === previousDateKey(dateKey) ? stats!.currentStreak : 0;
     const freezeUsed = !won && previousStreak > 0 && wallet.streakFreezes > 0;
     const currentStreak = won ? previousStreak + 1 : freezeUsed ? previousStreak : 0;
     const reward = won ? getWinReward(guessIds.length) + (STREAK_MILESTONES[currentStreak] ?? 0) : 0;

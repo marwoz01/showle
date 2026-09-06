@@ -7,6 +7,8 @@ const isPublicRoute = createRouteMatcher([
   "/play(.*)",
   "/recommend(.*)",
   "/api/movies(.*)",
+  "/api/game/state",
+  "/api/game/complete",
   "/api/duel(.*)",
   "/api/recommend(.*)",
 ]);

@@ -1,38 +1,8 @@
 import { describe, it, expect } from "vitest";
-
-const POOL_SIZE = 4941;
-
-function hashDate(dateStr: string): number {
-  let hash = 0;
-  for (let i = 0; i < dateStr.length; i++) {
-    hash = (hash * 31 + dateStr.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
-}
-
-function getDailyIndex(dateStr: string): number {
-  const recentIndices = new Set<number>();
-  const date = new Date(dateStr + "T00:00:00");
-
-  for (let d = 1; d <= 90; d++) {
-    const prev = new Date(date);
-    prev.setDate(prev.getDate() - d);
-    const prevStr = prev.toISOString().slice(0, 10);
-    const prevHash = hashDate(prevStr);
-    recentIndices.add(prevHash % POOL_SIZE);
-  }
-
-  const baseHash = hashDate(dateStr);
-  let index = baseHash % POOL_SIZE;
-
-  let attempt = 0;
-  while (recentIndices.has(index) && attempt < POOL_SIZE) {
-    attempt++;
-    index = (baseHash + attempt) % POOL_SIZE;
-  }
-
-  return index;
-}
+import { hashDate, getDailyIndex } from "@/lib/daily";
+import { getTodayKey, getTimeUntilReset } from "@/lib/game-date";
+import pool from "@/data/eligible-movies.json";
+const POOL_SIZE = pool.length;
 
 describe("hashDate", () => {
   it("returns a non-negative number", () => {
@@ -68,11 +38,11 @@ describe("getDailyIndex", () => {
     // of any of the previous 90 days
     const dateStr = "2026-06-01";
     const index = getDailyIndex(dateStr);
-    const date = new Date(dateStr + "T00:00:00");
+    const date = new Date(dateStr + "T12:00:00Z");
 
     for (let d = 1; d <= 90; d++) {
       const prev = new Date(date);
-      prev.setDate(prev.getDate() - d);
+      prev.setUTCDate(prev.getUTCDate() - d);
       const prevStr = prev.toISOString().slice(0, 10);
       const rawIndex = hashDate(prevStr) % POOL_SIZE;
       expect(index).not.toBe(rawIndex);
@@ -90,7 +60,21 @@ describe("getDailyIndex", () => {
       indices.add(getDailyIndex(dateStr));
     }
 
-    // 365 days should produce at least 350 unique indices from a pool of 4941
-    expect(indices.size).toBeGreaterThan(350);
+    // Use the real pool (not the old hard-coded 4,941-entry test copy).
+    // Coverage should be at least 90% of uniform sampling's expected unique count.
+    const expectedUnique = POOL_SIZE * (1 - (1 - 1 / POOL_SIZE) ** 365);
+    expect(indices.size).toBeGreaterThan(expectedUnique * 0.9);
+  });
+});
+
+describe("Warsaw day boundary", () => {
+  it("uses Warsaw dates irrespective of the caller's timezone", () => {
+    expect(getTodayKey(new Date("2026-09-06T22:30:00Z"))).toBe("2026-09-07");
+  });
+  it("counts down to midnight across the spring DST change", () => {
+    expect(getTimeUntilReset(new Date("2026-03-28T23:00:00Z"))).toBe(23 * 3600000);
+  });
+  it("counts down to midnight across the autumn DST change", () => {
+    expect(getTimeUntilReset(new Date("2026-10-24T22:00:00Z"))).toBe(25 * 3600000);
   });
 });
