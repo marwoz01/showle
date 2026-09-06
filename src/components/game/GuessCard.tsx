@@ -88,7 +88,7 @@ export default function GuessCard({ result }: GuessCardProps) {
               backgroundSize: "28px 28px",
             }}
           />
-          <div className="relative">
+          <div className="comparison-region relative">
             <ComparisonTable comparison={result.comparison} />
           </div>
         </section>

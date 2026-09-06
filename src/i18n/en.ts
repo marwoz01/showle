@@ -33,8 +33,8 @@ const en: Translations = {
 
   // Pro section
   pro: {
-    title: "Unlock Pro",
-    description: "Remove ads, get unlimited plays, and detailed statistics.",
+    title: "Showle Pro",
+    description: "Extra features are in development. Current game modes remain available without Pro.",
     upgrade: "Upgrade to Pro",
     comingSoon: "Coming Soon",
   },
@@ -125,10 +125,10 @@ const en: Translations = {
       "A new movie awaits every day. Enter a title and we'll compare it with the answer across 9 categories.",
     step2Title: "Read the clues",
     step2Desc:
-      "Each wrong guess reveals a new hint — director initials, genre, country, and more.",
+      "Compare the colours and arrows. Extra hints unlock after guesses 2, 4 and 6.",
     step3Title: "Discover movies",
     step3Desc:
-      "Pick your genres and preferences, and we'll find 5 movies perfectly matched for your evening.",
+      "Pick your genres and preferences, and we'll suggest up to 8 movies for your evening.",
     step4Title: "Share your score",
     step4Desc:
       "Nailed it? Share your result grid with friends and compare streaks.",
@@ -285,7 +285,7 @@ const en: Translations = {
     getRecommendations: "Find my movies",
     topPick: "Top Pick",
     whyRecommend: "Why we recommend this",
-    ctaSubtext: "You'll get 5 personalized recommendations",
+    ctaSubtext: "Get up to 8 personalized recommendations",
     popularityPopularDesc: "Well-known blockbusters",
     popularityMediumDesc: "Appreciated by cinephiles",
     popularityNicheDesc: "Hidden gems to discover",

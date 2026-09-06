@@ -11,6 +11,7 @@ import HintsPanel from "@/components/game/HintsPanel";
 import ResultScreen from "@/components/game/ResultScreen";
 import CountdownTimer from "@/components/game/CountdownTimer";
 import { ChevronLeft, Flag, Loader2, Search } from "lucide-react";
+import experience from "@/i18n/experience";
 
 export default function PlayMoviePage() {
   const { t, locale } = useTranslation();
@@ -39,6 +40,7 @@ export default function PlayMoviePage() {
       <button disabled={pending} onClick={() => void refresh()} className="shrink-0 underline">{locale === "pl" ? "Odśwież" : "Reload"}</button>
     </div>}
     {!finished && <SearchBar onSelect={submitGuess} disabled={pending} />}
+    {!finished && <details className="text-sm text-muted"><summary className="cursor-pointer">{experience[locale].comparisonTitle}</summary><p className="mt-2 max-w-3xl leading-relaxed">{experience[locale].comparisonHelp}</p></details>}
     {pending && <p role="status" className="text-sm text-muted">{locale === "pl" ? "Sprawdzanie odpowiedzi…" : "Checking your answer…"}</p>}
     {finished && answer && <ResultScreen answer={answer} localizedAnswer={answer} status={status} guesses={guesses} hintsUsed={hints.length} celebrate={celebrate} dateKey={game.dateKey} />}
     <div className={finished ? "space-y-4" : "grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1fr)_280px]"}>

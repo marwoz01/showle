@@ -1,4 +1,5 @@
 import { MediaDetails } from "@/types";
+import type { MovieSuggestion } from "@/types/movie-suggestion";
 import {
   selectBestTrailer,
   type MovieTrailer,
@@ -11,6 +12,7 @@ const BASE_URL = "https://api.themoviedb.org/3";
 interface TmdbMovieListItem {
   id: number;
   title: string;
+  original_title?: string;
   release_date: string;
   poster_path: string | null;
   backdrop_path: string | null;
@@ -76,10 +78,10 @@ async function tmdbFetch<T>(path: string, params: Record<string, string> = {}): 
 /**
  * Search movies by title query.
  */
-export async function searchMovies(query: string): Promise<MediaDetails[]> {
+export async function searchMovies(query: string, language = "en-US"): Promise<MovieSuggestion[]> {
   const data = await tmdbFetch<{ results: TmdbMovieListItem[] }>("/search/movie", {
     query,
-    language: "en-US",
+    language,
     page: "1",
   });
 
@@ -88,10 +90,10 @@ export async function searchMovies(query: string): Promise<MediaDetails[]> {
     (m) => m.vote_count >= 50 && m.release_date
   );
 
-  // Fetch full details for top 6 results (in parallel)
-  const top = filtered.slice(0, 6);
-  const details = await Promise.all(top.map((m) => getMovieDetails(m.id)));
-  return details.filter((d): d is MediaDetails => d !== null);
+  // Suggestions need one upstream request. Fetch credits/details only after selection.
+  return filtered.slice(0, 8).map((movie) => ({ id: movie.id, title: movie.title,
+    originalTitle: movie.original_title ?? movie.title, year: Number(movie.release_date.slice(0, 4)),
+    posterPath: movie.poster_path ?? "" }));
 }
 
 /**

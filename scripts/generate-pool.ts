@@ -85,7 +85,7 @@ async function main() {
   const totalPages = Math.min(first.total_pages, 50); // Cap at 50 pages (1000 movies)
   console.log(`Total pages available: ${first.total_pages}, fetching up to ${totalPages}`);
 
-  let allMovies: DiscoverResult[] = [...first.results];
+  const allMovies: DiscoverResult[] = [...first.results];
 
   // Fetch remaining pages with rate limiting
   for (let page = 2; page <= totalPages; page++) {

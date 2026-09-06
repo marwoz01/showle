@@ -1,0 +1,32 @@
+// Copy shared by the daily, duel and practice flows.
+const experience = {
+  pl: {
+    continueGame: "Kontynuuj grę", viewResult: "Zobacz wynik", dailyEyebrow: "Jedna zagadka. Każdego dnia.",
+    dailyFootnote: "7 prób · wskazówki po 2., 4. i 6. próbie", progress: (n: number) => `Wykorzystane próby: ${n}/7`,
+    searchLoading: "Szukanie filmów…", searchEmpty: "Brak wyników. Spróbuj tytułu oryginalnego lub krótszej nazwy.",
+    searchError: "Nie udało się wyszukać filmów.", searchResults: (n: number) => `Znalezione filmy: ${n}`,
+    shareError: "Nie udało się skopiować. Zaznacz i skopiuj wynik poniżej.",
+    practiceTitle: "Trening z kadrów", practiceDesc: "6 kadrów, 4 odpowiedzi i 10 sekund na rundę. Graj solo, bez czekania na przeciwnika.", practiceAction: "Rozpocznij trening",
+    winRate: "Wygrane gry", matchingFields: "Trafione cechy",
+    comparisonTitle: "Co oznaczają kolory?",
+    comparisonHelp: "Zielony: ta sama wartość. Żółty: wspólny gatunek lub blisko — rok ±3, czas ±15 min, budżet i głosy do 25% większej wartości, ocena ±1. Strzałka wskazuje, czy szukana liczba jest wyższa, czy niższa. Oceny porównujemy do jednego miejsca po przecinku. Brak budżetu oznaczamy znakiem ?.",
+    inviteLink: "Kopiuj link zaproszenia", ready: "Jestem gotowy", loadingFrame: "Wczytywanie kadru…", readyWaiting: "Gotowe — czekamy na drugiego gracza", prepare: "Przygotowanie rundy", frameError: "Nie udało się wczytać kadru. Spróbuj ponownie.",
+    rematch: "Zagraj rewanż", rematchWaiting: "Rewanż zaproponowany — czekamy na drugiego gracza", rematchRequested: "Przeciwnik chce rewanżu", guestWaiting: "Czekamy na znajomego", seconds: "sekund", practiceFinished: "Trening ukończony", correctCount: (n: number) => `Poprawne odpowiedzi: ${n}/6`,
+    breakdown: "Podsumowanie rund", roundPoints: "Punkty", newPractice: "Nowy trening", unavailable: "Rozgrywka wygasła. Utwórz nową.", readyHint: "Czas ruszy po wczytaniu kadru przez obu graczy i odliczeniu 3–2–1.",
+  },
+  en: {
+    continueGame: "Continue game", viewResult: "View result", dailyEyebrow: "One mystery. Every day.",
+    dailyFootnote: "7 guesses · hints after guesses 2, 4 and 6", progress: (n: number) => `Guesses used: ${n}/7`,
+    searchLoading: "Searching movies…", searchEmpty: "No results. Try the original title or a shorter name.",
+    searchError: "Could not search movies.", searchResults: (n: number) => `Movies found: ${n}`,
+    shareError: "Could not copy. Select and copy your result below.",
+    practiceTitle: "Frame practice", practiceDesc: "6 frames, 4 answers and 10 seconds per round. Play solo, without waiting for an opponent.", practiceAction: "Start practice",
+    winRate: "Games won", matchingFields: "Matching clues",
+    comparisonTitle: "What do the colours mean?",
+    comparisonHelp: "Green: the same value. Yellow: a shared genre or close — year ±3, runtime ±15 min, budget and votes within 25% of the larger value, rating ±1. The arrow shows whether the answer's value is higher or lower. Ratings are compared to one decimal place. Unknown budgets are marked ?.",
+    inviteLink: "Copy invitation link", ready: "I'm ready", loadingFrame: "Loading frame…", readyWaiting: "Ready — waiting for the other player", prepare: "Preparing round", frameError: "Could not load the frame. Please try again.",
+    rematch: "Play a rematch", rematchWaiting: "Rematch requested — waiting for the other player", rematchRequested: "Your opponent wants a rematch", guestWaiting: "Waiting for your friend", seconds: "seconds", practiceFinished: "Practice complete", correctCount: (n: number) => `Correct answers: ${n}/6`,
+    breakdown: "Round breakdown", roundPoints: "Points", newPractice: "New practice", unavailable: "This game has expired. Start a new one.", readyHint: "The timer starts after both players load the frame and the 3–2–1 countdown.",
+  },
+};
+export default experience;

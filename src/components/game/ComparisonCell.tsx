@@ -32,7 +32,7 @@ export default function ComparisonCell({
 
   return (
     <div
-      className="comparison-tile h-28 min-w-0"
+      className="comparison-tile h-full min-w-0"
       data-status={status}
       style={style}
     >
@@ -54,7 +54,7 @@ export default function ComparisonCell({
             {label}
           </span>
           <span
-            className="mt-1 line-clamp-3 min-h-8 min-w-0 w-full max-w-full text-left text-xs font-bold leading-tight [overflow-wrap:anywhere]"
+            className="mt-1 line-clamp-3 min-h-8 min-w-0 w-full max-w-full text-left text-xs font-bold leading-tight [overflow-wrap:break-word]"
             title={value}
           >
             {value}

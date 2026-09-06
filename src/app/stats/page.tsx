@@ -13,6 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import GameHeatmap from "@/components/stats/GameHeatmap";
+import experience from "@/i18n/experience";
 
 interface Stats {
   gamesPlayed: number;
@@ -23,7 +24,7 @@ interface Stats {
 }
 
 export default function StatsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { isSignedIn, isLoaded } = useUser();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +76,7 @@ export default function StatsPage() {
       icon: Target,
     },
     {
-      label: t.result.accuracy,
+      label: experience[locale].winRate,
       value: `${winRate}%`,
       icon: Trophy,
     },

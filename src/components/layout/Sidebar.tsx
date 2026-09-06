@@ -62,7 +62,6 @@ export default function Sidebar() {
   const [prevPathname, setPrevPathname] = useState(pathname);
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
-  const [proClicked, setProClicked] = useState(false);
   const [streak, setStreak] = useState<number | null>(null);
   const [prevSignedIn, setPrevSignedIn] = useState(isSignedIn);
   const [streakKey, setStreakKey] = useState(0);
@@ -209,13 +208,7 @@ export default function Sidebar() {
           {t.pro.title}
         </div>
         <p className="mb-3 text-xs text-muted">{t.pro.description}</p>
-        <button
-          onClick={() => setProClicked(true)}
-          className={`w-full rounded-lg py-2 text-xs font-semibold text-white transition-opacity ${proClicked ? "bg-white/10 cursor-default" : "bg-linear-to-r from-accent-purple to-[#a855f7] hover:opacity-90"}`}
-          disabled={proClicked}
-        >
-          {proClicked ? t.pro.comingSoon : t.pro.upgrade}
-        </button>
+        <span className="inline-flex rounded-full bg-white/5 px-2.5 py-1 text-[10px] text-muted">{t.pro.comingSoon}</span>
       </div>
 
       {/* Auth button */}

@@ -20,6 +20,7 @@ import { useTranslation } from "@/i18n";
 import { ArrowLeft, Plus, Loader2, Search, X, Library, Eye, Bookmark } from "lucide-react";
 import Image from "next/image";
 import { MediaDetails } from "@/types";
+import type { MovieSuggestion } from "@/types/movie-suggestion";
 import RankingItemRow from "@/components/collection/RankingItemRow";
 
 interface RankingItem {
@@ -47,7 +48,7 @@ interface RankingDetailProps {
 }
 
 export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [list, setList] = useState<RankedList | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
@@ -55,7 +56,7 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<MediaDetails[]>([]);
+  const [searchResults, setSearchResults] = useState<MovieSuggestion[]>([]);
   const [searching, setSearching] = useState(false);
 
   const sensors = useSensors(
@@ -93,10 +94,11 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `/api/movies/search?q=${encodeURIComponent(query)}`,
+          `/api/movies/search?q=${encodeURIComponent(query)}&lang=${locale}`,
           { signal: controller.signal }
         );
-        const data: MediaDetails[] = await res.json();
+        if (!res.ok) throw new Error("search");
+        const data: MovieSuggestion[] = await res.json();
         setSearchResults(data);
       } catch {
         // ignore
@@ -109,7 +111,7 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query]);
+  }, [query, locale]);
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -133,8 +135,11 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
     });
   };
 
-  const handleAddItem = async (movie: MediaDetails) => {
+  const handleAddItem = async (suggestion: MovieSuggestion) => {
     try {
+      const details = await fetch(`/api/movies/details?id=${suggestion.id}&lang=${locale}`);
+      if (!details.ok) throw new Error("details");
+      const movie: MediaDetails = await details.json();
       await fetch(`/api/collection/rankings/${listId}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

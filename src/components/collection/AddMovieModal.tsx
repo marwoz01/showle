@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useTranslation } from "@/i18n";
 import { MediaDetails } from "@/types";
+import type { MovieSuggestion } from "@/types/movie-suggestion";
 import { X, Search, Loader2, Eye, Bookmark, Check } from "lucide-react";
 import { localizeGenres } from "@/lib/localization";
 
@@ -12,9 +13,9 @@ interface AddMovieModalProps {
 }
 
 export default function AddMovieModal({ onClose }: AddMovieModalProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<MediaDetails[]>([]);
+  const [results, setResults] = useState<MovieSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [category, setCategory] = useState<"watched" | "watchlist">("watched");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,7 +31,7 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
   const [checked, setChecked] = useState<Set<number>>(new Set());
   const [savingBulk, setSavingBulk] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
-  const checkedMoviesRef = useRef<Map<number, MediaDetails>>(new Map());
+  const checkedMoviesRef = useRef<Map<number, MediaDetails | MovieSuggestion>>(new Map());
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -78,10 +79,11 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `/api/movies/search?q=${encodeURIComponent(query)}`,
+          `/api/movies/search?q=${encodeURIComponent(query)}&lang=${locale}`,
           { signal: controller.signal }
         );
-        const data: MediaDetails[] = await res.json();
+        if (!res.ok) throw new Error("search");
+        const data: MovieSuggestion[] = await res.json();
         setResults(data);
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
@@ -96,7 +98,7 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query]);
+  }, [query, locale]);
 
   // Infinite scroll
   useEffect(() => {
@@ -120,7 +122,7 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
     return () => el.removeEventListener("scroll", handleScroll);
   }, [query, loadingPopular, popularPage, popularTotalPages, fetchPopular]);
 
-  const toggleCheck = (movie: MediaDetails) => {
+  const toggleCheck = (movie: MediaDetails | MovieSuggestion) => {
     setChecked((prev) => {
       const next = new Set(prev);
       if (next.has(movie.id)) {
@@ -139,7 +141,12 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
     setSavingBulk(true);
 
     try {
-      const movies = Array.from(checkedMoviesRef.current.values());
+      const movies = await Promise.all(Array.from(checkedMoviesRef.current.values()).map(async (movie) => {
+        if ("genres" in movie) return movie;
+        const response = await fetch(`/api/movies/details?id=${movie.id}&lang=${locale}`);
+        if (!response.ok) throw new Error("details");
+        return await response.json() as MediaDetails;
+      }));
       await Promise.all(
         movies.map((movie) =>
           fetch("/api/collection", {
@@ -302,7 +309,7 @@ export default function AddMovieModal({ onClose }: AddMovieModalProps) {
                     </p>
                     <p className="text-xs text-muted">
                       {movie.year}
-                      {movie.genres.length > 0 && (
+                      {"genres" in movie && movie.genres.length > 0 && (
                         <>
                           {" · "}
                           {localizeGenres(movie.genres.slice(0, 2), t).join(", ")}

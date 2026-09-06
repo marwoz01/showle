@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
 import { ArrowLeft, Loader2, RefreshCw, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -18,7 +17,6 @@ type ViewState = "form" | "loading" | "results" | "error";
 
 export default function RecommendPage() {
   const { t, locale } = useTranslation();
-  const { isSignedIn } = useUser();
   const [view, setView] = useState<ViewState>("form");
   const [results, setResults] = useState<Recommendation[]>([]);
   const [errorType, setErrorType] = useState<string>("");

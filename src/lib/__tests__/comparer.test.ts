@@ -214,17 +214,15 @@ describe("budget comparison", () => {
 });
 
 describe("popularity comparison", () => {
-  it("exact when same bucket", () => {
-    // Both in bucket 2 (5000–12000): high.
-    const result = compareMedia(makeMovie({ popularity: 6000 }), makeMovie({ popularity: 10000 }), en);
+  it("exact only when vote counts match", () => {
+    const result = compareMedia(makeMovie({ popularity: 10000 }), makeMovie({ popularity: 10000 }), en);
     expect(result[7].status).toBe("exact");
-    expect(result[7].guessValue).toBe("6,000");
+    expect(result[7].guessValue).toBe("10,000");
     expect(result[7].answerValue).toBe("10,000");
   });
 
-  it("partial when adjacent buckets", () => {
-    // Bucket 1 (medium, 1000–5000) vs bucket 2 (high, 5000–12000).
-    const result = compareMedia(makeMovie({ popularity: 3000 }), makeMovie({ popularity: 8000 }), en);
+  it("partial when vote counts differ by no more than 25%", () => {
+    const result = compareMedia(makeMovie({ popularity: 6000 }), makeMovie({ popularity: 8000 }), en);
     expect(result[7].status).toBe("partial");
   });
 
@@ -236,9 +234,9 @@ describe("popularity comparison", () => {
 });
 
 describe("rating comparison", () => {
-  it("exact when within 0.3", () => {
+  it("partial, not exact, when ratings differ by 0.2", () => {
     const result = compareMedia(makeMovie({ rating: 7.0 }), makeMovie({ rating: 7.2 }), en);
-    expect(result[8].status).toBe("exact");
+    expect(result[8].status).toBe("partial");
   });
 
   it("partial when within 1.0", () => {

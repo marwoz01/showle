@@ -22,6 +22,7 @@ export default function StarRating({
   const [showPicker, setShowPicker] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ left: 0, top: 0 });
 
   useEffect(() => {
     if (!showPicker) return;
@@ -101,7 +102,11 @@ export default function StarRating({
       {/* Compact badge — click to open picker */}
       <button
         type="button"
-        onClick={() => setShowPicker(!showPicker)}
+        onClick={() => {
+          const rect = pickerRef.current?.getBoundingClientRect();
+          if (rect) setPosition({ left: Math.max(8, Math.min(rect.left, window.innerWidth - 300)), top: Math.min(rect.bottom + 4, window.innerHeight - 86) });
+          setShowPicker(!showPicker);
+        }}
         className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-semibold transition-colors ${
           displayValue
             ? "bg-yellow-500/15 text-yellow-400 hover:bg-yellow-500/25"
@@ -117,17 +122,7 @@ export default function StarRating({
         <div className="fixed inset-0 z-40" onClick={() => setShowPicker(false)}>
           <div
             className="absolute rounded-xl border border-white/10 bg-card-hover p-3 shadow-2xl"
-            style={{
-              left: pickerRef.current
-                ? Math.min(
-                    pickerRef.current.getBoundingClientRect().left,
-                    window.innerWidth - 280
-                  )
-                : 0,
-              top: pickerRef.current
-                ? pickerRef.current.getBoundingClientRect().bottom + 4
-                : 0,
-            }}
+            style={position}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-0.5">

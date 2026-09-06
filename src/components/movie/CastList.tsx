@@ -17,9 +17,9 @@ export default function CastList({ cast, label }: CastListProps) {
       <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted">
         {label}
       </h4>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,145px),1fr))] gap-x-4 gap-y-3">
         {cast.map((member) => (
-          <div key={member.name} className="flex items-center gap-2.5">
+          <div key={member.name} className="flex min-h-12 min-w-0 items-center gap-2.5">
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white/5">
               {member.profilePath ? (
                 <Image
@@ -36,11 +36,11 @@ export default function CastList({ cast, label }: CastListProps) {
               )}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-xs font-semibold text-foreground">
+              <p title={member.name} className="line-clamp-2 text-xs font-semibold text-foreground">
                 {member.name}
               </p>
               {member.character && (
-                <p className="truncate text-[10px] text-muted">
+                <p title={member.character} className="truncate text-[10px] text-muted">
                   {member.character}
                 </p>
               )}

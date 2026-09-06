@@ -198,7 +198,7 @@ function InfoSlot({ label, value }: { label: string; value: string | undefined }
         {label}
       </span>
       <span
-        className={`line-clamp-2 w-full max-w-full text-xs font-semibold leading-tight [overflow-wrap:anywhere] ${value ? "text-match-exact" : "text-muted/40"}`}
+        className={`line-clamp-2 w-full max-w-full text-xs font-semibold leading-tight [overflow-wrap:break-word] ${value ? "text-match-exact" : "text-muted/40"}`}
         title={value}
       >
         {value ?? "?"}

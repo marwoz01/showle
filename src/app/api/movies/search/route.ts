@@ -13,14 +13,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const query = request.nextUrl.searchParams.get("q");
+  const query = request.nextUrl.searchParams.get("q")?.trim().slice(0, 160);
 
   if (!query || query.length < 2) {
     return NextResponse.json([]);
   }
 
   try {
-    const results = await searchMovies(query);
+    const language = request.nextUrl.searchParams.get("lang") === "pl" ? "pl-PL" : "en-US";
+    const results = await searchMovies(query, language);
     return NextResponse.json(results);
   } catch (error) {
     console.error("TMDB search error:", error);

@@ -53,9 +53,9 @@ const pl: Translations = {
 
   // Pro section
   pro: {
-    title: "Odblokuj Pro",
+    title: "Showle Pro",
     description:
-      "Usuń reklamy, graj bez limitu i sprawdzaj szczegółowe statystyki.",
+      "Dodatkowe funkcje są w przygotowaniu. Obecne tryby gry pozostają dostępne bez Pro.",
     upgrade: "Ulepsz do Pro",
     comingSoon: "Wkrótce dostępne",
   },
@@ -146,10 +146,10 @@ const pl: Translations = {
       "Codziennie czeka nowy film. Wpisz tytuł, a porównamy go z odpowiedzią w 9 kategoriach.",
     step2Title: "Czytaj wskazówki",
     step2Desc:
-      "Każda błędna próba odkrywa nową wskazówkę — reżysera, gatunek, kraj i więcej.",
+      "Porównuj kolory i strzałki. Dodatkowe wskazówki odsłaniają się po 2., 4. i 6. próbie.",
     step3Title: "Odkrywaj filmy",
     step3Desc:
-      "Wybierz gatunki i preferencje, a dobierzemy 5 filmów idealnie dopasowanych na wieczór.",
+      "Wybierz gatunki i preferencje, a zaproponujemy do 8 filmów na Twój wieczór.",
     step4Title: "Udostępnij wynik",
     step4Desc:
       "Udało się? Podziel się siatką wyników ze znajomymi i porównajcie swoje serie zwycięstw.",
@@ -305,7 +305,7 @@ const pl: Translations = {
     topPick: "Najlepszy wybór",
     whyRecommend: "Dlaczego polecamy",
     ctaSubtext:
-      "Dobierzemy 5 filmów idealnie dopasowanych do Twoich preferencji",
+      "Zaproponujemy do 8 filmów dopasowanych do Twoich preferencji",
     popularityPopularDesc: "Znane szerokiej publiczności",
     popularityMediumDesc: "Cenione przez koneserów",
     popularityNicheDesc: "Mało znane perełki do odkrycia",

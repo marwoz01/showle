@@ -135,13 +135,11 @@ function comparePopularity(
   t: Translations,
   locale: Locale,
 ): ComparisonField {
-  const guessBucket = getPopularityBucket(guess);
-  const answerBucket = getPopularityBucket(answer);
-  const diff = Math.abs(guessBucket - answerBucket);
+  const diff = Math.abs(guess - answer);
 
   let status: MatchStatus = "miss";
   if (diff === 0) status = "exact";
-  else if (diff === 1) status = "partial";
+  else if (diff / Math.max(guess, answer) <= 0.25) status = "partial";
 
   return {
     label: t.comparison.popularity,
@@ -178,34 +176,25 @@ function compareBudget(guess: number, answer: number, t: Translations): Comparis
 }
 
 function compareRating(guess: number, answer: number, t: Translations): ComparisonField {
-  const diff = Math.abs(guess - answer);
+  const roundedGuess = Math.round(guess * 10);
+  const roundedAnswer = Math.round(answer * 10);
+  const diff = Math.abs(roundedGuess - roundedAnswer);
   let status: MatchStatus = "miss";
-  if (diff <= 0.3) status = "exact";
-  else if (diff <= 1.0) status = "partial";
+  if (diff === 0) status = "exact";
+  else if (diff <= 10) status = "partial";
 
   return {
     label: t.comparison.rating,
     guessValue: guess.toFixed(1),
     answerValue: answer.toFixed(1),
     status,
-    direction: getDirection(guess, answer),
+    direction: getDirection(roundedGuess, roundedAnswer),
   };
 }
 
 function getDirection(guess: number, answer: number): Direction {
   if (guess === answer) return null;
   return guess < answer ? "up" : "down";
-}
-
-// Buckets are calibrated to TMDB `vote_count` (now stored in `popularity` — see tmdb.ts).
-// Reference points: indie/obscure ~500, lesser-known ~2000, well-known ~8000,
-// hits ~17000 (Green Mile), popular hits ~23000 (Shutter Island), blockbuster 35000+.
-function getPopularityBucket(value: number): number {
-  if (value < 1000) return 0;
-  if (value < 5000) return 1;
-  if (value < 12000) return 2;
-  if (value < 25000) return 3;
-  return 4;
 }
 
 function formatVoteCount(value: number, locale: Locale): string {
