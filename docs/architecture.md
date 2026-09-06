@@ -1,5 +1,7 @@
 # Architecture
 
+The recommendation subsystem has a separate, current architecture and maintenance guide in [recommendations.md](recommendations.md). It uses RecommendationMovie, not the daily/frame game pools.
+
 ## Folder Structure
 
 ```

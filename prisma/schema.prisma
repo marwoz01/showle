@@ -190,3 +190,48 @@ model MovieEmbedding {
 
   @@index([year])
 }
+
+model RecommendationMovie {
+  tmdbId             Int                          @id
+  title              String
+  titlePl            String                       @default("")
+  year               Int
+  genres             String[]                     @default([])
+  overview           String                       @default("")
+  overviewPl         String                       @default("")
+  posterPath         String                       @default("")
+  backdropPath       String                       @default("")
+  director           String                       @default("")
+  leadActor          String                       @default("")
+  country            String                       @default("")
+  countryCode        String                       @default("")
+  runtime            Int                          @default(0)
+  budget             Int                          @default(0)
+  voteCount          Int                          @default(0)
+  rating             Float                        @default(0)
+  tagline            String?
+  taglinePl          String?
+  cast               Json                         @default("[]")
+  keywords           String[]                     @default([])
+  collectionId       Int?
+  providerIds        Int[]                        @default([])
+  providersUpdatedAt DateTime?
+  updatedAt          DateTime                     @default(now())
+  embedding          Unsupported("vector(1536)")?
+  embeddingTextHash  String                       @default("")
+
+  @@index([year])
+  @@index([genres], type: Gin)
+  @@index([providerIds], type: Gin)
+}
+
+model RecommendationFeedback {
+  userId    String
+  tmdbId    Int
+  reaction  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, tmdbId])
+  @@index([userId, updatedAt])
+}

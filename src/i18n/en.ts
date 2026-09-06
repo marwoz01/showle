@@ -1,7 +1,9 @@
 import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
+import { recommendationEn } from "@/i18n/recommendation";
 
 const en: Translations = {
+  recommendation: recommendationEn,
   meta: {
     title: "Showle · Daily Movie",
     description:

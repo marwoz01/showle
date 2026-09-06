@@ -1,6 +1,8 @@
 import type { MovieGenre } from "@/constants/genres";
+import type { RecommendationCopy } from "@/i18n/recommendation";
 
 export interface Translations {
+  recommendation: RecommendationCopy;
   meta: {
     title: string;
     description: string;

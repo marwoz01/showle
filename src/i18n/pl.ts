@@ -1,5 +1,6 @@
 import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
+import { recommendationPl } from "@/i18n/recommendation";
 
 function polishMovieCount(count: number): string {
   const lastDigit = count % 10;
@@ -22,6 +23,7 @@ function polishGameCount(count: number): string {
 }
 
 const pl: Translations = {
+  recommendation: recommendationPl,
   meta: {
     title: "Showle · Film dnia",
     description:

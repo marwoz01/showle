@@ -37,6 +37,7 @@ export default function RecommendationCard({
 
   // Keyboard support for the card-as-button pattern.
   const handleKey = (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setShowDetails(true);
@@ -51,8 +52,7 @@ export default function RecommendationCard({
           tabIndex={0}
           onClick={() => setShowDetails(true)}
           onKeyDown={handleKey}
-          className="soft-card soft-card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none sm:flex-row"
-          style={{ animation: "fadeSlideUp 0.4s ease-out both" }}
+          className="soft-card soft-card-interactive animate-result-reveal group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none sm:flex-row"
         >
           {/* Poster */}
           <div className="shrink-0 p-4 pb-0 sm:pb-4 sm:pr-0">
@@ -146,10 +146,9 @@ export default function RecommendationCard({
         tabIndex={0}
         onClick={() => setShowDetails(true)}
         onKeyDown={handleKey}
-        className="soft-card soft-card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-xl focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+        className="soft-card soft-card-interactive animate-result-reveal group relative flex cursor-pointer flex-col overflow-hidden rounded-xl focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
         style={{
           animationDelay: `${index * 100}ms`,
-          animation: "fadeSlideUp 0.4s ease-out both",
         }}
       >
         {/* Poster */}

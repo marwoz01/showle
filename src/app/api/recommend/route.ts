@@ -1,300 +1,95 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { rateLimit } from "@/lib/rate-limit";
-import { getOpenRouter } from "@/lib/gemini";
-import {
-  findSimilarMovies,
-  findMoviesByFilters,
-  buildQueryText,
-  inferGenresFromText,
-  type SimilarMovieResult,
-} from "@/lib/embeddings";
 import { prisma } from "@/lib/prisma";
-import type { MediaDetails } from "@/types";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
-import { parseRecommendRequest, MAX_RECOMMEND_BODY_BYTES, MAX_JUSTIFICATION_PROMPT_CHARS } from "@/lib/recommend-input";
+import { parseRecommendRequest, MAX_RECOMMEND_BODY_BYTES } from "@/lib/recommend-input";
 import { reserveRecommendation } from "@/lib/recommend-quota";
-
-function toMediaDetails(row: SimilarMovieResult): MediaDetails {
-  return {
-    id: row.tmdbId,
-    title: row.title,
-    type: "movie",
-    year: row.year,
-    genres: row.genres,
-    country: row.country,
-    director: row.director,
-    leadActor: row.leadActor,
-    runtime: row.runtime,
-    budget: row.budget,
-    popularity: row.voteCount,
-    rating: row.rating,
-    posterPath: row.posterPath,
-    backdropPath: row.backdropPath || undefined,
-    overview: row.overview,
-    tagline: row.tagline ?? undefined,
-    cast: row.cast,
-  };
-}
-
-/**
- * Translate a non-English freeform query to English so the embedding lands in
- * the same language space as our (English-built) movie embeddings. Cross-lingual
- * cosine match is unreliable for short, idiomatic phrases ("romans z mocnym
- * zakończeniem" was matching popular blockbusters instead of romances).
- */
-async function translateToEnglish(text: string): Promise<string> {
-  try {
-    const completion = await getOpenRouter().chat.completions.create({
-      model: "google/gemini-2.0-flash-001",
-      max_tokens: 256,
-      messages: [
-        {
-          role: "system",
-          content: `You translate movie-recommendation queries into natural English used by film critics and audiences.
-
-Context: the user is describing what kind of MOVIE they want to watch. Disambiguate genre and cinematic terms accordingly:
-- "romans" / "romance" / etc. → "romance" (the film genre), never "novel"
-- "thriller" / "horror" / "comedy" / "drama" → keep as English film-genre terms
-- moods (dark, slow-burn, feel-good, gritty) → preserve them faithfully
-
-Output ONLY the translation — no quotes, no preamble, no explanation.`,
-        },
-        { role: "user", content: text },
-      ],
-    });
-    const translated = completion.choices[0]?.message?.content?.trim();
-    return translated || text;
-  } catch {
-    return text;
-  }
-}
-
-function buildJustificationPrompt(
-  movies: { title: string; year: number; overview: string }[],
-  preferences: { genres: string[]; freeformText?: string; popularity: string },
-  locale: string
-): { system: string; user: string } {
-  const lang = locale === "pl"
-    ? "Pisz uzasadnienia po polsku."
-    : "Write justifications in English.";
-
-  const system = `You are a movie recommendation expert. The user has been matched with movies based on their preferences. Your job is to write a short, compelling justification (1-2 sentences) for each movie explaining WHY it fits the user's taste.
-
-Rules:
-1. Be specific — reference the movie's mood, themes, style, or narrative approach.
-2. Connect each justification to the user's stated preferences.
-3. Never use generic phrases like "great movie" or "must-see".
-4. ${lang}
-
-Respond ONLY in JSON: {"justifications": ["...", "...", ...]}`;
-
-  const movieList = movies
-    .map((m, i) => `${i + 1}. "${m.title}" (${m.year}) — ${m.overview.slice(0, 200)}`)
-    .join("\n");
-
-  const prefParts: string[] = [];
-  if (preferences.genres.length) prefParts.push(`Genres: ${preferences.genres.join(", ")}`);
-  if (preferences.freeformText) prefParts.push(`User description: "${preferences.freeformText}"`);
-  if (preferences.popularity) prefParts.push(`Popularity preference: ${preferences.popularity}`);
-
-  const user = `User preferences:
-${prefParts.join("\n")}
-
-Movies to justify:
-${movieList}`;
-
-  return { system, user };
-}
+import { interpretRecommendation } from "@/lib/recommend-ai";
+import { inferRecommendationIntent } from "@/lib/recommend-intent";
+import { resolveRecommendationFilters } from "@/lib/recommend-filters";
+import { getRecommendationProfile } from "@/lib/recommend-profile";
+import { getRecommendationReference } from "@/lib/recommend-reference";
+import { findRecommendationCandidates } from "@/lib/recommend-search";
+import { rankRecommendations } from "@/lib/recommend-ranking";
+import { reviewRecommendationRelevance } from "@/lib/recommend-relevance";
+import { explainRecommendation } from "@/lib/recommend-explanations";
+import { RECOMMENDATION_TARGET } from "@/constants/recommendation";
 
 const DAILY_LIMIT_AUTH = 20;
 const DAILY_LIMIT_ANON = 1;
+const noStore = { "Cache-Control": "no-store" };
 
-export async function GET(request: NextRequest) {
+async function context(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   const { userId } = await auth();
   const today = new Date().toISOString().slice(0, 10);
-  const dailyLimit = userId ? DAILY_LIMIT_AUTH : DAILY_LIMIT_ANON;
-  const dailyKey = userId
-    ? `recommend:${userId}:${today}`
-    : `recommend:anon:${ip}:${today}`;
+  const limit = userId ? DAILY_LIMIT_AUTH : DAILY_LIMIT_ANON;
+  const key = userId ? `recommend:${userId}:${today}` : `recommend:anon:${ip}:${today}`;
+  return { userId, today, limit, key };
+}
 
-  const usage = await prisma.dailyUsage.findUnique({ where: { key: dailyKey } });
-  const remaining = Math.max(0, dailyLimit - (usage?.count ?? 0));
-  return NextResponse.json({ remaining, limit: dailyLimit });
+export async function GET(request: NextRequest) {
+  try {
+    const { key, limit } = await context(request);
+    const usage = await prisma.dailyUsage.findUnique({ where: { key } });
+    return NextResponse.json({ remaining: Math.max(0, limit - (usage?.count ?? 0)), limit }, { headers: noStore });
+  } catch {
+    return NextResponse.json({ error: "internal" }, { status: 500, headers: noStore });
+  }
 }
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-
-  // Anti-abuse: 5 req per 5 min per IP (independent of daily quota)
-  const { success: ipOk } = rateLimit(`recommend:${ip}`, { limit: 5, windowMs: 300_000 });
-  if (!ipOk) {
-    return NextResponse.json(
-      { error: "rate_limited" },
-      { status: 429, headers: { "Retry-After": "300" } }
-    );
+  if (!rateLimit(`recommend:${ip}`, { limit: 5, windowMs: 300_000 }).success) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429, headers: { ...noStore, "Retry-After": "300" } });
   }
-
-  // Daily quota — persisted in DB so it survives serverless cold starts
-  const { userId } = await auth();
-  const today = new Date().toISOString().slice(0, 10);
-  const dailyLimit = userId ? DAILY_LIMIT_AUTH : DAILY_LIMIT_ANON;
-  const dailyKey = userId
-    ? `recommend:${userId}:${today}`
-    : `recommend:anon:${ip}:${today}`;
-
-  let input: unknown;
-  try {
-    input = await readJsonBody(request, MAX_RECOMMEND_BODY_BYTES);
-  } catch (error) {
-    return NextResponse.json({ error: "invalid_request" }, { status: error instanceof RequestBodyError ? error.status : 400 });
-  }
-  const body = parseRecommendRequest(input);
-  if (!body) {
-    return NextResponse.json({ error: "invalid_preferences" }, { status: 400 });
-  }
-  const hasFreeform = body.freeformText.length > 0;
-  const hasGenres = body.genres.length > 0;
-
-  const TARGET = 8;
   let remaining: number | null = null;
-
+  let limit = DAILY_LIMIT_ANON;
   try {
-    // Watched movies are always excluded for signed-in users.
-    const watchedIds = new Set<number>();
-    if (userId) {
-      const watched = await prisma.savedMovie.findMany({
-        where: { userId, category: "watched" },
-        select: { tmdbId: true },
-      });
-      watched.forEach((w) => watchedIds.add(w.tmdbId));
+    const raw = await readJsonBody(request, MAX_RECOMMEND_BODY_BYTES);
+    const body = parseRecommendRequest(raw);
+    if (!body) return NextResponse.json({ error: "invalid_preferences" }, { status: 400, headers: noStore });
+    const localIntent = inferRecommendationIntent(body.freeformText);
+    if (body.genres.some((genre) => localIntent.excludedGenres.includes(genre))) {
+      return NextResponse.json({ error: "conflicting_preferences" }, { status: 400, headers: noStore });
     }
-
-    // Session-tracked exclusions (movies already shown to the user this visit).
-    const sessionExcludes = new Set(body.exclude || []);
-    const fullExcludes = new Set([...watchedIds, ...sessionExcludes]);
-
-    remaining = await reserveRecommendation(dailyKey, today, dailyLimit);
+    const ctx = await context(request);
+    limit = ctx.limit;
+    remaining = await reserveRecommendation(ctx.key, ctx.today, limit);
     if (remaining === null) {
-      const error = userId ? "daily_limit_reached" : "daily_limit_anon";
-      return NextResponse.json({ error, remaining: 0, limit: dailyLimit }, { status: 429 });
+      return NextResponse.json({ error: ctx.userId ? "daily_limit_reached" : "daily_limit_anon", remaining: 0, limit }, { status: 429, headers: noStore });
     }
-
-    // Translate non-English freeform input to match the catalog's English embeddings.
-    let freeformForEmbedding = body.freeformText;
-    if (hasFreeform && body.locale && body.locale !== "en") {
-      freeformForEmbedding = await translateToEnglish(body.freeformText!);
+    const [intent, profile, reference] = await Promise.all([
+      interpretRecommendation(body.freeformText),
+      getRecommendationProfile(ctx.userId, body),
+      getRecommendationReference(body.referenceMovieId),
+    ]);
+    if (body.referenceMovieId && !reference) {
+      return NextResponse.json({ error: "reference_unavailable", remaining, limit }, { status: 503, headers: noStore });
     }
-
-    // Infer genre hints from freeform text BEFORE building the query so they can
-    // strengthen both the embedding vector AND the SQL genre filter.
-    // Run on both the original text and the translation to survive failures of either.
-    const inferredGenres =
-      hasFreeform && !hasGenres
-        ? [
-            ...new Set([
-              ...inferGenresFromText(body.freeformText!),
-              ...inferGenresFromText(freeformForEmbedding ?? ""),
-            ]),
-          ]
-        : [];
-
-    // Build query text — pass inferred genres as a hint so the embedding vector
-    // also leans toward the right genre (e.g. appends ". Genres: Romance").
-    const queryText = buildQueryText({
-      genres: hasGenres ? body.genres : inferredGenres,
-      yearFrom: body.yearFrom,
-      yearTo: body.yearTo,
-      popularity: body.popularity,
-      freeformText: freeformForEmbedding,
-    });
-
-    const searchParams = {
-      queryText,
-      genres: body.genres,
-      inferredGenres: inferredGenres.length ? inferredGenres : undefined,
-      hasFreeform,
-      yearFrom: body.yearFrom,
-      yearTo: body.yearTo,
-      popularity: body.popularity,
-    };
-
-    // Vector search with filter-only fallback if embeddings fail.
-    async function search(excludeIds: number[]) {
-      try {
-        return await findSimilarMovies({ ...searchParams, excludeIds, limit: TARGET });
-      } catch (embeddingError) {
-        console.error("Embedding search failed, falling back to filters:", embeddingError);
-        return findMoviesByFilters({ ...searchParams, excludeIds, limit: TARGET });
-      }
+    const filters = resolveRecommendationFilters(body, intent, profile.excludedIds);
+    if (filters.genres.some((genre) => filters.excludedGenres.includes(genre))) {
+      return NextResponse.json({ error: "conflicting_preferences", remaining, limit }, { status: 400, headers: noStore });
     }
-
-    let similarMovies = await search([...fullExcludes]);
-
-    // Pool-exhaustion fallback: if we don't have enough results AND the user has been
-    // clicking "try again" (sessionExcludes non-empty), retry without the session
-    // exclusions so they get fresh recommendations even after burning through the pool.
-    // Watched-exclusion is always preserved.
-    if (similarMovies.length < TARGET && sessionExcludes.size > 0) {
-      similarMovies = await search([...watchedIds]);
+    const queryText = [
+      intent.queryEnglish, filters.genres.length ? `Genres: ${filters.genres.join(", ")}` : "",
+      reference ? `Similar to ${reference.title}. ${reference.overview.slice(0, 900)}` : "",
+    ].filter(Boolean).join(". ");
+    const preferredGenres = [...new Set(profile.signals.filter((signal) => signal.weight > 0).flatMap((signal) => signal.genres))].slice(0, 8);
+    const { movies, matching } = await findRecommendationCandidates({ filters, queryText, preferredGenres });
+    const shortlist = rankRecommendations(movies, filters, profile.signals, reference, { limit: 24 });
+    const relevance = await reviewRecommendationRelevance(shortlist, body.freeformText, reference);
+    const ranked = rankRecommendations(shortlist, filters, profile.signals, reference, { relevance: relevance.scores });
+    const meta = { matching, interpretation: intent.source, relevance: relevance.source, partial: ranked.length < RECOMMENDATION_TARGET, personalized: profile.signals.length > 0 };
+    if (!ranked.length) {
+      return NextResponse.json({ error: body.exclude.length ? "pool_exhausted" : "no_results", remaining, limit, meta }, { status: 404, headers: noStore });
     }
-
-    if (similarMovies.length === 0) {
-      return NextResponse.json({ error: "no_results", remaining, limit: dailyLimit }, { status: 404 });
-    }
-
-    // All movie data is in our own catalog now — no TMDB roundtrip needed.
-    const movies: MediaDetails[] = similarMovies.map(toMediaDetails);
-
-    // Generate AI justifications
-    let justifications: string[] = movies.map((m) => m.overview.slice(0, 200));
-
-    try {
-      const prompt = buildJustificationPrompt(
-        movies.map((m) => ({
-          title: m.title,
-          year: m.year,
-          overview: m.overview,
-        })),
-        { genres: body.genres, freeformText: body.freeformText, popularity: body.popularity },
-        body.locale || "en"
-      );
-
-      if (prompt.system.length + prompt.user.length > MAX_JUSTIFICATION_PROMPT_CHARS) {
-        throw new Error("justification_prompt_too_large");
-      }
-      const completion = await getOpenRouter().chat.completions.create({
-        model: "google/gemini-2.0-flash-001",
-        max_tokens: 1200,
-        messages: [
-          { role: "system", content: prompt.system },
-          { role: "user", content: prompt.user },
-        ],
-        response_format: { type: "json_object" },
-      });
-
-      const text = completion.choices[0]?.message?.content;
-      if (text) {
-        const parsed = JSON.parse(text) as { justifications: string[] };
-        if (Array.isArray(parsed.justifications) && parsed.justifications.length === movies.length &&
-          parsed.justifications.every((value) => typeof value === "string" && value.length <= 2000)) {
-          justifications = parsed.justifications;
-        }
-      }
-    } catch (aiError) {
-      console.error("Justification generation failed, using overviews:", aiError);
-    }
-
-    // Build response in same shape as before
-    const recommendations = movies.map((movie, i) => ({
-      movie,
-      justification: justifications[i] || movie.overview.slice(0, 200),
-    }));
-
-    return NextResponse.json({ recommendations, remaining, limit: dailyLimit });
+    const recommendations = ranked.map((movie) => explainRecommendation(movie, filters, profile.signals, reference, body.locale));
+    return NextResponse.json({ recommendations, remaining, limit, meta }, { headers: noStore });
   } catch (error) {
-    console.error("Recommend error:", error);
-    return NextResponse.json({ error: "internal", ...(remaining !== null ? { remaining, limit: dailyLimit } : {}) }, { status: 500 });
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: "invalid_request" }, { status: error.status, headers: noStore });
+    console.error("Recommendation request failed");
+    return NextResponse.json({ error: "internal", ...(remaining !== null ? { remaining, limit } : {}) }, { status: 500, headers: noStore });
   }
 }

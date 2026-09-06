@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { candidate } from "@/lib/__tests__/fixtures/recommendations";
+import { inferRecommendationIntent } from "@/lib/recommend-intent";
 
 const mocks = vi.hoisted(() => ({
   count: 0,
@@ -8,15 +10,16 @@ const mocks = vi.hoisted(() => ({
   upsert: vi.fn(),
   ai: vi.fn(),
   search: vi.fn(),
-  fallback: vi.fn(),
+  profile: vi.fn(),
+  reference: vi.fn(),
 }));
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ userId: mocks.userId }) }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: () => ({ success: true }) }));
-vi.mock("@/lib/gemini", () => ({ getOpenRouter: () => ({ chat: { completions: { create: mocks.ai } } }) }));
-vi.mock("@/lib/embeddings", () => ({
-  findSimilarMovies: mocks.search, findMoviesByFilters: mocks.fallback,
-  buildQueryText: () => "Drama", inferGenresFromText: () => [],
-}));
+vi.mock("@/lib/recommend-ai", () => ({ interpretRecommendation: mocks.ai }));
+vi.mock("@/lib/recommend-search", () => ({ findRecommendationCandidates: mocks.search }));
+vi.mock("@/lib/recommend-profile", () => ({ getRecommendationProfile: mocks.profile }));
+vi.mock("@/lib/recommend-reference", () => ({ getRecommendationReference: mocks.reference }));
+vi.mock("@/lib/recommend-relevance", () => ({ reviewRecommendationRelevance: async () => ({ scores: null, source: "local" }) }));
 vi.mock("@/lib/prisma", () => {
   const tx = {
     $executeRaw: mocks.lock,
@@ -38,7 +41,7 @@ vi.mock("@/lib/prisma", () => {
 import { POST } from "@/app/api/recommend/route";
 
 const valid = { genres: ["Drama"], yearFrom: 1990, yearTo: 2026, popularity: "popular", locale: "en", freeformText: "", exclude: [] };
-const movie = { tmdbId: 1, title: "Film", year: 2020, genres: ["Drama"], overview: "Plot", country: "PL", director: "Director", leadActor: "Actor", runtime: 100, budget: 1, voteCount: 100, rating: 7, posterPath: "/poster.jpg", cast: [] };
+const movie = candidate();
 const request = (body: unknown) => new NextRequest("http://localhost/api/recommend", { method: "POST", body: JSON.stringify(body), headers: { "Content-Type": "application/json" } });
 
 beforeEach(() => {
@@ -46,9 +49,10 @@ beforeEach(() => {
   mocks.count = 0;
   mocks.userId = null;
   mocks.upsert.mockImplementation(async () => ({ count: ++mocks.count }));
-  mocks.search.mockResolvedValue([movie]);
-  mocks.fallback.mockResolvedValue([movie]);
-  mocks.ai.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ justifications: ["Good match"] }) } }] });
+  mocks.search.mockResolvedValue({ movies: [movie], matching: "semantic" });
+  mocks.profile.mockResolvedValue({ signals: [], excludedIds: [] });
+  mocks.reference.mockResolvedValue(null);
+  mocks.ai.mockImplementation(async (text: string) => inferRecommendationIntent(text));
 });
 
 describe("recommendation security boundary", () => {
@@ -60,7 +64,7 @@ describe("recommendation security boundary", () => {
     expect(mocks.lock).toHaveBeenCalled();
   });
   it("charges empty results and never starts AI after the quota is exhausted", async () => {
-    mocks.search.mockResolvedValue([]);
+    mocks.search.mockResolvedValue({ movies: [], matching: "semantic" });
     const empty = await POST(request({ ...valid, locale: "pl", freeformText: "romans" }));
     expect(empty.status).toBe(404);
     expect(await empty.json()).toMatchObject({ error: "no_results", remaining: 0, limit: 1 });
@@ -72,7 +76,6 @@ describe("recommendation security boundary", () => {
   it("keeps the reservation on an upstream failure", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     mocks.search.mockRejectedValue(new Error("upstream"));
-    mocks.fallback.mockRejectedValue(new Error("upstream"));
     const response = await POST(request(valid));
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({ remaining: 0, limit: 1 });
@@ -110,26 +113,37 @@ describe("recommendation security boundary", () => {
       expect((await response.json()).recommendations).toHaveLength(1);
     }
     expect(mocks.count).toBe(2);
-    for (const [args] of mocks.ai.mock.calls) expect(args.max_tokens).toBeGreaterThan(0);
+    for (const [text] of mocks.ai.mock.calls) expect(text.length).toBeLessThanOrEqual(400);
   });
-  it("never submits an oversized combined justification prompt", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    mocks.search.mockResolvedValue([{ ...movie, title: "x".repeat(6000) }]);
+  it("never sends catalog descriptions or history to the interpretation model", async () => {
+    mocks.search.mockResolvedValue({ movies: [candidate(1, { overview: "x".repeat(6000) })], matching: "semantic" });
+    const response = await POST(request({ ...valid, freeformText: "moving drama" }));
+    expect(response.status).toBe(200);
+    expect(mocks.ai).toHaveBeenCalledWith("moving drama");
+    expect((await response.json()).recommendations[0].justification).not.toContain("x".repeat(100));
+  });
+  it("exposes degraded/partial matching without silently dropping constraints", async () => {
+    mocks.search.mockResolvedValue({ movies: [movie, candidate(2, { genres: ["Horror"] })], matching: "filters" });
     const response = await POST(request(valid));
     expect(response.status).toBe(200);
-    expect((await response.json()).recommendations[0].justification).toBe(movie.overview);
+    expect(await response.json()).toMatchObject({ recommendations: [{ movie: { id: 1 } }], meta: { matching: "filters", partial: true } });
+  });
+  it("does not return previously displayed movies or refill an exhausted pool", async () => {
+    const response = await POST(request({ ...valid, exclude: [1] }));
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: "pool_exhausted" });
+    expect(mocks.search).toHaveBeenCalledTimes(1);
+  });
+  it("rejects a selected genre contradicted by the description before spending quota", async () => {
+    const response = await POST(request({ ...valid, genres: ["Horror"], freeformText: "bez horroru" }));
+    expect(response.status).toBe(400);
+    expect(mocks.count).toBe(0);
     expect(mocks.ai).not.toHaveBeenCalled();
-    vi.restoreAllMocks();
   });
-  it("keeps valid recommendations when embeddings or malformed justifications need fallback", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    mocks.search.mockRejectedValue(new Error("embedding"));
-    mocks.ai.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ justifications: [42] }) } }] });
-    const response = await POST(request(valid));
-    expect(response.status).toBe(200);
-    expect(mocks.fallback).toHaveBeenCalledTimes(1);
-    expect((await response.json()).recommendations[0].justification).toBe(movie.overview);
-    expect(mocks.count).toBe(1);
-    vi.restoreAllMocks();
+  it("does not fabricate an unavailable reference film", async () => {
+    const response = await POST(request({ ...valid, referenceMovieId: 123 }));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ error: "reference_unavailable", remaining: 0 });
+    expect(mocks.search).not.toHaveBeenCalled();
   });
 });

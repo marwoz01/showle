@@ -10,6 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "catalog:sync": "node scripts/sync-frame-catalog.mjs",
+    "recommendations:sync": "node scripts/sync-recommendation-catalog.mjs",
+    "recommendations:embed": "node scripts/embed-recommendation-catalog.mjs",
+    "recommendations:check": "node scripts/check-recommendation-health.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

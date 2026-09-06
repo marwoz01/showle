@@ -11,8 +11,9 @@ import { Film, Search, Loader2 } from "@/components/ui/icons";
 interface SearchBarProps {
   onSelect: (movie: MovieSuggestion) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
-export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
+export default function SearchBar({ onSelect, disabled, placeholder }: SearchBarProps) {
   const { t, locale } = useTranslation();
   const copy = experience[locale];
   const [query, setQuery] = useState("");
@@ -102,7 +103,7 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
         <input
           ref={inputRef}
           role="combobox"
-          aria-label={t.game.searchPlaceholder}
+          aria-label={placeholder ?? t.game.searchPlaceholder}
           aria-autocomplete="list"
           aria-expanded={open}
           aria-controls={listId}
@@ -110,7 +111,7 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
             open && active >= 0 ? `${listId}-${active}` : undefined
           }
           autoComplete="off"
-          placeholder={t.game.searchPlaceholder}
+          placeholder={placeholder ?? t.game.searchPlaceholder}
           value={query}
           disabled={disabled}
           onChange={(event) => setQuery(event.target.value)}
@@ -177,7 +178,7 @@ export default function SearchBar({ onSelect, disabled }: SearchBarProps) {
           <ul
             id={listId}
             role="listbox"
-            aria-label={t.game.searchPlaceholder}
+            aria-label={placeholder ?? t.game.searchPlaceholder}
             className="max-h-80 overflow-y-auto"
           >
             {results.map((movie, index) => (

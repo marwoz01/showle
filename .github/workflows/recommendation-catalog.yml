@@ -1,0 +1,39 @@
+name: Refresh recommendation catalog
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+permissions:
+  contents: read
+concurrency:
+  group: recommendation-catalog
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: vars.RECOMMENDATION_REFRESH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Check required secrets
+        run: node -e "for (const key of ['DATABASE_URL','TMDB_API_KEY','GEMINI_API_KEY']) if (!process.env[key]) throw new Error(key + ' secret is missing');"
+      - name: Refresh metadata weekly or on manual dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: npm run recommendations:sync -- --limit=5000
+      - name: Refresh metadata on Mondays
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$(date -u +%u)" = "1" ]; then
+            npm run recommendations:sync -- --limit=5000
+          fi
+      - name: Resume embeddings with a conservative daily budget
+        run: npm run recommendations:embed -- --limit=300
