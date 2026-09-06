@@ -65,11 +65,11 @@ async function playFrames(mode) {
       Date.parse(view.roundEndsAt) - Date.parse(view.roundStartsAt),
       10000,
     );
-    assert.equal(view.question.correctIndex, undefined);
+    assert.equal(view.question, null, "No clue during the countdown");
     assert.equal(
       view.nextFramePath,
       null,
-      "Do not send next frames before round feedback",
+      "Do not send future frames",
     );
     if (round === 0) {
       const early = await api(`${path}/answer`, host, {
@@ -84,6 +84,10 @@ async function playFrames(mode) {
       );
     }
     await pause(Math.max(0, Date.parse(view.roundStartsAt) - Date.now()) + 100);
+    view = await api(path, host);
+    assert.equal(typeof view.question.imagePath, "string");
+    assert.equal(view.question.options.length, 4);
+    assert.equal(view.question.correctIndex, undefined);
     const answer = { answerIndex: 0, round, match: view.matchNumber };
     const [one, two] = await Promise.all([
       api(`${path}/answer`, host, answer),
@@ -120,19 +124,12 @@ async function playFrames(mode) {
       view.players.every((player) => player.answerIndex === 0),
       "Reveal both players on the same answer",
     );
-    const nextFrame = view.nextFramePath;
-    if (round < 5)
-      assert.equal(
-        typeof nextFrame,
-        "string",
-        "Preload the next frame during feedback",
-      );
-    else assert.equal(nextFrame, null);
+    assert.equal(view.nextFramePath, null, "Feedback cannot reveal a future clue");
     await pause(
       Math.max(0, Date.parse(view.roundResolvedAt) + 2550 - Date.now()),
     );
     view = await api(path, host);
-    if (round < 5) assert.equal(view.question.imagePath, nextFrame);
+    if (round < 5) assert.equal(view.question, null);
     console.log(`${mode}: round ${round + 1}/6 verified`);
   }
   assert.equal(view.status, "finished");
@@ -155,6 +152,7 @@ async function playFrames(mode) {
   assert.equal(view.matchNumber, match + 1);
   assert.equal(view.players[0].score, 0);
   assert.equal(view.history.length, 0);
+  assert.equal(view.question, null, "Rematch cannot reveal a clue before readiness");
   console.log(`${mode}: rematch in the same room verified`);
 }
 

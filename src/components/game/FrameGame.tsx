@@ -163,6 +163,25 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     return () => clearInterval(timer);
   }, [room?.status]);
 
+  useEffect(() => {
+    if (!room?.roundStartsAt || room.status !== "playing" || room.question || !playerId) return;
+    const ac = new AbortController();
+    // Request the newly released clue at the deadline, not one polling interval later.
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/duel/rooms/${room.code}`, {
+          headers: { "x-duel-player": playerId }, cache: "no-store", signal: ac.signal,
+        });
+        if (!response.ok) throw new Error("load");
+        const view: DuelRoomView = await response.json();
+        if (!ac.signal.aborted) accept(view);
+      } catch {
+        if (!ac.signal.aborted) setError(t.duel.serverError);
+      }
+    }, Math.max(0, Date.parse(room.roundStartsAt) - Date.now() - clockOffset.current));
+    return () => { clearTimeout(timer); ac.abort(); };
+  }, [room?.code, room?.matchNumber, room?.currentRound, room?.roundStartsAt, room?.status, room?.question, playerId, accept, t.duel.serverError]);
+
   const request = useCallback(
     async (path: string, body: object) => {
       if (busy.current || !playerId) return;
@@ -210,19 +229,19 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     : "";
   const me = room?.players.find((player) => player.role === room.you);
   const ready = useCallback(async () => {
-    if (!room || loadedKey !== roundKey || me?.ready) return;
+    if (!room || room.status !== "playing" || room.roundStartsAt || me?.ready) return;
     const success = await request(`/api/duel/rooms/${room.code}/action`, {
       type: "ready",
       round: room.currentRound,
       match: room.matchNumber,
     });
     if (!success) autoReady.current = "";
-  }, [room, loadedKey, roundKey, me?.ready, request]);
+  }, [room, me?.ready, request]);
   useEffect(() => {
     if (
       room?.status === "playing" &&
       room.currentRound > 0 &&
-      loadedKey === roundKey &&
+      !room.roundStartsAt &&
       !me?.ready &&
       !pending &&
       !error &&
@@ -234,7 +253,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
   }, [
     room?.status,
     room?.currentRound,
-    loadedKey,
+    room?.roundStartsAt,
     roundKey,
     me?.ready,
     pending,
@@ -300,6 +319,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
     startsAt &&
     countdown === 0 &&
     remaining > 0 &&
+    room?.question &&
     loadedKey === roundKey &&
     !resolved,
   );
@@ -541,18 +561,6 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
             className="pointer-events-none absolute inset-0 z-30"
           />
           <section className="frame-stage soft-panel overflow-hidden rounded-3xl p-2">
-            {room.nextFramePath && (
-              <Image
-                unoptimized
-                src={`https://image.tmdb.org/t/p/w1280${room.nextFramePath}`}
-                alt=""
-                aria-hidden="true"
-                width={1}
-                height={1}
-                loading="eager"
-                className="absolute h-px w-px opacity-0 pointer-events-none"
-              />
-            )}
             <div className="frame-stage__inner overflow-hidden rounded-[1.25rem] bg-[#121214]">
               <div
                 ref={frameRef}
@@ -575,7 +583,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                     onError={() => setFailedKey(roundKey)}
                   />
                 )}
-                {(!startsAt || countdown > 0) && (
+                {(!startsAt || countdown > 0 || loadedKey !== roundKey) && (
                   <div className="frame-stage__intro absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#141418] px-6 text-center">
                     {countdown > 0 ? (
                       <p
@@ -598,10 +606,12 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                           {t.common.tryAgain}
                         </button>
                       </>
+                    ) : startsAt ? (
+                      <LoaderCircle role="status" aria-label={copy.loadingFrame} className="animate-spin text-accent-purple" size={32} />
                     ) : room.currentRound > 0 ? (
                       error ? (
                         <button
-                          disabled={pending || loadedKey !== roundKey}
+                          disabled={pending}
                           onClick={ready}
                           className={actionClass}
                         >
@@ -616,16 +626,6 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                           3
                         </p>
                       )
-                    ) : loadedKey !== roundKey ? (
-                      <>
-                        <LoaderCircle
-                          className="animate-spin text-accent-purple"
-                          size={32}
-                        />
-                        <p className="text-sm text-muted">
-                          {copy.loadingFrame}
-                        </p>
-                      </>
                     ) : (
                       <>
                         <h2 className="text-2xl font-semibold">
@@ -691,16 +691,16 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                 className="grid grid-cols-2 auto-rows-fr gap-2 p-3 sm:gap-3 sm:p-5"
                 data-testid="frame-answers"
               >
-                {room.question?.options.map((option, index) => (
+                {(room.question?.options ?? Array.from({ length: 4 }, () => ({ title: "", year: 0 }))).map((option, index) => (
                   <button
                     key={index}
                     title={
-                      startsAt && countdown === 0
+                      room.question && startsAt && countdown === 0
                         ? `${option.title} (${option.year})`
                         : undefined
                     }
                     aria-label={
-                      !startsAt || countdown > 0
+                      !room.question || !startsAt || countdown > 0
                         ? String.fromCharCode(65 + index)
                         : undefined
                     }
@@ -715,7 +715,7 @@ export default function FrameGame({ solo = false }: { solo?: boolean }) {
                     }}
                     className={`frame-answer flex min-h-24 min-w-0 flex-col justify-between gap-2 rounded-2xl px-3 py-3 text-left text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-purple sm:px-4 sm:text-sm ${resolved && room.question?.correctIndex === index ? "bg-match-exact/15 text-match-exact" : selectedIndex === index ? (resolved ? "bg-match-miss/15 text-match-miss" : "bg-accent-purple/20 text-foreground") : "bg-white/5 text-foreground hover:enabled:bg-white/10"}`}
                   >
-                    {startsAt && countdown === 0 ? (
+                    {room.question && startsAt && countdown === 0 ? (
                       <span className="line-clamp-3 leading-snug">
                         {option.title}{" "}
                         <span className="text-[10px] font-normal text-muted sm:text-xs">

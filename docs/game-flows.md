@@ -4,7 +4,7 @@ Daily guesses are checked by the server. The browser sends only `type: guess` pl
 
 Daily movie details are frozen per date and film in `DailyMovieSnapshot`. Polish text and artwork share the same canonical numeric values as English. Day boundaries use Europe/Warsaw, including daylight-saving changes.
 
-Duels and solo frame practice share one server state machine and the `DuelRoom` table (`mode` distinguishes them). Both players must load the frame before the three-second countdown. Each round then has ten seconds. Correct answers earn 500–1,000 points according to the server's receipt time; an incorrect or late answer earns zero. A round ends after both answers or the deadline, never after just the first correct answer. Match numbers reject delayed requests from a previous rematch. Frame games do not affect daily-game coins, streaks or statistics.
+Duels and solo frame practice share one server state machine and the `DuelRoom` table (`mode` distinguishes them). Both players confirm readiness before the three-second countdown (later rounds confirm automatically). The server releases the frame and options only when the round starts, never during readiness, countdown or previous-round feedback. Each round has a ten-second server window; image/network latency uses part of that window, and the client fetches at the start rather than waiting for its next poll. Correct answers earn 500–1,000 points according to the server's receipt time; an incorrect or late answer earns zero. A round ends after both answers or the deadline, never after just the first correct answer. Match numbers reject delayed requests from a previous rematch. Frame games do not affect daily-game coins, streaks or statistics.
 
 ## Database rollout
 

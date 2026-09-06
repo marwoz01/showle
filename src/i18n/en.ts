@@ -344,6 +344,7 @@ const en: Translations = {
     addFromCollection: "Add from collection",
     addAllWatched: "All watched movies",
     addAllWatchlist: "All from watchlist",
+    rankingLimit: "A ranking can contain up to 500 movies. Remove some entries before adding more.",
     addedCount: (added: number, skipped: number) =>
       `Added ${added}${skipped > 0 ? `, skipped ${skipped} (already in ranking)` : ""}`,
     position: "Position",

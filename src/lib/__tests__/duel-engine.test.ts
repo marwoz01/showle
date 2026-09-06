@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DuelRoom } from "@prisma/client";
 import { transitionRoom } from "@/lib/duel-engine";
 import { createDuelQuestions } from "@/lib/duel";
@@ -20,6 +20,8 @@ const questions = createDuelQuestions(
   () => 0.4,
 );
 const now = Date.parse("2026-09-06T12:00:00Z");
+beforeEach(() => { vi.spyOn(Date, "now").mockReturnValue(now + 60000); });
+afterEach(() => { vi.restoreAllMocks(); });
 function room(mode = "duel"): DuelRoom {
   return {
     code: "ABCDEF",
@@ -71,6 +73,39 @@ function start(original: DuelRoom) {
       );
 }
 describe("frame-game server state machine", () => {
+  it.each(["duel", "practice"])("withholds all clues before the server start in %s", (mode) => {
+    const initial = room(mode);
+    expect(serializeRoom(initial, initial.hostId, now).question).toBeNull();
+    const ready = start(initial);
+    for (const time of [now, now + 2999]) {
+      const view = serializeRoom(ready, initial.hostId, time);
+      expect(view.question).toBeNull();
+      expect(view.nextFramePath).toBeNull();
+      expect(JSON.stringify(view)).not.toContain(questions[0].imagePath);
+    }
+    const released = serializeRoom(ready, initial.hostId, now + 3000);
+    expect(released.question?.imagePath).toBe(questions[0].imagePath);
+    expect(released.question?.options).toHaveLength(4);
+    expect(released.question?.correctIndex).toBeUndefined();
+    expect(JSON.stringify(released)).not.toContain('"movieId"');
+  });
+  it("does not leak the next clue through feedback, advancement or rematch", () => {
+    const feedback = transitionRoom(start(room()), "host-1234", { type: "tick" }, now + 13000);
+    const view = serializeRoom(feedback, "host-1234", now + 13000);
+    expect(view.question?.correctIndex).toBe(questions[0].correctIndex);
+    expect(view.nextFramePath).toBeNull();
+    expect(JSON.stringify(view)).not.toContain(questions[1].imagePath);
+    const next = transitionRoom(feedback, "host-1234", { type: "tick" }, now + 15500);
+    expect(serializeRoom(next, "host-1234", now + 15500).question).toBeNull();
+    const rematch = transitionRoom({ ...feedback, mode: "practice", status: "finished" }, "host-1234",
+      { type: "rematch", match: 1, questions }, now + 16000);
+    expect(serializeRoom(rematch, "host-1234", now + 16000).question).toBeNull();
+  });
+  it("withholds the clue while waiting for the guest or their ready signal", () => {
+    expect(serializeRoom({ ...room(), status: "waiting" }, "host-1234", now).question).toBeNull();
+    const oneReady = transitionRoom(room(), "host-1234", { type: "ready", round: 0, match: 1 }, now);
+    expect(serializeRoom(oneReady, "guest-1234", now + 60000).question).toBeNull();
+  });
   it("persists both choices but hides opponents' answers and new points until resolution", () => {
     const index = questions[0].correctIndex;
     const host = transitionRoom(
@@ -194,7 +229,7 @@ describe("frame-game server state machine", () => {
     expect(guest.roundResolvedAt).not.toBeNull();
     expect(guest.roundHistory).toHaveLength(1);
   });
-  it("does not start the next round until its frame has loaded on both devices", () => {
+  it("does not start the next round until both clients are ready", () => {
     const expired = transitionRoom(
       start(room()),
       "host-1234",

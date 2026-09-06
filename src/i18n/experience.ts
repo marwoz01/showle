@@ -45,7 +45,7 @@ const experience = {
     newPractice: "Nowy trening",
     unavailable: "Rozgrywka wygasła. Utwórz nową.",
     readyHint:
-      "Czas ruszy po wczytaniu kadru przez obu graczy i odliczeniu 3–2–1.",
+      "Gdy oboje będziecie gotowi, ruszy odliczanie 3–2–1. Kadr i odpowiedzi odsłonią się na starcie rundy.",
   },
   en: {
     continueGame: "Continue game",
@@ -91,7 +91,7 @@ const experience = {
     newPractice: "New practice",
     unavailable: "This game has expired. Start a new one.",
     readyHint:
-      "The timer starts after both players load the frame and the 3–2–1 countdown.",
+      "When both players are ready, the 3–2–1 countdown begins. The frame and answers are revealed when the round starts.",
   },
 };
 export default experience;

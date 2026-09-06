@@ -296,6 +296,7 @@ export interface Translations {
     addAllWatched: string;
     addAllWatchlist: string;
     addedCount: (added: number, skipped: number) => string;
+    rankingLimit: string;
     position: string;
     saved: string;
     alreadySaved: string;

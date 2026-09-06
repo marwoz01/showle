@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDuelRoomView, normalizeDuelCode, normalizePlayerId } from "@/lib/duel-room";
-import { rateLimit } from "@/lib/rate-limit";
+import { allowDuelRequest } from "@/lib/duel-rate-limit";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { success } = rateLimit(`duel-state:${ip}`, {
-    limit: 240,
-    windowMs: 60_000,
-  });
-  if (!success) {
+  if (!allowDuelRequest(request, "state")) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 

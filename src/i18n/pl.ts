@@ -365,6 +365,7 @@ const pl: Translations = {
     addFromCollection: "Dodaj z kolekcji",
     addAllWatched: "Wszystkie obejrzane",
     addAllWatchlist: "Wszystkie z listy do obejrzenia",
+    rankingLimit: "Ranking może zawierać maksymalnie 500 filmów. Usuń część pozycji przed dodaniem kolejnych.",
     addedCount: (added: number, skipped: number) =>
       `Dodano ${added}${skipped > 0 ? `, pominięto ${skipped} (już w rankingu)` : ""}`,
     position: "Pozycja",

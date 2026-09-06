@@ -11,6 +11,9 @@ import {
 } from "@/lib/embeddings";
 import { prisma } from "@/lib/prisma";
 import type { MediaDetails } from "@/types";
+import { readJsonBody, RequestBodyError } from "@/lib/request-body";
+import { parseRecommendRequest, MAX_RECOMMEND_BODY_BYTES, MAX_JUSTIFICATION_PROMPT_CHARS } from "@/lib/recommend-input";
+import { reserveRecommendation } from "@/lib/recommend-quota";
 
 function toMediaDetails(row: SimilarMovieResult): MediaDetails {
   return {
@@ -34,16 +37,6 @@ function toMediaDetails(row: SimilarMovieResult): MediaDetails {
   };
 }
 
-interface RecommendRequest {
-  genres: string[];
-  yearFrom: number;
-  yearTo: number;
-  popularity: string;
-  locale: string;
-  exclude?: number[];
-  freeformText?: string;
-}
-
 /**
  * Translate a non-English freeform query to English so the embedding lands in
  * the same language space as our (English-built) movie embeddings. Cross-lingual
@@ -54,6 +47,7 @@ async function translateToEnglish(text: string): Promise<string> {
   try {
     const completion = await getOpenRouter().chat.completions.create({
       model: "google/gemini-2.0-flash-001",
+      max_tokens: 256,
       messages: [
         {
           role: "system",
@@ -150,32 +144,21 @@ export async function POST(request: NextRequest) {
     ? `recommend:${userId}:${today}`
     : `recommend:anon:${ip}:${today}`;
 
-  // Read current count before deciding whether to allow
-  const existingUsage = await prisma.dailyUsage.findUnique({ where: { key: dailyKey } });
-  if (existingUsage && existingUsage.count >= dailyLimit) {
-    const error = userId ? "daily_limit_reached" : "daily_limit_anon";
-    return NextResponse.json({ error, remaining: 0, limit: dailyLimit }, { status: 429 });
-  }
-
-  let body: RecommendRequest;
+  let input: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    input = await readJsonBody(request, MAX_RECOMMEND_BODY_BYTES);
+  } catch (error) {
+    return NextResponse.json({ error: "invalid_request" }, { status: error instanceof RequestBodyError ? error.status : 400 });
   }
-
-  const hasFreeform = !!body.freeformText?.trim();
-  const hasGenres = body.genres && body.genres.length > 0;
-
-  if (!hasFreeform && !hasGenres) {
-    return NextResponse.json({ error: "At least one genre or freeform text required" }, { status: 400 });
+  const body = parseRecommendRequest(input);
+  if (!body) {
+    return NextResponse.json({ error: "invalid_preferences" }, { status: 400 });
   }
-
-  if (hasFreeform && body.freeformText!.length > 400) {
-    return NextResponse.json({ error: "Freeform text too long (max 400)" }, { status: 400 });
-  }
+  const hasFreeform = body.freeformText.length > 0;
+  const hasGenres = body.genres.length > 0;
 
   const TARGET = 8;
+  let remaining: number | null = null;
 
   try {
     // Watched movies are always excluded for signed-in users.
@@ -191,6 +174,12 @@ export async function POST(request: NextRequest) {
     // Session-tracked exclusions (movies already shown to the user this visit).
     const sessionExcludes = new Set(body.exclude || []);
     const fullExcludes = new Set([...watchedIds, ...sessionExcludes]);
+
+    remaining = await reserveRecommendation(dailyKey, today, dailyLimit);
+    if (remaining === null) {
+      const error = userId ? "daily_limit_reached" : "daily_limit_anon";
+      return NextResponse.json({ error, remaining: 0, limit: dailyLimit }, { status: 429 });
+    }
 
     // Translate non-English freeform input to match the catalog's English embeddings.
     let freeformForEmbedding = body.freeformText;
@@ -252,7 +241,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (similarMovies.length === 0) {
-      return NextResponse.json({ error: "no_results" }, { status: 404 });
+      return NextResponse.json({ error: "no_results", remaining, limit: dailyLimit }, { status: 404 });
     }
 
     // All movie data is in our own catalog now — no TMDB roundtrip needed.
@@ -272,8 +261,12 @@ export async function POST(request: NextRequest) {
         body.locale || "en"
       );
 
+      if (prompt.system.length + prompt.user.length > MAX_JUSTIFICATION_PROMPT_CHARS) {
+        throw new Error("justification_prompt_too_large");
+      }
       const completion = await getOpenRouter().chat.completions.create({
         model: "google/gemini-2.0-flash-001",
+        max_tokens: 1200,
         messages: [
           { role: "system", content: prompt.system },
           { role: "user", content: prompt.user },
@@ -284,7 +277,8 @@ export async function POST(request: NextRequest) {
       const text = completion.choices[0]?.message?.content;
       if (text) {
         const parsed = JSON.parse(text) as { justifications: string[] };
-        if (parsed.justifications?.length === movies.length) {
+        if (Array.isArray(parsed.justifications) && parsed.justifications.length === movies.length &&
+          parsed.justifications.every((value) => typeof value === "string" && value.length <= 2000)) {
           justifications = parsed.justifications;
         }
       }
@@ -298,17 +292,9 @@ export async function POST(request: NextRequest) {
       justification: justifications[i] || movie.overview.slice(0, 200),
     }));
 
-    // Increment usage counter only on a successful response
-    const updated = await prisma.dailyUsage.upsert({
-      where: { key: dailyKey },
-      update: { count: { increment: 1 } },
-      create: { key: dailyKey, count: 1, date: today },
-    });
-    const remaining = Math.max(0, dailyLimit - updated.count);
-
     return NextResponse.json({ recommendations, remaining, limit: dailyLimit });
   } catch (error) {
     console.error("Recommend error:", error);
-    return NextResponse.json({ error: "internal" }, { status: 500 });
+    return NextResponse.json({ error: "internal", ...(remaining !== null ? { remaining, limit: dailyLimit } : {}) }, { status: 500 });
   }
 }

@@ -9,6 +9,12 @@ export async function getDuelRoomView(
   playerId: string,
   action: RoomAction = { type: "tick" },
 ): Promise<DuelRoomView | null> {
+  // Reject outsiders before they can queue on a room's advisory lock.
+  const member = await prisma.duelRoom.findFirst({
+    where: { code, expiresAt: { gt: new Date() }, OR: [{ hostId: playerId }, { guestId: playerId }] },
+    select: { code: true },
+  });
+  if (!member) return null;
   return prisma.$transaction(
     async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"duel:" + code}))`;
@@ -45,7 +51,7 @@ export async function getDuelRoomView(
   );
 }
 
-export function serializeRoom(room: DuelRoom, playerId: string): DuelRoomView {
+export function serializeRoom(room: DuelRoom, playerId: string, now = Date.now()): DuelRoomView {
   const question = (room.questions as unknown as DuelQuestion[])[
     room.currentRound
   ];
@@ -65,7 +71,7 @@ export function serializeRoom(room: DuelRoom, playerId: string): DuelRoomView {
     matchNumber: room.matchNumber,
     status: room.status as DuelRoomView["status"],
     you,
-    serverNow: new Date().toISOString(),
+    serverNow: new Date(now).toISOString(),
     roundStartsAt: room.roundStartedAt?.toISOString() ?? null,
     history:
       room.status === "finished"
@@ -115,14 +121,10 @@ export function serializeRoom(room: DuelRoom, playerId: string): DuelRoomView {
         : "guest"
       : null,
     winner,
-    // Warm the next image during feedback, never send future answer options.
-    nextFramePath:
-      resolved && room.status === "playing"
-        ? ((room.questions as unknown as DuelQuestion[])[room.currentRound + 1]
-            ?.imagePath ?? null)
-        : null,
+    // A readable image is a clue even without its answer options.
+    nextFramePath: null,
     question:
-      room.status === "waiting" || !question
+      room.status === "waiting" || !question || !room.roundStartedAt || room.roundStartedAt.getTime() > now
         ? null
         : {
             imagePath: question.imagePath,

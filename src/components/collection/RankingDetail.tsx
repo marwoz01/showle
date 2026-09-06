@@ -22,6 +22,7 @@ import Image from "next/image";
 import { MediaDetails } from "@/types";
 import type { MovieSuggestion } from "@/types/movie-suggestion";
 import RankingItemRow from "@/components/collection/RankingItemRow";
+import { MAX_RANKING_ADD_BATCH } from "@/lib/ranking-input";
 
 interface RankingItem {
   id: string;
@@ -58,6 +59,7 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<MovieSuggestion[]>([]);
   const [searching, setSearching] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -69,14 +71,15 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
   const fetchList = useCallback(async () => {
     try {
       const res = await fetch(`/api/collection/rankings/${listId}`);
+      if (!res.ok) throw new Error("ranking");
       const data = await res.json();
       setList(data);
     } catch {
-      // silently fail
+      setBulkMessage(t.common.genericError);
     } finally {
       setLoading(false);
     }
-  }, [listId]);
+  }, [listId, t.common.genericError]);
 
   useEffect(() => {
     fetchList();
@@ -115,10 +118,11 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over || !list || active.id === over.id) return;
+    if (!over || !list || saving || bulkLoading || active.id === over.id) return;
 
     const oldIndex = list.items.findIndex((i) => i.id === active.id);
     const newIndex = list.items.findIndex((i) => i.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
 
     const reordered = arrayMove(list.items, oldIndex, newIndex).map(
       (item, idx) => ({ ...item, position: idx + 1 })
@@ -126,24 +130,37 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
 
     setList({ ...list, items: reordered });
 
-    await fetch(`/api/collection/rankings/${listId}/items`, {
-      method: "PUT",
+    setSaving(true);
+    setBulkMessage(null);
+    try {
+      await writeItems("PUT", { move: { id: String(active.id), position: newIndex + 1 } });
+    } catch (error) {
+      setBulkMessage(error instanceof Error && error.message === t.collection.rankingLimit ? t.collection.rankingLimit : t.common.genericError);
+    } finally {
+      await fetchList();
+      setSaving(false);
+    }
+  };
+
+  const writeItems = async (method: "POST" | "PUT", body: { items: unknown[] } | { move: { id: string; position: number } }) => {
+    const res = await fetch(`/api/collection/rankings/${listId}/items`, {
+      method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: reordered.map((item) => ({ id: item.id, position: item.position })),
-      }),
+      body: JSON.stringify(body),
     });
+    if (!res.ok) throw new Error(res.status === 409 ? t.collection.rankingLimit : t.common.genericError);
+    return res.json();
   };
 
   const handleAddItem = async (suggestion: MovieSuggestion) => {
+    if (saving || bulkLoading) return;
+    setSaving(true);
+    setBulkMessage(null);
     try {
       const details = await fetch(`/api/movies/details?id=${suggestion.id}&lang=${locale}`);
-      if (!details.ok) throw new Error("details");
+      if (!details.ok) throw new Error(t.common.genericError);
       const movie: MediaDetails = await details.json();
-      await fetch(`/api/collection/rankings/${listId}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await writeItems("POST", { items: [{
           tmdbId: movie.id,
           title: movie.title,
           year: movie.year,
@@ -151,25 +168,28 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
           genres: movie.genres,
           director: movie.director,
           overview: movie.overview,
-        }),
-      });
+      }] });
       setShowSearch(false);
       setQuery("");
       setSearchResults([]);
-      fetchList();
-    } catch {
-      // silently fail
+    } catch (error) {
+      setBulkMessage(error instanceof Error && error.message === t.collection.rankingLimit ? t.collection.rankingLimit : t.common.genericError);
+    } finally {
+      await fetchList();
+      setSaving(false);
     }
   };
 
   const handleBulkAdd = async (category: "watched" | "watchlist") => {
+    if (saving || bulkLoading) return;
     setBulkLoading(true);
     setShowBulkMenu(false);
     setBulkMessage(null);
 
     try {
-      // Fetch all movies from the category
+      // Use the collection endpoint's current page; keep each write bounded.
       const res = await fetch(`/api/collection?category=${category}&sort=date`);
+      if (!res.ok) throw new Error(t.common.genericError);
       const data = await res.json();
       const movies = data.items || [];
 
@@ -184,11 +204,7 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
       }
 
       // Bulk add to ranking
-      const addRes = await fetch(`/api/collection/rankings/${listId}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: movies.map((m: { tmdbId: number; title: string; year: number; posterPath: string; genres?: string[]; director?: string; overview?: string }) => ({
+      const items = movies.map((m: { tmdbId: number; title: string; year: number; posterPath: string; genres?: string[]; director?: string; overview?: string }) => ({
             tmdbId: m.tmdbId,
             title: m.title,
             year: m.year,
@@ -196,21 +212,26 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
             genres: m.genres || [],
             director: m.director || "",
             overview: m.overview || "",
-          })),
-        }),
-      });
-      const result = await addRes.json();
-      setBulkMessage(t.collection.addedCount(result.added || 0, result.skipped || 0));
-      fetchList();
-    } catch {
-      // silently fail
+      }));
+      let added = 0;
+      let skipped = 0;
+      for (let offset = 0; offset < items.length; offset += MAX_RANKING_ADD_BATCH) {
+        const result = await writeItems("POST", { items: items.slice(offset, offset + MAX_RANKING_ADD_BATCH) });
+        added += result.added ?? 0;
+        skipped += result.skipped ?? 0;
+      }
+      setBulkMessage(t.collection.addedCount(added, skipped));
+    } catch (error) {
+      setBulkMessage(error instanceof Error && error.message === t.collection.rankingLimit ? t.collection.rankingLimit : t.common.genericError);
     } finally {
+      await fetchList();
       setBulkLoading(false);
     }
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!list) return;
+    if (!list || saving || bulkLoading) return;
+    setSaving(true);
     setList({
       ...list,
       items: list.items
@@ -218,9 +239,15 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
         .map((item, idx) => ({ ...item, position: idx + 1 })),
     });
 
-    await fetch(`/api/collection/rankings/${listId}/items/${itemId}`, {
-      method: "DELETE",
-    });
+    try {
+      const res = await fetch(`/api/collection/rankings/${listId}/items/${itemId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("delete");
+    } catch {
+      setBulkMessage(t.common.genericError);
+    } finally {
+      await fetchList();
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -254,7 +281,7 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
           <div className="relative">
             <button
               onClick={() => setShowBulkMenu(!showBulkMenu)}
-              disabled={bulkLoading}
+              disabled={bulkLoading || saving}
               className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground disabled:opacity-50"
             >
               {bulkLoading ? (
@@ -294,6 +321,7 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
           {/* Single add via search */}
           <button
             onClick={() => setShowSearch(!showSearch)}
+            disabled={saving || bulkLoading}
             className="flex items-center gap-2 rounded-lg bg-accent-purple px-3 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
             <Plus size={16} />
@@ -355,6 +383,7 @@ export default function RankingDetail({ listId, onBack }: RankingDetailProps) {
               {searchResults.map((movie) => (
                 <button
                   key={movie.id}
+                  disabled={saving || bulkLoading}
                   onClick={() => handleAddItem(movie)}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/4"
                 >

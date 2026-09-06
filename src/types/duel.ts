@@ -40,5 +40,6 @@ export interface DuelRoomView {
   roundWinner: DuelRole | null;
   winner: DuelRole | "draw" | null;
   question: DuelQuestionView | null;
-  nextFramePath: string | null;
+  /** Kept for wire compatibility; future frames are never released early. */
+  nextFramePath: null;
 }

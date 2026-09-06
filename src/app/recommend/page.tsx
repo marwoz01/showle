@@ -7,6 +7,7 @@ import Link from "next/link";
 import PreferenceForm from "@/components/recommend/PreferenceForm";
 import RecommendationCard from "@/components/recommend/RecommendationCard";
 import type { MediaDetails } from "@/types";
+import { MAX_RECOMMEND_EXCLUDES } from "@/lib/recommend-input";
 
 interface Recommendation {
   movie: MediaDetails;
@@ -67,6 +68,8 @@ export default function RecommendPage() {
       });
 
       const data = await res.json().catch(() => ({}));
+      if (data.remaining !== undefined) setRemaining(data.remaining);
+      if (data.limit !== undefined) setQuotaLimit(data.limit);
 
       if (res.status === 429) {
         const errCode = data.error ?? "rate_limited";
@@ -97,7 +100,7 @@ export default function RecommendPage() {
       if (data.remaining !== undefined) setRemaining(data.remaining);
       if (data.limit !== undefined) setQuotaLimit(data.limit);
       setResults(recommendations);
-      setExcludeIds((prev) => [...prev, ...recommendations.map((r: Recommendation) => r.movie.id)]);
+      setExcludeIds((prev) => [...new Set([...prev, ...recommendations.map((r: Recommendation) => r.movie.id)])].slice(-MAX_RECOMMEND_EXCLUDES));
       setView("results");
       topRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch {
@@ -180,6 +183,7 @@ export default function RecommendPage() {
               {errorType !== "daily_limit_reached" && errorType !== "daily_limit_anon" && (
                 <button
                   onClick={handleTryAgain}
+                  disabled={remaining === 0}
                   className="inline-flex items-center gap-2 rounded-lg bg-accent-purple px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 >
                   <RefreshCw size={16} />
