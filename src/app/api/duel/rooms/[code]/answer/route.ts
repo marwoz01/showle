@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { calculateDuelPoints, type DuelQuestion } from "@/lib/duel";
 import {
   getDuelRoomView,
   normalizeDuelCode,
@@ -12,113 +10,36 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { success } = rateLimit(`duel-answer:${ip}`, {
-    limit: 60,
-    windowMs: 60_000,
-  });
-  if (!success) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
-  }
-
   const playerId = normalizePlayerId(request.headers.get("x-duel-player"));
   const code = normalizeDuelCode((await params).code);
-  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
-  const answerIndex = Number(body?.answerIndex);
-  const round = Number(body?.round);
-
+  const body = await request.json().catch(() => null);
   if (
     !playerId ||
-    code.length !== 6 ||
-    !Number.isInteger(answerIndex) ||
-    answerIndex < 0 ||
-    answerIndex > 3 ||
-    !Number.isInteger(round)
+    !code ||
+    !Number.isSafeInteger(body?.answerIndex) ||
+    body.answerIndex < 0 ||
+    body.answerIndex > 3 ||
+    !Number.isSafeInteger(body?.round) ||
+    !Number.isSafeInteger(body?.match)
   ) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-
-  const currentView = await getDuelRoomView(code, playerId);
-  if (!currentView) {
-    return NextResponse.json({ error: "room_not_found" }, { status: 404 });
-  }
-
-  const room = await prisma.duelRoom.findUnique({ where: { code } });
   if (
-    !room ||
-    room.status !== "playing" ||
-    room.currentRound !== round ||
-    room.roundResolvedAt
-  ) {
-    return NextResponse.json(currentView);
-  }
-
-  const isHost = room.hostId === playerId;
-  const isGuest = room.guestId === playerId;
-  if (!isHost && !isGuest) {
-    return NextResponse.json({ error: "room_not_found" }, { status: 404 });
-  }
-
-  const remainingMs = (room.roundEndsAt?.getTime() ?? 0) - Date.now();
-  if (remainingMs <= 0) {
-    return NextResponse.json(await getDuelRoomView(code, playerId));
-  }
-
-  const questions = room.questions as unknown as DuelQuestion[];
-  const correct = questions[round]?.correctIndex === answerIndex;
-  const points = correct ? calculateDuelPoints(remainingMs) : 0;
-
-  const marked = isHost
-    ? await prisma.duelRoom.updateMany({
-        where: {
-          code,
-          status: "playing",
-          currentRound: round,
-          roundResolvedAt: null,
-          hostAnsweredRound: { not: round },
-        },
-        data: {
-          hostAnsweredRound: round,
-          hostRoundPoints: points,
-          hostScore: { increment: points },
-        },
-      })
-    : await prisma.duelRoom.updateMany({
-        where: {
-          code,
-          status: "playing",
-          currentRound: round,
-          roundResolvedAt: null,
-          guestAnsweredRound: { not: round },
-        },
-        data: {
-          guestAnsweredRound: round,
-          guestRoundPoints: points,
-          guestScore: { increment: points },
-        },
-      });
-
-  if (marked.count === 0) {
-    return NextResponse.json(await getDuelRoomView(code, playerId));
-  }
-
-  const afterAnswer = await prisma.duelRoom.findUnique({ where: { code } });
-  if (
-    afterAnswer &&
-    afterAnswer.hostAnsweredRound === round &&
-    afterAnswer.guestAnsweredRound === round
-  ) {
-    const roundWinnerId =
-      afterAnswer.hostRoundPoints === afterAnswer.guestRoundPoints
-        ? null
-        : afterAnswer.hostRoundPoints > afterAnswer.guestRoundPoints
-          ? afterAnswer.hostId
-          : afterAnswer.guestId;
-    await prisma.duelRoom.updateMany({
-      where: { code, currentRound: round, roundResolvedAt: null },
-      data: { roundResolvedAt: new Date(), roundWinnerId },
+    !rateLimit(`duel-answer:${playerId}`, { limit: 60, windowMs: 60000 })
+      .success
+  )
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  try {
+    const room = await getDuelRoomView(code, playerId, {
+      type: "answer",
+      answerIndex: body.answerIndex,
+      round: body.round,
+      match: body.match,
     });
+    return room
+      ? NextResponse.json(room)
+      : NextResponse.json({ error: "room_not_found" }, { status: 404 });
+  } catch {
+    return NextResponse.json({ error: "server_error" }, { status: 503 });
   }
-
-  return NextResponse.json(await getDuelRoomView(code, playerId));
 }

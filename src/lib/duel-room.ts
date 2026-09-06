@@ -1,111 +1,85 @@
 import { prisma } from "@/lib/prisma";
-import {
-  DUEL_REVEAL_MS,
-  DUEL_ROUND_MS,
-  DUEL_ROUNDS,
-  type DuelQuestion,
-} from "@/lib/duel";
+import { DUEL_ROUNDS, type DuelQuestion } from "@/lib/duel";
+import { transitionRoom, type RoomAction } from "@/lib/duel-engine";
+import type { DuelRoom, Prisma } from "@prisma/client";
 import type { DuelRole, DuelRoomView } from "@/types/duel";
 
 export async function getDuelRoomView(
   code: string,
   playerId: string,
+  action: RoomAction = { type: "tick" },
 ): Promise<DuelRoomView | null> {
-  let room = await prisma.duelRoom.findUnique({ where: { code } });
-  if (!room || (room.hostId !== playerId && room.guestId !== playerId)) {
-    return null;
-  }
-
-  if (room.status === "playing") {
-    const now = Date.now();
-
-    if (!room.roundResolvedAt && room.roundEndsAt && room.roundEndsAt.getTime() <= now) {
-      const roundWinnerId =
-        room.hostRoundPoints === room.guestRoundPoints
-          ? null
-          : room.hostRoundPoints > room.guestRoundPoints
-            ? room.hostId
-            : room.guestId;
-      await prisma.duelRoom.updateMany({
-        where: {
-          code,
-          status: "playing",
-          currentRound: room.currentRound,
-          roundResolvedAt: null,
-        },
-        data: { roundResolvedAt: new Date(), roundWinnerId },
-      });
-      room = (await prisma.duelRoom.findUnique({ where: { code } })) ?? room;
-    }
-
-    if (
-      room.roundResolvedAt &&
-      room.roundResolvedAt.getTime() + DUEL_REVEAL_MS <= now
-    ) {
-      const isLastRound = room.currentRound >= DUEL_ROUNDS - 1;
-      const nextRoundAt = new Date();
-
-      await prisma.duelRoom.updateMany({
-        where: {
-          code,
-          status: "playing",
-          currentRound: room.currentRound,
-          roundResolvedAt: room.roundResolvedAt,
-        },
-        data: isLastRound
-          ? { status: "finished" }
-          : {
-              currentRound: { increment: 1 },
-              hostRoundPoints: 0,
-              guestRoundPoints: 0,
-              roundWinnerId: null,
-              roundResolvedAt: null,
-              roundStartedAt: nextRoundAt,
-              roundEndsAt: new Date(nextRoundAt.getTime() + DUEL_ROUND_MS),
-            },
-      });
-      room = (await prisma.duelRoom.findUnique({ where: { code } })) ?? room;
-    }
-  }
-
-  return serializeRoom(room, playerId);
+  return prisma.$transaction(
+    async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"duel:" + code}))`;
+      const saved = await tx.duelRoom.findUnique({ where: { code } });
+      if (
+        !saved ||
+        saved.expiresAt.getTime() <= Date.now() ||
+        (saved.hostId !== playerId && saved.guestId !== playerId)
+      )
+        return null;
+      const room = transitionRoom(saved, playerId, action);
+      if (JSON.stringify(room) !== JSON.stringify(saved)) {
+        const {
+          code: _code,
+          createdAt: _created,
+          updatedAt: _updated,
+          ...data
+        } = room;
+        void _code;
+        void _created;
+        void _updated;
+        await tx.duelRoom.update({
+          where: { code },
+          data: {
+            ...data,
+            questions: data.questions as Prisma.InputJsonValue,
+            roundHistory: data.roundHistory as Prisma.InputJsonValue,
+          },
+        });
+      }
+      return serializeRoom(room, playerId);
+    },
+    { timeout: 15000 },
+  );
 }
 
-function serializeRoom(
-  room: NonNullable<Awaited<ReturnType<typeof prisma.duelRoom.findUnique>>>,
-  playerId: string,
-): DuelRoomView {
-  const questions = room.questions as unknown as DuelQuestion[];
-  const question = questions[room.currentRound];
+export function serializeRoom(room: DuelRoom, playerId: string): DuelRoomView {
+  const question = (room.questions as unknown as DuelQuestion[])[
+    room.currentRound
+  ];
   const resolved = Boolean(room.roundResolvedAt);
   const you: DuelRole = room.hostId === playerId ? "host" : "guest";
-  const roundWinner: DuelRole | null = room.roundWinnerId
-    ? room.roundWinnerId === room.hostId
-      ? "host"
-      : "guest"
-    : null;
-
-  let winner: DuelRoomView["winner"] = null;
-  if (room.status === "finished") {
-    winner =
-      room.hostScore === room.guestScore
+  const winner =
+    room.status !== "finished"
+      ? null
+      : room.hostScore === room.guestScore
         ? "draw"
         : room.hostScore > room.guestScore
           ? "host"
           : "guest";
-  }
-
   return {
     code: room.code,
+    mode: room.mode === "practice" ? "practice" : "duel",
+    matchNumber: room.matchNumber,
     status: room.status as DuelRoomView["status"],
     you,
+    serverNow: new Date().toISOString(),
+    roundStartsAt: room.roundStartedAt?.toISOString() ?? null,
+    history:
+      room.status === "finished"
+        ? (room.roundHistory as DuelRoomView["history"])
+        : [],
     players: [
       {
         role: "host",
         name: room.hostName,
         score: room.hostScore,
-        roundPoints: room.hostRoundPoints,
+        roundPoints: resolved ? room.hostRoundPoints : 0,
         answered: room.hostAnsweredRound === room.currentRound,
+        ready: room.hostReadyRound === room.currentRound,
+        rematch: room.hostRematch,
       },
       ...(room.guestId && room.guestName
         ? [
@@ -113,8 +87,10 @@ function serializeRoom(
               role: "guest" as const,
               name: room.guestName,
               score: room.guestScore,
-              roundPoints: room.guestRoundPoints,
+              roundPoints: resolved ? room.guestRoundPoints : 0,
               answered: room.guestAnsweredRound === room.currentRound,
+              ready: room.guestReadyRound === room.currentRound,
+              rematch: room.guestRematch,
             },
           ]
         : []),
@@ -123,31 +99,36 @@ function serializeRoom(
     totalRounds: DUEL_ROUNDS,
     roundEndsAt: room.roundEndsAt?.toISOString() ?? null,
     roundResolvedAt: room.roundResolvedAt?.toISOString() ?? null,
-    roundWinner,
+    roundWinner: room.roundWinnerId
+      ? room.roundWinnerId === room.hostId
+        ? "host"
+        : "guest"
+      : null,
     winner,
     question:
       room.status === "waiting" || !question
         ? null
         : {
             imagePath: question.imagePath,
-            options: question.options.map(({ title, year }) => ({ title, year })),
+            options: question.options.map(({ title, year }) => ({
+              title,
+              year,
+            })),
             ...(resolved ? { correctIndex: question.correctIndex } : {}),
           },
   };
 }
 
 export function normalizeDuelCode(value: unknown): string {
-  return typeof value === "string"
-    ? value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6)
+  return typeof value === "string" && /^[a-z0-9]{6}$/i.test(value.trim())
+    ? value.trim().toUpperCase()
     : "";
 }
-
 export function normalizePlayerId(value: unknown): string {
-  return typeof value === "string" && value.length >= 8 && value.length <= 100
+  return typeof value === "string" && /^[a-zA-Z0-9_-]{8,100}$/.test(value)
     ? value
     : "";
 }
-
 export function normalizePlayerName(value: unknown): string {
   return typeof value === "string"
     ? value.trim().replace(/\s+/g, " ").slice(0, 24)

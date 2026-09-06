@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { createDuelQuestions, createRoomCode, DUEL_ROUND_MS } from "@/lib/duel";
+import { createDuelQuestions, createRoomCode } from "@/lib/duel";
 import {
   getDuelRoomView,
   normalizeDuelCode,
@@ -43,6 +43,8 @@ export async function POST(request: NextRequest) {
       await prisma.duelRoom.create({
         data: {
           code,
+          mode: body?.mode === "practice" ? "practice" : "duel",
+          status: body?.mode === "practice" ? "playing" : "waiting",
           hostId: playerId,
           hostName: name,
           questions: questions as unknown as Prisma.InputJsonValue,
@@ -66,19 +68,18 @@ export async function POST(request: NextRequest) {
       if (existing.hostId === playerId || existing.guestId === playerId) {
         return NextResponse.json(await getDuelRoomView(code, playerId));
       }
-      if (existing.status !== "waiting" || existing.guestId) {
+      if (existing.mode !== "duel" || existing.status !== "waiting" || existing.guestId) {
         return NextResponse.json({ error: "room_full" }, { status: 409 });
       }
 
-      const roundStartedAt = new Date();
       const joined = await prisma.duelRoom.updateMany({
         where: { code, status: "waiting", guestId: null },
         data: {
           guestId: playerId,
           guestName: name,
           status: "playing",
-          roundStartedAt,
-          roundEndsAt: new Date(roundStartedAt.getTime() + DUEL_ROUND_MS),
+          roundStartedAt: null,
+          roundEndsAt: null,
         },
       });
       if (joined.count === 0) {

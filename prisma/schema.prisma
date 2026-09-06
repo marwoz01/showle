@@ -134,6 +134,13 @@ model DailyUsage {
 
 model DuelRoom {
   code                 String    @id
+  mode                 String    @default("duel")
+  matchNumber          Int       @default(1)
+  hostReadyRound       Int       @default(-1)
+  guestReadyRound      Int       @default(-1)
+  hostRematch          Boolean   @default(false)
+  guestRematch         Boolean   @default(false)
+  roundHistory         Json      @default("[]")
   status               String    @default("waiting")
   hostId               String
   hostName             String

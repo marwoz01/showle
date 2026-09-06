@@ -7,6 +7,8 @@ export interface DuelPlayerView {
   score: number;
   roundPoints: number;
   answered: boolean;
+  ready: boolean;
+  rematch: boolean;
 }
 
 export interface DuelQuestionView {
@@ -17,6 +19,11 @@ export interface DuelQuestionView {
 
 export interface DuelRoomView {
   code: string;
+  mode: "duel" | "practice";
+  matchNumber: number;
+  serverNow: string;
+  roundStartsAt: string | null;
+  history: { title: string; year: number; hostPoints: number; guestPoints: number }[];
   status: DuelStatus;
   you: DuelRole;
   players: DuelPlayerView[];
