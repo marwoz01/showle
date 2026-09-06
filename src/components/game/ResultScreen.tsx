@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import confetti from "canvas-confetti";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { MediaDetails, GuessResult, GameStatus } from "@/types";
 import { MAX_ATTEMPTS } from "@/constants";
 import { useTranslation } from "@/i18n";
@@ -24,6 +26,8 @@ import CastList from "@/components/movie/CastList";
 import WatchProviders from "@/components/movie/WatchProviders";
 import { localizeCountry, localizeGenre } from "@/lib/localization";
 import type { MovieTrailer } from "@/lib/trailers";
+
+gsap.registerPlugin(useGSAP);
 
 interface ResultScreenProps {
   answer: MediaDetails;
@@ -47,6 +51,7 @@ export default function ResultScreen({
   hintsUsed,
 }: ResultScreenProps) {
   const { t, locale } = useTranslation();
+  const resultRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
   const won = status === "won";
@@ -99,8 +104,8 @@ export default function ResultScreen({
       return;
     }
 
-    const duration = 2500;
-    const end = Date.now() + duration;
+    let animationFrameId: number | null = null;
+    let end = 0;
 
     function frame() {
       confetti({
@@ -119,12 +124,74 @@ export default function ResultScreen({
       });
 
       if (Date.now() < end) {
-        requestAnimationFrame(frame);
+        animationFrameId = requestAnimationFrame(frame);
       }
     }
 
-    frame();
+    const startTimer = window.setTimeout(() => {
+      end = Date.now() + 1600;
+      frame();
+    }, 520);
+
+    return () => {
+      window.clearTimeout(startTimer);
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [won]);
+
+  useGSAP(
+    () => {
+      if (!won) return;
+
+      const revealTargets = gsap.utils.toArray<HTMLElement>(
+        "[data-result-reveal]",
+      );
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.set(revealTargets, { clearProps: "all" });
+        return;
+      }
+
+      const timeline = gsap.timeline({
+        defaults: { duration: 0.42, ease: "power3.out" },
+      });
+
+      timeline
+        .fromTo(
+          '[data-result-reveal="intro"]',
+          { autoAlpha: 0, y: 18, scale: 0.985 },
+          { autoAlpha: 1, y: 0, scale: 1, stagger: 0.06 },
+          0,
+        )
+        .fromTo(
+          '[data-result-reveal="details"]',
+          { autoAlpha: 0, y: 16 },
+          { autoAlpha: 1, y: 0 },
+          0.28,
+        )
+        .fromTo(
+          '[data-result-reveal="trailer"]',
+          { autoAlpha: 0, y: 14, scale: 0.99 },
+          { autoAlpha: 1, y: 0, scale: 1 },
+          0.56,
+        )
+        .fromTo(
+          '[data-result-reveal="final"]',
+          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 1, y: 0 },
+          0.84,
+        );
+
+      return () => timeline.kill();
+    },
+    {
+      scope: resultRef,
+      dependencies: [answer.id, won],
+      revertOnUpdate: true,
+    },
+  );
 
   const attempts = guesses.length;
   const exactCount = guesses.reduce(
@@ -171,9 +238,12 @@ export default function ResultScreen({
   ];
 
   return (
-    <div className="soft-panel animate-result-reveal overflow-hidden rounded-2xl">
+    <div ref={resultRef} className="soft-panel overflow-hidden rounded-2xl">
       {/* Cinematic hero with backdrop */}
-      <div className="relative h-72 overflow-hidden sm:h-96">
+      <div
+        data-result-reveal="intro"
+        className="relative h-72 overflow-hidden sm:h-96"
+      >
         {displayAnswer.backdropPath ? (
           <Image
             src={`https://image.tmdb.org/t/p/w1280${displayAnswer.backdropPath}`}
@@ -250,7 +320,10 @@ export default function ResultScreen({
         }`}
       >
         {/* Left — poster + actions */}
-        <div className="flex flex-row gap-4 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:flex-col">
+        <div
+          data-result-reveal="intro"
+          className="flex flex-row gap-4 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:flex-col"
+        >
           <div className="aspect-2/3 w-32 shrink-0 overflow-hidden rounded-xl bg-white/5 shadow-lg shadow-black/40 lg:w-full">
             {displayAnswer.posterPath ? (
               <Image
@@ -285,6 +358,7 @@ export default function ResultScreen({
 
         {/* Middle — details */}
         <div
+          data-result-reveal="details"
           className={`flex min-w-0 flex-col gap-4 lg:col-start-2 ${
             won ? "lg:row-start-2 xl:row-start-1" : "lg:row-start-1"
           }`}
@@ -340,6 +414,7 @@ export default function ResultScreen({
 
         {/* Right — trailer first on mobile, with compact stats underneath */}
         <aside
+          data-result-reveal="trailer"
           className={`min-w-0 lg:col-start-2 ${
             won
               ? "order-first lg:order-none lg:row-start-1 xl:col-start-3"
@@ -423,7 +498,10 @@ export default function ResultScreen({
         </aside>
 
         {/* Shared lower row — uses the space beneath both details and trailer */}
-        <div className="min-w-0 border-t border-white/6 pt-5 lg:col-start-2 lg:row-start-3 xl:col-span-2 xl:row-start-2">
+        <div
+          data-result-reveal="final"
+          className="min-w-0 border-t border-white/6 pt-5 lg:col-start-2 lg:row-start-3 xl:col-span-2 xl:row-start-2"
+        >
           <div
             className={`grid min-w-0 gap-6 xl:gap-8 ${
               won
@@ -449,7 +527,10 @@ export default function ResultScreen({
 
       {/* Gallery — cinematic stills from TMDB */}
       {gallery.length > 0 && (
-        <div className="border-t border-white/6 px-6 py-5">
+        <div
+          data-result-reveal="final"
+          className="border-t border-white/6 px-6 py-5"
+        >
           <MovieGallery paths={gallery} label={t.result.gallery} />
         </div>
       )}
