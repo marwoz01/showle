@@ -141,6 +141,30 @@ export interface Translations {
     loadError: string;
     movieCard: string;
     revealed: string;
+    mobile: {
+      navigation: string;
+      guesses: string;
+      hints: string;
+      revealed: string;
+      chooseGuess: string;
+      showGuess: (attempt: number, title: string) => string;
+      latestGuess: string;
+      checking: string;
+      accepted: (attempt: number) => string;
+      duplicate: (attempt: number) => string;
+      newHint: string;
+      hintAfter: (attempt: number) => string;
+      revealedHelp: string;
+      emptyTitle: string;
+      emptyHelp: string;
+      exact: string;
+      partial: string;
+      miss: string;
+      higher: string;
+      lower: string;
+      saveError: string;
+      reload: string;
+    };
   };
   comparison: {
     year: string;

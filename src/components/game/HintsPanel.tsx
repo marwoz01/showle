@@ -9,11 +9,13 @@ import { Lightbulb, Lock } from "@/components/ui/icons";
 interface HintsPanelProps {
   revealedHints: Hint[];
   totalHints: number;
+  showUnlockAt?: boolean;
 }
 
 export default function HintsPanel({
   revealedHints,
   totalHints,
+  showUnlockAt = false,
 }: HintsPanelProps) {
   const { t } = useTranslation();
   const lockedCount = Math.max(0, totalHints - revealedHints.length);
@@ -59,7 +61,9 @@ export default function HintsPanel({
                 <span className="text-muted/35">
                   <Lock size={16} />
                 </span>
-                <span className="font-medium tracking-wider text-muted/35">???</span>
+                <span className={showUnlockAt ? "text-xs text-muted" : "font-medium tracking-wider text-muted/35"}>
+                  {showUnlockAt ? t.game.mobile.hintAfter((revealedHints.length + i + 1) * 2) : "???"}
+                </span>
                 <span className="ml-auto text-[10px] font-semibold text-muted/20">
                   {String(revealedHints.length + i + 1).padStart(2, "0")}
                 </span>

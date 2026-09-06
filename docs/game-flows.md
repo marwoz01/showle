@@ -20,6 +20,14 @@ Both scripts are safe to re-run. This existing project has no full baseline migr
 
 ## Verification
 
+### Mobile daily workspace
+
+Below the `lg` breakpoint, the daily game uses one compact workspace with three tabs: guesses, hints and revealed clues. Search, server-confirmed submission feedback and tabs stay below the fixed mobile navigation. Selecting a movie dismisses the mobile keyboard; after confirmation the workspace scrolls into view and selects that guess. Numbered buttons switch older comparisons without stacking the full cards. The three-column clue grid becomes two columns below 360px so long names stay readable.
+
+The revealed tab aggregates only exact, non-empty answers already returned by the server. An accepted receipt requires the selected ID in a response for the same date. Failed, superseded and stale-day requests do not produce a success message. Duplicate selections show the existing attempt number; they do not claim a new attempt. Newly unlocked hints get a badge until opened, and locked hints explain the 2/4/6 thresholds. Desktop cards and the completed-game reveal are preserved. No database migration is needed for this layout change.
+
+Manual regression checks: 320px and phone-sized widths, long titles/genres, six previous guesses, all three tabs, keyboard tab navigation, successful/duplicate/failed submissions, locale changes and desktop layout. Preview fixtures must not save actual daily progress or ship in production. Responsive browser checks do not replace a physical iPhone/Safari keyboard check.
+
 ```sh
 npm test
 npm run lint

@@ -77,7 +77,7 @@ export default async function RootLayout({
       >
         <AppProviders initialLocale={locale}>
           <Sidebar />
-          <main className="relative min-h-screen overflow-x-hidden p-4 pt-18 lg:ml-60 lg:p-10">
+          <main className="relative min-h-screen overflow-x-clip p-4 pt-18 lg:ml-60 lg:p-10">
             <div className="pointer-events-none absolute left-1/2 top-0 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
             {children}
           </main>

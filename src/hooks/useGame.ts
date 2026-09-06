@@ -146,6 +146,7 @@ export function useGame() {
         setCelebrate(view.status === "won");
         if (view.status !== "playing")
           window.dispatchEvent(new Event("game-completed"));
+        return view;
       } catch {
         if (current === version.current) setError(true);
       } finally {

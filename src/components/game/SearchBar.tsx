@@ -12,8 +12,9 @@ interface SearchBarProps {
   onSelect: (movie: MovieSuggestion) => void;
   disabled?: boolean;
   placeholder?: string;
+  dismissKeyboardOnSelect?: boolean;
 }
-export default function SearchBar({ onSelect, disabled, placeholder }: SearchBarProps) {
+export default function SearchBar({ onSelect, disabled, placeholder, dismissKeyboardOnSelect }: SearchBarProps) {
   const { t, locale } = useTranslation();
   const copy = experience[locale];
   const [query, setQuery] = useState("");
@@ -74,7 +75,11 @@ export default function SearchBar({ onSelect, disabled, placeholder }: SearchBar
     setResults([]);
     setOpen(false);
     setActive(-1);
-    inputRef.current?.focus();
+    if (dismissKeyboardOnSelect && window.matchMedia("(max-width: 63.999rem)").matches) {
+      inputRef.current?.blur();
+    } else {
+      inputRef.current?.focus();
+    }
   }
 
   return (
@@ -179,7 +184,7 @@ export default function SearchBar({ onSelect, disabled, placeholder }: SearchBar
             id={listId}
             role="listbox"
             aria-label={placeholder ?? t.game.searchPlaceholder}
-            className="max-h-80 overflow-y-auto"
+            className="max-h-[min(20rem,40dvh)] overflow-y-auto overscroll-contain"
           >
             {results.map((movie, index) => (
               <li
