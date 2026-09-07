@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import type { LucideIcon } from "@/components/ui/icons";
 import { ArrowUpRight, Clapperboard, Lightbulb, Sparkles, Trophy } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
@@ -131,10 +132,13 @@ export default function HowItWorks() {
           </div>
         ))}
 
-        <div className="relative ml-auto mt-2 flex w-fit rotate-[-3deg] items-center gap-2 rounded-full border border-accent-purple/25 bg-accent-purple/10 px-4 py-2 text-sm font-semibold text-foreground lg:absolute lg:bottom-0 lg:right-[12%]">
+        <Link
+          href="/play/movie"
+          className="relative ml-auto mt-2 flex w-fit rotate-[-3deg] items-center gap-2 rounded-full border border-accent-purple/25 bg-accent-purple/10 px-4 py-2 text-sm font-semibold text-foreground transition-all hover:rotate-0 hover:border-accent-purple/50 hover:bg-accent-purple/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple lg:absolute lg:bottom-0 lg:right-[12%]"
+        >
           {t.howItWorks.ready}
           <ArrowUpRight size={16} className="text-accent-purple" />
-        </div>
+        </Link>
       </div>
     </section>
   );
