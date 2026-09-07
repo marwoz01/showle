@@ -1,9 +1,10 @@
 "use client";
 
-import { Clapperboard, Swords, Film } from "@/components/ui/icons";
+import { Clapperboard, Swords, Film, ArrowUpDown } from "@/components/ui/icons";
 import GameModeCard from "@/components/home/GameModeCard";
 import { useTranslation } from "@/i18n";
 import experience from "@/i18n/experience";
+import { higherLowerCopy } from "@/i18n/higher-lower";
 
 export default function PlayModePage() {
   const { t, locale } = useTranslation();
@@ -22,7 +23,7 @@ export default function PlayModePage() {
         </p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2">
         <GameModeCard
           icon={<Clapperboard size={22} idle />}
           title={t.modes.dailyMovie}
@@ -38,6 +39,14 @@ export default function PlayModePage() {
           href="/play/duel"
           actionLabel={t.duel.modeAction}
           badge={t.duel.badge}
+        />
+        <GameModeCard
+          icon={<ArrowUpDown size={22} idle />}
+          title={higherLowerCopy[locale].modeTitle}
+          description={higherLowerCopy[locale].modeDesc}
+          href="/play/higher-lower"
+          actionLabel={higherLowerCopy[locale].modeAction}
+          badge={t.modes.new}
         />
         <GameModeCard
           icon={<Film size={22} idle />}

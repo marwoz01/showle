@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "catalog:sync": "node scripts/sync-frame-catalog.mjs",
+    "higher-lower:sync": "node scripts/sync-higher-lower-catalog.mjs",
     "recommendations:sync": "node scripts/sync-recommendation-catalog.mjs",
     "recommendations:embed": "node scripts/embed-recommendation-catalog.mjs",
     "recommendations:check": "node scripts/check-recommendation-health.mjs",

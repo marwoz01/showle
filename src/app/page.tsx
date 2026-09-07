@@ -3,8 +3,9 @@ import GameModeCard from "@/components/home/GameModeCard";
 import DailyEntry from "@/components/home/DailyEntry";
 import HowItWorks from "@/components/home/HowItWorks";
 import { useTranslation } from "@/i18n";
-import { Sparkles, Swords, Film } from "@/components/ui/icons";
+import { Sparkles, Swords, Film, ArrowUpDown } from "@/components/ui/icons";
 import experience from "@/i18n/experience";
+import { higherLowerCopy } from "@/i18n/higher-lower";
 
 export default function Home() {
   const { t, locale } = useTranslation();
@@ -27,7 +28,15 @@ export default function Home() {
           badge={t.duel.badge}
         />
       </div>
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <GameModeCard
+          icon={<ArrowUpDown size={22} idle />}
+          title={higherLowerCopy[locale].modeTitle}
+          description={higherLowerCopy[locale].modeDesc}
+          href="/play/higher-lower"
+          actionLabel={higherLowerCopy[locale].modeAction}
+          badge={t.modes.new}
+        />
         <GameModeCard
           icon={<Film size={22} idle />}
           title={experience[locale].practiceTitle}
