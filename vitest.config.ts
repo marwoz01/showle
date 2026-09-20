@@ -4,7 +4,6 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    maxWorkers: 2,
   },
   resolve: {
     alias: {

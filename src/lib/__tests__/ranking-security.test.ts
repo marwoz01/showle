@@ -8,7 +8,7 @@ const db = vi.hoisted(() => ({
   transaction: vi.fn(), raw: vi.fn(), create: vi.fn(), find: vi.fn(), limit: vi.fn(),
 }));
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ userId: db.userId }) }));
-vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: db.limit }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: db.limit }));
 vi.mock("@/lib/prisma", () => ({ prisma: { $transaction: db.transaction } }));
 import { POST, PUT } from "@/app/api/collection/rankings/[id]/items/route";
 

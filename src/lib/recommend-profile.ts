@@ -4,11 +4,10 @@ import type { TasteSignal } from "@/lib/recommend-taste";
 
 export interface RecommendationProfile { signals: TasteSignal[]; excludedIds: number[] }
 
-export async function getRecommendationProfile(userId: string | null, request: RecommendRequest, favoriteIds: number[] = []): Promise<RecommendationProfile> {
+export async function getRecommendationProfile(userId: string | null, request: RecommendRequest): Promise<RecommendationProfile> {
   const signals: TasteSignal[] = [];
   const excluded = new Set<number>();
   const reactions = new Map<number, "more" | "less">();
-  favoriteIds.forEach((id) => { reactions.set(id, "more"); excluded.add(id); });
   if (userId) {
     const [watched, ratings, feedback] = await Promise.all([
       prisma.savedMovie.findMany({ where: { userId, category: "watched" }, select: { tmdbId: true } }),
@@ -31,7 +30,7 @@ export async function getRecommendationProfile(userId: string | null, request: R
       where: { tmdbId: { in: [...reactions.keys()] } }, select: { tmdbId: true, genres: true, director: true },
     });
     for (const movie of movies) {
-      if (request.source !== "watchlist" || reactions.get(movie.tmdbId) === "less") excluded.add(movie.tmdbId);
+      excluded.add(movie.tmdbId);
       signals.push({ genres: movie.genres, director: movie.director, weight: reactions.get(movie.tmdbId) === "more" ? 1 : -1 });
     }
   }

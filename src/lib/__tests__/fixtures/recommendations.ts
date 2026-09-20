@@ -3,7 +3,6 @@ import type { RecommendRequest } from "@/lib/recommend-input";
 import type { RecommendationFilters } from "@/lib/recommend-filters";
 
 export const preferences: RecommendRequest = {
-  source: "catalog",
   genres: [], excludedGenres: [], yearFrom: 1888, yearTo: 2026, popularity: "any",
   locale: "en", freeformText: "", exclude: [], maxRuntime: null, providerIds: [],
   referenceMovieId: null, positiveIds: [], negativeIds: [],

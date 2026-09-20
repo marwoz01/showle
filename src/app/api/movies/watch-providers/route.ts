@@ -1,12 +1,10 @@
-import { reportServerError } from "@/lib/server-error";
-import { requestIp } from "@/lib/request-ip";
 import { NextRequest, NextResponse } from "next/server";
 import { getWatchProviders } from "@/lib/tmdb";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
-  const ip = requestIp(request);
-  const { success } = (await checkRateLimit(`watch-providers:${ip}`, { limit: 60, windowMs: 60_000 }));
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  const { success } = rateLimit(`watch-providers:${ip}`, { limit: 60, windowMs: 60_000 });
   if (!success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
@@ -24,7 +22,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    reportServerError("movies.watch-providers", error);
+    console.error("TMDB watch providers error:", error);
     return NextResponse.json({ error: "Failed to fetch providers" }, { status: 500 });
   }
 }

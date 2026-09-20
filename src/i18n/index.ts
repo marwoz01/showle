@@ -8,11 +8,10 @@ import {
   useSyncExternalStore,
 } from "react";
 import React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import pl from "./pl";
 import en from "./en";
 import { Translations } from "./types";
-import { createLocalePreference } from "@/lib/locale-preference";
 
 export type { Translations };
 
@@ -34,23 +33,17 @@ const I18nContext = createContext<I18nContextValue>({
 
 const STORAGE_KEY = "showle-locale";
 const LOCALE_EVENT = "showle-locale-change";
-const localePreference = createLocalePreference();
 
-function persistLocaleCookie(locale: Locale) {
-  try { document.cookie = `${STORAGE_KEY}=${locale}; path=/; max-age=31536000; samesite=lax`; }
-  catch { /* Embedded/private browsing can block cookies while the current tab still works. */ }
+function getStoredLocale(): Locale {
+  const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
+  return saved && translations[saved] ? saved : "pl";
 }
 
 function subscribeToLocale(onStoreChange: () => void) {
-  const storageChanged = (event: StorageEvent) => {
-    if (event.key !== null && event.key !== STORAGE_KEY) return;
-    localePreference.external(event.newValue);
-    onStoreChange();
-  };
-  window.addEventListener("storage", storageChanged);
+  window.addEventListener("storage", onStoreChange);
   window.addEventListener(LOCALE_EVENT, onStoreChange);
   return () => {
-    window.removeEventListener("storage", storageChanged);
+    window.removeEventListener("storage", onStoreChange);
     window.removeEventListener(LOCALE_EVENT, onStoreChange);
   };
 }
@@ -62,8 +55,7 @@ export function I18nProvider({
   children: React.ReactNode;
   initialLocale?: Locale;
 }) {
-  const router = useRouter();
-  const getStoredLocale = useCallback(() => localePreference.read(() => localStorage.getItem(STORAGE_KEY), initialLocale), [initialLocale]);
+  const pathname = usePathname();
   const locale = useSyncExternalStore<Locale>(
     subscribeToLocale,
     getStoredLocale,
@@ -72,16 +64,19 @@ export function I18nProvider({
   const t = translations[locale];
 
   const setLocale = useCallback((newLocale: Locale) => {
-    localePreference.set(newLocale, (value) => localStorage.setItem(STORAGE_KEY, value));
-    persistLocaleCookie(newLocale);
+    localStorage.setItem(STORAGE_KEY, newLocale);
+    document.cookie = `${STORAGE_KEY}=${newLocale}; path=/; max-age=31536000; samesite=lax`;
     window.dispatchEvent(new Event(LOCALE_EVENT));
-    router.refresh();
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = locale;
-    persistLocaleCookie(locale);
-  }, [locale]);
+    document.title = t.meta.title;
+    document.cookie = `${STORAGE_KEY}=${locale}; path=/; max-age=31536000; samesite=lax`;
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", t.meta.description);
+  }, [locale, pathname, t]);
 
   const value: I18nContextValue = {
     locale,

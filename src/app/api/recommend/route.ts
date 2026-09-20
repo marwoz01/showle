@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { requestIp } from "@/lib/request-ip";
-import { reportServerError } from "@/lib/server-error";
+import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
 import { parseRecommendRequest, MAX_RECOMMEND_BODY_BYTES } from "@/lib/recommend-input";
@@ -17,14 +15,13 @@ import { rankRecommendations } from "@/lib/recommend-ranking";
 import { reviewRecommendationRelevance } from "@/lib/recommend-relevance";
 import { explainRecommendation } from "@/lib/recommend-explanations";
 import { RECOMMENDATION_TARGET } from "@/constants/recommendation";
-import { getRecommendationWatchlist, prepareWatchlistCatalog } from "@/lib/recommend-watchlist";
 
 const DAILY_LIMIT_AUTH = 20;
 const DAILY_LIMIT_ANON = 1;
 const noStore = { "Cache-Control": "no-store" };
 
 async function context(request: NextRequest) {
-  const ip = requestIp(request);
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   const { userId } = await auth();
   const today = new Date().toISOString().slice(0, 10);
   const limit = userId ? DAILY_LIMIT_AUTH : DAILY_LIMIT_ANON;
@@ -34,27 +31,18 @@ async function context(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { key, limit, userId } = await context(request);
-    const budget = await checkRateLimit(`recommend-quota:${userId ?? requestIp(request)}`, { limit: 60, windowMs: 60000 });
-    if (!budget.success) return NextResponse.json({ error: budget.unavailable ? "unavailable" : "rate_limited" },
-      { status: budget.unavailable ? 503 : 429, headers: { ...noStore, "Retry-After": "60" } });
-    const [usage, watchlistCount] = await Promise.all([
-      prisma.dailyUsage.findUnique({ where: { key } }),
-      userId ? prisma.savedMovie.count({ where: { userId, category: "watchlist" } }) : null,
-    ]);
-    return NextResponse.json({ remaining: Math.max(0, limit - (usage?.count ?? 0)), limit, watchlistCount }, { headers: noStore });
-  } catch (error) {
-    const requestId = reportServerError("recommendation_quota", error);
-    return NextResponse.json({ error: "internal", requestId }, { status: 500, headers: noStore });
+    const { key, limit } = await context(request);
+    const usage = await prisma.dailyUsage.findUnique({ where: { key } });
+    return NextResponse.json({ remaining: Math.max(0, limit - (usage?.count ?? 0)), limit }, { headers: noStore });
+  } catch {
+    return NextResponse.json({ error: "internal" }, { status: 500, headers: noStore });
   }
 }
 
 export async function POST(request: NextRequest) {
-  const ip = requestIp(request);
-  const budget = await checkRateLimit(`recommend:${ip}`, { limit: 5, windowMs: 300_000 });
-  if (!budget.success) {
-    return NextResponse.json({ error: budget.unavailable ? "internal" : "rate_limited" },
-      { status: budget.unavailable ? 503 : 429, headers: { ...noStore, "Retry-After": "300" } });
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  if (!rateLimit(`recommend:${ip}`, { limit: 5, windowMs: 300_000 }).success) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429, headers: { ...noStore, "Retry-After": "300" } });
   }
   let remaining: number | null = null;
   let limit = DAILY_LIMIT_ANON;
@@ -67,29 +55,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "conflicting_preferences" }, { status: 400, headers: noStore });
     }
     const ctx = await context(request);
-    if (body.source === "watchlist" && !ctx.userId) {
-      return NextResponse.json({ error: "watchlist_login_required" }, { status: 401, headers: noStore });
-    }
-    const watchlistIds = body.source === "watchlist" && ctx.userId ? await getRecommendationWatchlist(ctx.userId) : undefined;
-    if (watchlistIds && !watchlistIds.length) {
-      return NextResponse.json({ error: "watchlist_empty" }, { status: 400, headers: noStore });
-    }
     limit = ctx.limit;
     remaining = await reserveRecommendation(ctx.key, ctx.today, limit);
     if (remaining === null) {
       return NextResponse.json({ error: ctx.userId ? "daily_limit_reached" : "daily_limit_anon", remaining: 0, limit }, { status: 429, headers: noStore });
     }
-    const [intent, profile, reference, watchlistUnavailable] = await Promise.all([
+    const [intent, profile, reference] = await Promise.all([
       interpretRecommendation(body.freeformText),
       getRecommendationProfile(ctx.userId, body),
       getRecommendationReference(body.referenceMovieId),
-      watchlistIds ? prepareWatchlistCatalog(watchlistIds, { budgetKey: ctx.userId ?? ip }) : 0,
     ]);
     if (body.referenceMovieId && !reference) {
       return NextResponse.json({ error: "reference_unavailable", remaining, limit }, { status: 503, headers: noStore });
     }
     const filters = resolveRecommendationFilters(body, intent, profile.excludedIds);
-    filters.includeIds = watchlistIds;
     if (filters.genres.some((genre) => filters.excludedGenres.includes(genre))) {
       return NextResponse.json({ error: "conflicting_preferences", remaining, limit }, { status: 400, headers: noStore });
     }
@@ -102,15 +81,15 @@ export async function POST(request: NextRequest) {
     const shortlist = rankRecommendations(movies, filters, profile.signals, reference, { limit: 24 });
     const relevance = await reviewRecommendationRelevance(shortlist, body.freeformText, reference);
     const ranked = rankRecommendations(shortlist, filters, profile.signals, reference, { relevance: relevance.scores });
-    const meta = { source: body.source, watchlistUnavailable, matching, interpretation: intent.source, relevance: relevance.source, partial: ranked.length < RECOMMENDATION_TARGET, personalized: profile.signals.length > 0 };
+    const meta = { matching, interpretation: intent.source, relevance: relevance.source, partial: ranked.length < RECOMMENDATION_TARGET, personalized: profile.signals.length > 0 };
     if (!ranked.length) {
-      return NextResponse.json({ error: body.source === "watchlist" ? "watchlist_no_results" : body.exclude.length ? "pool_exhausted" : "no_results", remaining, limit, meta }, { status: 404, headers: noStore });
+      return NextResponse.json({ error: body.exclude.length ? "pool_exhausted" : "no_results", remaining, limit, meta }, { status: 404, headers: noStore });
     }
     const recommendations = ranked.map((movie) => explainRecommendation(movie, filters, profile.signals, reference, body.locale));
     return NextResponse.json({ recommendations, remaining, limit, meta }, { headers: noStore });
   } catch (error) {
     if (error instanceof RequestBodyError) return NextResponse.json({ error: "invalid_request" }, { status: error.status, headers: noStore });
-    const requestId = reportServerError("recommendation_search", error);
-    return NextResponse.json({ error: "internal", requestId, ...(remaining !== null ? { remaining, limit } : {}) }, { status: 500, headers: noStore });
+    console.error("Recommendation request failed");
+    return NextResponse.json({ error: "internal", ...(remaining !== null ? { remaining, limit } : {}) }, { status: 500, headers: noStore });
   }
 }

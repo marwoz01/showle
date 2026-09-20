@@ -1,8 +1,4 @@
 export interface RecommendationCopy {
-  watchlistOnly: string; watchlistHint: string; watchlistLogin: string;
-  watchlistCount: (count: number) => string; watchlistEmpty: string; watchlistNoResults: string;
-  watchlistResults: string; watchlistSubmit: string; watchlistAction: string;
-  watchlistIncomplete: (count: number) => string;
   advanced: string; anyPopularity: string; anyPopularityDesc: string;
   excludedGenres: string; maxRuntime: string; noRuntimeLimit: string; minutes: (count: number) => string;
   providers: string; providersHint: string; reference: string; referencePlaceholder: string;
@@ -16,16 +12,6 @@ export interface RecommendationCopy {
 }
 
 export const recommendationPl: RecommendationCopy = {
-  watchlistOnly: "Tylko z listy Do obejrzenia",
-  watchlistHint: "Dopasujemy zapisane filmy do Twojego nastroju.",
-  watchlistLogin: "Zaloguj się, aby wybrać film ze swojej listy.",
-  watchlistCount: (count) => `Na Twojej liście: ${count}`,
-  watchlistEmpty: "Lista Do obejrzenia jest pusta. Dodaj filmy w kolekcji lub wyłącz tę opcję.",
-  watchlistNoResults: "Nie znaleźliśmy kolejnych filmów z Twojej listy pasujących do tych preferencji. Zmień nastrój lub filtry.",
-  watchlistResults: "Wybrane z Twojej listy Do obejrzenia",
-  watchlistSubmit: "Dobierz film z mojej listy",
-  watchlistAction: "Pomóż mi wybrać",
-  watchlistIncomplete: (count) => `Nie uwzględniliśmy jeszcze ${count} filmów z listy: ich dane wymagają uzupełnienia. Możesz spróbować ponownie później.`,
   advanced: "Doprecyzuj wybór", anyPopularity: "Bez znaczenia", anyPopularityDesc: "Liczy się dopasowanie do Ciebie",
   excludedGenres: "Czego nie chcesz oglądać?", maxRuntime: "Maksymalny czas filmu", noRuntimeLimit: "Bez limitu", minutes: (count) => `${count} min`,
   providers: "Twoje platformy", providersHint: "Abonamenty w Polsce, nie wypożyczenia. Wystarczy dostępność na jednej wybranej platformie. Dane: TMDB / JustWatch.",
@@ -47,16 +33,6 @@ export const recommendationPl: RecommendationCopy = {
   becauseRating: (rating, votes) => `Ocena widzów TMDB: ${rating.toLocaleString("pl-PL")}/10 na podstawie ${votes} głosów.`,
 };
 export const recommendationEn: RecommendationCopy = {
-  watchlistOnly: "Only from my watchlist",
-  watchlistHint: "Match your saved movies to today's mood.",
-  watchlistLogin: "Sign in to choose a movie from your watchlist.",
-  watchlistCount: (count) => `On your watchlist: ${count}`,
-  watchlistEmpty: "Your watchlist is empty. Save movies in your collection or turn this option off.",
-  watchlistNoResults: "No more movies on your watchlist match these preferences. Change your mood or filters.",
-  watchlistResults: "Picked from your watchlist",
-  watchlistSubmit: "Pick a movie from my watchlist",
-  watchlistAction: "Help me choose",
-  watchlistIncomplete: (count) => `We couldn't include ${count} watchlist movies yet: their metadata needs updating. You can try again later.`,
   advanced: "Refine your picks", anyPopularity: "Any popularity", anyPopularityDesc: "Focus on what fits your taste",
   excludedGenres: "What would you rather avoid?", maxRuntime: "Maximum runtime", noRuntimeLimit: "No limit", minutes: (count) => `${count} min`,
   providers: "Your streaming services", providersHint: "Subscriptions in Poland, not rentals. Availability on any selected service is enough. Data: TMDB / JustWatch.",

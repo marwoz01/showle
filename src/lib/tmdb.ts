@@ -6,10 +6,67 @@ import {
   type TrailerCandidate,
 } from "@/lib/trailers";
 
-import type { TmdbMovieListItem } from "@/lib/tmdb-types";
-import { tmdbFetch } from "@/lib/tmdb-http";
-import { getMovieDetails } from "@/lib/tmdb-details";
-export { getMovieDetails } from "@/lib/tmdb-details";
+const API_KEY = process.env.TMDB_API_KEY!;
+const BASE_URL = "https://api.themoviedb.org/3";
+
+interface TmdbMovieListItem {
+  id: number;
+  title: string;
+  original_title?: string;
+  release_date: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  overview: string;
+  popularity: number;
+  vote_average: number;
+  vote_count: number;
+  genre_ids: number[];
+}
+
+interface TmdbMovieDetails {
+  id: number;
+  title: string;
+  release_date: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  overview: string;
+  tagline: string;
+  popularity: number;
+  vote_average: number;
+  vote_count: number;
+  runtime: number;
+  budget: number;
+  genres: { id: number; name: string }[];
+  production_countries: { iso_3166_1: string; name: string }[];
+}
+
+interface TmdbCredits {
+  cast: {
+    name: string;
+    order: number;
+    character: string;
+    profile_path: string | null;
+  }[];
+  crew: {
+    job: string;
+    name: string;
+    profile_path: string | null;
+  }[];
+}
+
+const CAST_LIMIT = 8;
+
+async function tmdbFetch<T>(path: string, params: Record<string, string> = {}): Promise<T> {
+  const url = new URL(`${BASE_URL}${path}`);
+  url.searchParams.set("api_key", API_KEY);
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+
+  const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+  if (!res.ok) throw new Error(`TMDB error: ${res.status}`);
+  return res.json();
+}
 
 /**
  * Search movies by title query.
@@ -45,17 +102,7 @@ export async function getPopularMovies(page: number = 1): Promise<{ results: Med
     (m) => m.vote_count >= 50 && m.release_date && m.poster_path
   );
 
-  const selected = filtered.slice(0, 20);
-  const details: (MediaDetails | null)[] = Array(selected.length).fill(null);
-  const deadline = AbortSignal.timeout(10000);
-  let next = 0;
-  await Promise.all(Array.from({ length: Math.min(4, selected.length) }, async () => {
-    while (next < selected.length && !deadline.aborted) {
-      const index = next++;
-      details[index] = await getMovieDetails(selected[index].id, "en-US", deadline);
-    }
-  }));
-  if (selected.length && details.every((movie) => !movie)) throw new Error("TMDB details unavailable");
+  const details = await Promise.all(filtered.slice(0, 20).map((m) => getMovieDetails(m.id)));
   return {
     results: details.filter((d): d is MediaDetails => d !== null),
     totalPages: Math.min(data.total_pages, 20),
@@ -180,6 +227,58 @@ export async function getWatchProviders(id: number, region = "PL"): Promise<Watc
     const r = data.results?.[region];
     if (!r) return null;
     return { flatrate: r.flatrate, rent: r.rent, link: r.link };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get full movie details by ID, mapped to MediaDetails.
+ */
+export async function getMovieDetails(id: number, language = "en-US"): Promise<MediaDetails | null> {
+  try {
+    const [movie, credits] = await Promise.all([
+      tmdbFetch<TmdbMovieDetails>(`/movie/${id}`, { language }),
+      tmdbFetch<TmdbCredits>(`/movie/${id}/credits`),
+    ]);
+
+    const directorCredit = credits.crew.find((c) => c.job === "Director");
+    const director = directorCredit?.name ?? "Unknown";
+    const sortedCast = (credits.cast ?? [])
+      .slice()
+      .sort((a, b) => a.order - b.order);
+    const leadActor = sortedCast[0]?.name ?? "Unknown";
+    const cast = sortedCast.slice(0, CAST_LIMIT).map((c) => ({
+      name: c.name,
+      character: c.character ?? "",
+      profilePath: c.profile_path ?? "",
+    }));
+    const productionCountry = movie.production_countries[0];
+    const country = productionCountry?.name ?? "Unknown";
+
+    return {
+      id: movie.id,
+      title: movie.title,
+      type: "movie",
+      year: movie.release_date ? parseInt(movie.release_date.slice(0, 4)) : 0,
+      genres: movie.genres.map((g) => g.name),
+      country,
+      countryCode: productionCountry?.iso_3166_1,
+      director,
+      directorProfilePath: directorCredit?.profile_path ?? "",
+      leadActor,
+      runtime: movie.runtime ?? 0,
+      budget: movie.budget ? Math.round(movie.budget / 1_000_000) : 0,
+      // TMDB `popularity` is a daily-decaying activity metric (low for older classics
+      // even when they're famous). `vote_count` is a stable accumulated-fame proxy.
+      popularity: movie.vote_count ?? 0,
+      rating: Math.round(movie.vote_average * 10) / 10,
+      posterPath: movie.poster_path ?? "",
+      backdropPath: movie.backdrop_path ?? "",
+      overview: movie.overview,
+      tagline: movie.tagline || undefined,
+      cast,
+    };
   } catch {
     return null;
   }

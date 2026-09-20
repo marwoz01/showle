@@ -9,7 +9,6 @@ import { normalizeDisplayText } from "@/lib/typography";
 import { Sparkles, X } from "@/components/ui/icons";
 import SearchBar from "@/components/game/SearchBar";
 import RecommendationFilters from "@/components/recommend/RecommendationFilters";
-import WatchlistSource from "@/components/recommend/WatchlistSource";
 import type { RecommendationPreference } from "@/types/recommendation";
 import type { MovieSuggestion } from "@/types/movie-suggestion";
 
@@ -19,17 +18,13 @@ interface PreferenceFormProps {
   onSubmit: (preferences: RecommendationPreference, reference: MovieSuggestion | null) => void;
   remaining: number | null;
   quotaLimit: number | null;
-  signedIn?: boolean;
-  watchlistCount?: number | null;
 }
-export default function PreferenceForm({ initial, initialReference, onSubmit, remaining, quotaLimit, signedIn = false, watchlistCount = null }: PreferenceFormProps) {
+export default function PreferenceForm({ initial, initialReference, onSubmit, remaining, quotaLimit }: PreferenceFormProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState(initial);
   const [reference, setReference] = useState(initialReference);
   const update = (patch: Partial<RecommendationPreference>) => setValue((previous) => ({ ...previous, ...patch }));
-  const watchlist = value.source === "watchlist";
-  const canSubmit = (!watchlist || (signedIn && watchlistCount !== 0)) &&
-    (watchlist || value.genres.length > 0 || value.freeformText.trim().length > 0 || value.referenceMovieId !== null) &&
+  const canSubmit = (value.genres.length > 0 || value.freeformText.trim().length > 0 || value.referenceMovieId !== null) &&
     value.yearFrom >= 1888 && value.yearFrom <= value.yearTo && value.yearTo <= new Date().getFullYear() + 1;
   const popularityOptions = [
     { key: "any", label: t.recommendation.anyPopularity },
@@ -43,7 +38,6 @@ export default function PreferenceForm({ initial, initialReference, onSubmit, re
       if (canSubmit && remaining !== 0) onSubmit({ ...value, freeformText: value.freeformText.trim() }, reference);
     }}>
       <section className="soft-card space-y-6 rounded-2xl p-6 sm:p-8">
-        <WatchlistSource checked={watchlist} signedIn={signedIn} count={watchlistCount} onChange={(checked) => update({ source: checked ? "watchlist" : "catalog" })} />
         <div>
           <label htmlFor="recommend-description" className="mb-3 block text-sm font-semibold">{t.recommend.freeformLabel}</label>
           <textarea id="recommend-description" value={value.freeformText} maxLength={400} rows={3}
@@ -92,7 +86,7 @@ export default function PreferenceForm({ initial, initialReference, onSubmit, re
       <RecommendationFilters value={value} onChange={update} />
       <button type="submit" disabled={!canSubmit || remaining === 0}
         className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-accent-purple px-6 py-4 font-semibold text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
-        <Sparkles size={20} />{watchlist ? t.recommendation.watchlistSubmit : t.recommend.submit}
+        <Sparkles size={20} />{t.recommend.submit}
       </button>
       {remaining !== null && quotaLimit !== null && <p className="text-center text-xs text-muted">{t.recommend.quotaInfo(remaining, quotaLimit)}</p>}
       {remaining === 0 && quotaLimit === 1 && <p className="text-center text-sm"><Link href="/sign-in" className="text-accent-purple hover:underline">{t.recommend.loginForMore}</Link></p>}

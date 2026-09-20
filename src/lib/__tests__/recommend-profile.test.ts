@@ -7,6 +7,15 @@ import { getRecommendationProfile } from "@/lib/recommend-profile";
 import { preferences } from "@/lib/__tests__/fixtures/recommendations";
 beforeEach(() => { vi.clearAllMocks(); mocks.saved.mockResolvedValue([]); mocks.feedback.mockResolvedValue([]); mocks.catalog.mockResolvedValue([]); });
 describe("private recommendation profile", () => {
+  it("does not claim personalization from missing genre and director metadata", async () => {
+    mocks.saved.mockResolvedValueOnce([{ tmdbId: 4 }]).mockResolvedValueOnce([
+      { rating: 10, genres: [], director: "Unknown" },
+      { rating: 1, genres: [], director: "" },
+    ]);
+    mocks.catalog.mockResolvedValue([{ tmdbId: 2, genres: [], director: " " }]);
+    expect(await getRecommendationProfile("viewer", { ...preferences, positiveIds: [2] }))
+      .toEqual({ signals: [], excludedIds: [4, 2] });
+  });
   it("does not read account history for guests", async () => {
     expect(await getRecommendationProfile(null, preferences)).toEqual({ signals: [], excludedIds: [] });
     expect(mocks.saved).not.toHaveBeenCalled();
@@ -29,20 +38,5 @@ describe("private recommendation profile", () => {
     const result = await getRecommendationProfile(null, { ...preferences, positiveIds: [2, 9999] });
     expect(result.signals).toEqual([{ genres: ["Drama"], director: "Known", weight: 1 }]);
     expect(result.excludedIds).toEqual([2]);
-  });
-  it("allows positively rated watchlist choices but still excludes disliked movies", async () => {
-    mocks.catalog.mockResolvedValue([{ tmdbId: 2, genres: ["Drama"], director: "Liked" }, { tmdbId: 3, genres: ["Horror"], director: "Disliked" }]);
-    const result = await getRecommendationProfile("viewer", { ...preferences, source: "watchlist", positiveIds: [2], negativeIds: [3] });
-    expect(result.excludedIds).toEqual([3]);
-    expect(result.signals.map((signal) => signal.weight)).toEqual([1, -1]);
-  });
-  it("does not claim personalization from missing genre and director metadata", async () => {
-    mocks.saved.mockResolvedValueOnce([{ tmdbId: 4 }]).mockResolvedValueOnce([
-      { rating: 10, genres: [], director: "Unknown" },
-      { rating: 1, genres: [], director: "" },
-    ]);
-    mocks.catalog.mockResolvedValue([{ tmdbId: 2, genres: [], director: " " }]);
-    expect(await getRecommendationProfile("viewer", { ...preferences, positiveIds: [2] }))
-      .toEqual({ signals: [], excludedIds: [4, 2] });
   });
 });

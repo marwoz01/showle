@@ -5,7 +5,6 @@ import { dark } from "@clerk/themes";
 import { I18nProvider, useTranslation } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { clerkEn, clerkPl } from "@/i18n/clerk";
-import CollectionProvider from "@/components/providers/CollectionProvider";
 
 const appearance = {
   baseTheme: dark,
@@ -55,7 +54,7 @@ function LocalizedClerkProvider({ children }: { children: React.ReactNode }) {
       appearance={appearance}
       localization={locale === "pl" ? clerkPl : clerkEn}
     >
-      <CollectionProvider>{children}</CollectionProvider>
+      {children}
     </ClerkProvider>
   );
 }

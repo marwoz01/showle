@@ -12,17 +12,13 @@ const mocks = vi.hoisted(() => ({
   search: vi.fn(),
   profile: vi.fn(),
   reference: vi.fn(),
-  watchlist: vi.fn(),
-  prepareWatchlist: vi.fn(),
-  watchlistCount: vi.fn(),
 }));
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ userId: mocks.userId }) }));
-vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: async () => ({ success: true }) }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: () => ({ success: true }) }));
 vi.mock("@/lib/recommend-ai", () => ({ interpretRecommendation: mocks.ai }));
 vi.mock("@/lib/recommend-search", () => ({ findRecommendationCandidates: mocks.search }));
 vi.mock("@/lib/recommend-profile", () => ({ getRecommendationProfile: mocks.profile }));
 vi.mock("@/lib/recommend-reference", () => ({ getRecommendationReference: mocks.reference }));
-vi.mock("@/lib/recommend-watchlist", () => ({ getRecommendationWatchlist: mocks.watchlist, prepareWatchlistCatalog: mocks.prepareWatchlist }));
 vi.mock("@/lib/recommend-relevance", () => ({ reviewRecommendationRelevance: async () => ({ scores: null, source: "local" }) }));
 vi.mock("@/lib/prisma", () => {
   const tx = {
@@ -31,7 +27,7 @@ vi.mock("@/lib/prisma", () => {
       findUnique: vi.fn(async () => ({ count: mocks.count })),
       upsert: mocks.upsert,
     },
-    savedMovie: { findMany: vi.fn(async () => []), count: mocks.watchlistCount },
+    savedMovie: { findMany: vi.fn(async () => []) },
   };
   let queue = Promise.resolve();
   return { prisma: { ...tx, $transaction: async (fn: (client: typeof tx) => unknown) => {
@@ -42,7 +38,7 @@ vi.mock("@/lib/prisma", () => {
     try { return await fn(tx); } finally { release(); }
   } } };
 });
-import { GET, POST } from "@/app/api/recommend/route";
+import { POST } from "@/app/api/recommend/route";
 
 const valid = { genres: ["Drama"], yearFrom: 1990, yearTo: 2026, popularity: "popular", locale: "en", freeformText: "", exclude: [] };
 const movie = candidate();
@@ -56,76 +52,15 @@ beforeEach(() => {
   mocks.search.mockResolvedValue({ movies: [movie], matching: "semantic" });
   mocks.profile.mockResolvedValue({ signals: [], excludedIds: [] });
   mocks.reference.mockResolvedValue(null);
-  mocks.watchlist.mockResolvedValue([1, 2]);
-  mocks.prepareWatchlist.mockResolvedValue(0);
-  mocks.watchlistCount.mockResolvedValue(2);
   mocks.ai.mockImplementation(async (text: string) => inferRecommendationIntent(text));
 });
 
-describe("watchlist-only recommendations", () => {
-  it("requires authentication before looking up a list or spending quota", async () => {
-    const response = await POST(request({ ...valid, source: "watchlist", userId: "someone-else", includeIds: [1] }));
-    expect(response.status).toBe(401);
-    expect(await response.json()).toMatchObject({ error: "watchlist_login_required" });
-    expect(mocks.watchlist).not.toHaveBeenCalled();
-    expect(mocks.ai).not.toHaveBeenCalled();
-    expect(mocks.count).toBe(0);
-  });
-  it("does not charge an empty list", async () => {
-    mocks.userId = "viewer";
-    mocks.watchlist.mockResolvedValue([]);
-    const response = await POST(request({ ...valid, source: "watchlist" }));
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({ error: "watchlist_empty" });
-    expect(mocks.count).toBe(0);
-    expect(mocks.prepareWatchlist).not.toHaveBeenCalled();
-    expect(mocks.ai).not.toHaveBeenCalled();
-  });
-  it("uses the authenticated owner's IDs, ignores supplied scope and rechecks every result", async () => {
-    mocks.userId = "viewer";
-    mocks.search.mockResolvedValue({ movies: [candidate(1), candidate(999)], matching: "filters" });
-    const response = await POST(request({ ...valid, source: "watchlist", userId: "victim", includeIds: [999], watchlistIds: [999] }));
-    const data = await response.json();
-    expect(response.status).toBe(200);
-    expect(mocks.watchlist).toHaveBeenCalledWith("viewer");
-    expect(mocks.prepareWatchlist).toHaveBeenCalledWith([1, 2], { budgetKey: "viewer" });
-    expect(mocks.search.mock.calls[0][0].filters.includeIds).toEqual([1, 2]);
-    expect(data.recommendations.map((r: { movie: { id: number } }) => r.movie.id)).toEqual([1]);
-    expect(data.meta.source).toBe("watchlist");
-  });
-  it("never fills an exhausted watchlist with unrelated catalog movies", async () => {
-    mocks.userId = "viewer";
-    mocks.search.mockResolvedValue({ movies: [candidate(999)], matching: "filters" });
-    const response = await POST(request({ ...valid, source: "watchlist", exclude: [1, 2] }));
-    expect(response.status).toBe(404);
-    expect(await response.json()).toMatchObject({ error: "watchlist_no_results", remaining: 19 });
-  });
-  it("reports incomplete metadata without silently expanding the source", async () => {
-    mocks.userId = "viewer";
-    mocks.prepareWatchlist.mockResolvedValue(1);
-    const response = await POST(request({ ...valid, source: "watchlist" }));
-    expect(await response.json()).toMatchObject({ meta: { watchlistUnavailable: 1, source: "watchlist" } });
-  });
-  it("allows a watchlist pick without requiring a mood or genre", async () => {
-    mocks.userId = "viewer";
-    expect((await POST(request({ ...valid, genres: [], source: "watchlist" }))).status).toBe(200);
-  });
-  it("loads only the authenticated watchlist count and does not charge a read", async () => {
-    mocks.userId = "viewer";
-    const response = await GET(new NextRequest("http://localhost/api/recommend?userId=victim"));
-    expect(await response.json()).toMatchObject({ watchlistCount: 2, remaining: 20 });
-    expect(mocks.watchlistCount).toHaveBeenCalledWith({ where: { userId: "viewer", category: "watchlist" } });
-    expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(mocks.count).toBe(0);
-  });
-  it("does not read any watchlist for an anonymous quota check", async () => {
-    const response = await GET(new NextRequest("http://localhost/api/recommend"));
-    expect(await response.json()).toMatchObject({ watchlistCount: null });
-    expect(mocks.watchlistCount).not.toHaveBeenCalled();
-  });
-});
-
 describe("recommendation security boundary", () => {
+  it("does not request descriptive retrieval when only explicit filters were supplied", async () => {
+    const response = await POST(request(valid));
+    expect(response.status).toBe(200);
+    expect(mocks.search).toHaveBeenCalledWith(expect.objectContaining({ queryText: "", filters: expect.objectContaining({ genres: ["Drama"] }) }));
+  });
   it("reserves the only anonymous slot before concurrent provider calls", async () => {
     const responses = await Promise.all([POST(request(valid)), POST(request(valid))]);
     expect(responses.map((r) => r.status).sort()).toEqual([200, 429]);
@@ -191,11 +126,6 @@ describe("recommendation security boundary", () => {
     expect(response.status).toBe(200);
     expect(mocks.ai).toHaveBeenCalledWith("moving drama");
     expect((await response.json()).recommendations[0].justification).not.toContain("x".repeat(100));
-  });
-  it("does not request descriptive retrieval when only explicit filters were supplied", async () => {
-    const response = await POST(request(valid));
-    expect(response.status).toBe(200);
-    expect(mocks.search).toHaveBeenCalledWith(expect.objectContaining({ queryText: "", filters: expect.objectContaining({ genres: ["Drama"] }) }));
   });
   it("exposes degraded/partial matching without silently dropping constraints", async () => {
     mocks.search.mockResolvedValue({ movies: [movie, candidate(2, { genres: ["Horror"] })], matching: "filters" });

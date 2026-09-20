@@ -1,16 +1,13 @@
 import type { MovieGenre } from "@/constants/genres";
 import type { RecommendationCopy } from "@/i18n/recommendation";
-import type { RecommendationHomeCopy } from "@/i18n/recommendation-home";
 
 export interface Translations {
-  recommendationHome: RecommendationHomeCopy;
   recommendation: RecommendationCopy;
   meta: {
     title: string;
     description: string;
   };
   common: {
-    loading: string;
     genericError: string;
     tryAgain: string;
     unknown: string;
@@ -205,7 +202,6 @@ export interface Translations {
     accuracy: string;
     share: string;
     copied: string;
-    shared: string;
     playAgain: string;
     storyline: string;
     gallery: string;
@@ -299,10 +295,6 @@ export interface Translations {
     quotaInfo: (remaining: number, limit: number) => string;
   };
   collection: {
-    selectionLimit: string;
-    noSearchResults: string;
-    loadError: string;
-    saveError: string;
     title: string;
     tabs: {
       watched: string;
@@ -349,7 +341,6 @@ export interface Translations {
     saved: string;
     alreadySaved: string;
     addToCollection: string;
-    signInToSave: string;
     chooseCategory: string;
     watched: string;
     watchlist: string;

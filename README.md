@@ -1,41 +1,36 @@
-# Showle
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Three personal movie picks based on saved favorites, streaming services and reactions, with a movie collection, daily movie guessing, frame duels and solo practice. Available in Polish and English.
+## Getting Started
 
-Built with Next.js 16, React 19, TypeScript, Tailwind CSS, Clerk, Prisma and Neon PostgreSQL. Movie metadata comes from TMDB. Recommendations use a separate searchable catalog.
+First, run the development server:
 
-## Local setup
-
-Use Node.js 22 and npm.
-
-1. Run `npm ci`.
-2. Copy `.env.example` to `.env.local` and configure your own development services.
-3. Generate the Prisma client with `npx prisma generate` (also runs after installation).
-4. Prepare a dedicated development database. See [game deployment](docs/game-flows.md) and [recommendation deployment](docs/recommendations.md) before applying SQL.
-5. Run `npm run dev`.
-
-The migration chain includes a full baseline for empty PostgreSQL databases with pgvector. Existing databases must be audited and baselined before deploying the chain; follow [production and recovery](docs/production.md). Never reset an existing database to adopt migration history.
-
-## Checks
-
-```sh
-npm test
-npm run typecheck
-npm run lint
-npm run build
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Default Vitest tests mock the application database and providers. PostgreSQL and live recommendation integration suites require explicit opt-in configuration; see their documentation. Two workers keep the suite stable on machines with other development processes running.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-GitHub Actions runs these checks on pull requests and pushes to master. The unit/build job uses placeholder credentials. A separate job uses ephemeral pgvector PostgreSQL to replay the migration chain, detect schema drift and check real concurrent transactions. It never uses production secrets. The separate catalog refresh workflow remains opt-in.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Documentation
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- [Project and scope](docs/project.md)
-- [Architecture](docs/architecture.md)
-- [Engineering rules](docs/rules.md)
-- [Decisions](docs/decisions.md)
-- [Completed work and next tasks](docs/tasks.md)
-- [Daily and frame game flows](docs/game-flows.md)
-- [Recommendation catalog and operations](docs/recommendations.md)
-- [Production configuration, migration baseline and restore drill](docs/production.md)
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

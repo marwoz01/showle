@@ -1,4 +1,3 @@
-import { reportServerError } from "@/lib/server-error";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +13,7 @@ import { allowDuelRequest } from "@/lib/duel-rate-limit";
 import { isRecord, readJsonBody, RequestBodyError } from "@/lib/request-body";
 
 export async function POST(request: NextRequest) {
-  if (!await allowDuelRequest(request, "room")) {
+  if (!allowDuelRequest(request, "room")) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
@@ -96,7 +95,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof RequestBodyError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    reportServerError("duel.rooms", error);
+    console.error("Duel room error:", error);
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
 }

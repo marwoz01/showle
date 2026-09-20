@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { cookies } from "next/headers";
 import AppProviders from "@/components/providers/AppProviders";
 import Sidebar from "@/components/layout/Sidebar";
-import Footer from "@/components/layout/Footer";
-import { publicPageMetadata, requestLocale } from "@/lib/page-metadata";
-import { siteUrl } from "@/lib/site";
+import type { Locale } from "@/i18n";
 import { spaceGrotesk } from "@/lib/fonts";
 import "./globals.css";
 
@@ -13,13 +12,49 @@ const inter = Inter({
   subsets: ["latin", "latin-ext"],
 });
 
+const siteUrl = "https://showle.vercel.app";
+
+const metadataCopy = {
+  pl: {
+    title: "Showle · Film dnia",
+    description:
+      "Odgadnij film dnia, porównując rok, gatunek, reżysera, budżet i inne cechy. Codziennie nowe wyzwanie!",
+    locale: "pl_PL",
+  },
+  en: {
+    title: "Showle · Daily Movie",
+    description:
+      "Guess the daily movie by comparing its year, genre, director, budget, and more. A new challenge every day!",
+    locale: "en_US",
+  },
+} as const;
+
+async function getRequestLocale(): Promise<Locale> {
+  return (await cookies()).get("showle-locale")?.value === "en" ? "en" : "pl";
+}
+
 export async function generateMetadata(): Promise<Metadata> {
-  const base = await publicPageMetadata("/");
+  const locale = await getRequestLocale();
+  const copy = metadataCopy[locale];
+
   return {
-    ...base,
-    title: { default: String(base.title), template: "%s | Showle" },
-    metadataBase: new URL(siteUrl()),
+    title: { default: copy.title, template: "%s | Showle" },
+    description: copy.description,
+    metadataBase: new URL(siteUrl),
     icons: { icon: "/favicon.svg" },
+    openGraph: {
+      title: copy.title,
+      description: copy.description,
+      url: siteUrl,
+      siteName: "Showle",
+      locale: copy.locale,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: copy.title,
+      description: copy.description,
+    },
     robots: { index: true, follow: true },
   };
 }
@@ -29,7 +64,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await requestLocale();
+  const locale = await getRequestLocale();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -41,7 +76,6 @@ export default async function RootLayout({
           <main className="relative min-h-screen overflow-x-clip p-4 pt-18 lg:ml-60 lg:p-10">
             <div className="pointer-events-none absolute left-1/2 top-0 hidden h-96 w-150 -translate-x-1/2 rounded-full bg-accent-purple/8 blur-3xl sm:block" />
             {children}
-            <Footer locale={locale} />
           </main>
         </AppProviders>
       </body>

@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { requestIp } from "@/lib/request-ip";
-import { reportServerError } from "@/lib/server-error";
+import { rateLimit } from "@/lib/rate-limit";
 import { isRecord, readJsonBody, RequestBodyError } from "@/lib/request-body";
 import { validMovieId } from "@/lib/recommend-input";
 
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const ip = requestIp(request);
-  const budget = await checkRateLimit(`recommend-feedback:${ip}`, { limit: 120, windowMs: 60_000 });
-  const personal = await checkRateLimit(`recommend-feedback-user:${userId}`, { limit: 30, windowMs: 60_000 });
-  if (!budget.success || !personal.success) {
-    return NextResponse.json({ error: "rate_limited" }, { status: budget.unavailable || personal.unavailable ? 503 : 429,
-      headers: { "Cache-Control": "no-store", "Retry-After": "60" } });
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  if (!rateLimit(`recommend-feedback:${ip}`, { limit: 60, windowMs: 60_000 }).success ||
+    !rateLimit(`recommend-feedback-user:${userId}`, { limit: 30, windowMs: 60_000 }).success) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
   try {
     const data = await readJsonBody(request, 1024);
@@ -36,7 +32,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof RequestBodyError) return NextResponse.json({ error: "invalid_feedback" }, { status: error.status });
-    const requestId = reportServerError("recommendation_feedback", error);
-    return NextResponse.json({ error: "internal", requestId }, { status: 500, headers: { "Cache-Control": "no-store" } });
+    console.error("Recommendation feedback failed");
+    return NextResponse.json({ error: "internal" }, { status: 500 });
   }
 }

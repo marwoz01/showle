@@ -14,16 +14,15 @@
 
 ## No User model in database
 
-- **Decision**: Store application game, collection and recommendation data in Prisma, referencing accounts by Clerk `userId` string
+- **Decision**: Store only `GameResult` and `UserStats` in Prisma, reference users by Clerk `userId` string
 - **Why**: Clerk owns user data (email, name, avatar). Duplicating it creates sync issues. Simple string foreign key is sufficient.
 - **Alternatives**: Mirror user data via webhook (`user.created`), full User model with Clerk sync
 
-## Server-authoritative daily state (supersedes localStorage-first)
+## localStorage-first game state
 
-- **Decision**: The server validates each guess and derives outcomes, hints, rewards and statistics. The client stores only a progress summary.
-- **Why**: Preserve trustworthy results and consistent state across accounts, tabs and devices. Anonymous users use an HTTP-only player cookie.
-- **Migration**: Old local guess IDs may be replayed once; client-supplied results are never accepted.
-- **Tradeoff**: A server connection is required for gameplay.
+- **Decision**: Primary game persistence is localStorage, with optional server sync for logged-in users
+- **Why**: Game must work for anonymous users. Server sync is a bonus for cross-device play and stats. Fire-and-forget pattern means network failures don't break gameplay.
+- **Alternatives**: Server-only state (requires login), IndexedDB (overkill)
 
 ## Static movie pool (eligible-movies.json)
 
@@ -60,14 +59,3 @@
 - **Decision**: CSS custom properties defined in `globals.css` via `@theme inline`, consumed by Tailwind utility classes
 - **Why**: Single source of truth for colors. Easy to reference in both Tailwind classes and raw CSS. No tailwind.config.js needed in v4.
 - **Alternatives**: tailwind.config.js theme (v3 pattern), CSS modules, styled-components
-
-## Collection consistency and accessible dialogs
-
-- **Decision**: Confirm writes before removing/updating list content. Batch exact movie membership checks per account. Failed writes remain recoverable and do not display success.
-- **Why**: A wrong saved badge or disappearing review is more costly than a short pending state. Versioned lookups and cancelled page reads avoid stale response races.
-- **UI**: Use the native dialog element for modal behavior and manual keyboard activation for network-backed tabs, without adding a UI dependency.
-
-## Streak reads and writes
-
-- **Decision**: Use one calendar-gap calculation for stats, wallets and daily completion. Reads project available freezes; completion or a purchase persists any usage under the player lock.
-- **Why**: Display the correct current streak without requiring a separate browser streak-check request, while keeping GET endpoints read-only and freeze consumption idempotent.

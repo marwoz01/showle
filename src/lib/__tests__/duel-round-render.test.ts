@@ -1,16 +1,32 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { FrameRoomController } from "@/hooks/useFrameRoom";
 import type { DuelRoomView } from "@/types/duel";
 import pl from "@/i18n/pl";
 import en from "@/i18n/en";
 import experience from "@/i18n/experience";
 
 const language = vi.hoisted(() => ({ locale: "pl" as "pl" | "en" }));
+const renderState = vi.hoisted(() => ({ room: null as DuelRoomView | null, injected: false }));
+vi.mock("react", async (importOriginal) => {
+  const react = await importOriginal<typeof import("react")>();
+  return {
+    ...react,
+    useState: <T>(initialState: T | (() => T)) => {
+      // The room is FrameGame's first nullable state. Inject a server snapshot
+      // while preserving React's real hooks and the component's rendering logic.
+      if (initialState === null && !renderState.injected) {
+        renderState.injected = true;
+        return react.useState(renderState.room);
+      }
+      return react.useState(initialState);
+    },
+  };
+});
 vi.mock("@/i18n", () => ({ useTranslation: () => ({ t: language.locale === "pl" ? pl : en, locale: language.locale }) }));
 vi.mock("@gsap/react", () => ({ useGSAP: () => undefined }));
-import FrameRound from "@/components/game/FrameRound";
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+import FrameGame from "@/components/game/FrameGame";
 
 const start = Date.parse("2026-09-20T12:00:00Z");
 const room: DuelRoomView = {
@@ -25,12 +41,14 @@ const room: DuelRoomView = {
 };
 
 function render(view: DuelRoomView, now = start) {
-  const game = {
-    pending: false, error: "", me: view.players[0], now, selected: null,
-    roundKey: `${view.code}:${view.matchNumber}:${view.currentRound}`,
-    ready: vi.fn(), request: vi.fn(), setSelected: vi.fn(),
-  } as unknown as FrameRoomController;
-  return renderToStaticMarkup(createElement(FrameRound, { room: view, game, solo: false }));
+  renderState.room = view;
+  renderState.injected = false;
+  const clock = vi.spyOn(Date, "now").mockReturnValue(now);
+  try {
+    return renderToStaticMarkup(createElement(FrameGame, { solo: false }));
+  } finally {
+    clock.mockRestore();
+  }
 }
 
 describe.each(["pl", "en"] as const)("duel round presentation (%s)", (locale) => {
@@ -48,6 +66,16 @@ describe.each(["pl", "en"] as const)("duel round presentation (%s)", (locale) =>
       expect(render(ready, start - 3000 + elapsed)).toContain(`>${digit}</p>`);
     }
     expect(render(ready, start)).not.toMatch(/>[123]<\/p>/);
+  });
+
+  it("does not reveal the frame or answers before the server releases them", () => {
+    language.locale = locale;
+    const html = render({ ...room, roundStartsAt: new Date(start).toISOString() }, start - 1000);
+    expect(html).toContain('>1</p>');
+    expect(html).not.toContain('image.tmdb.org/t/p/');
+    expect(html).toContain('aria-label="A"');
+    expect(html).toContain('aria-label="D"');
+    expect(html.match(/disabled=""/g)).toHaveLength(4);
   });
 
   it("keeps scores and an accessible time bar without the removed chrome", () => {

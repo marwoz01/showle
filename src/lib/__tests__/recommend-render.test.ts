@@ -9,38 +9,19 @@ const locale = vi.hoisted(() => ({ value: "pl" }));
 vi.mock("@/i18n", () => ({ useTranslation: () => ({ t: locale.value === "pl" ? pl : en, locale: locale.value }) }));
 vi.mock("@/components/game/SearchBar", () => ({ default: ({ placeholder }: { placeholder: string }) => createElement("input", { placeholder }) }));
 vi.mock("@/components/recommend/RecommendationCard", () => ({ default: () => createElement("div", { role: "button" }, "Film") }));
-vi.mock("@/components/ui/icons", () => ({ Sparkles: () => null, X: () => null, Bookmark: () => null }));
+vi.mock("@/components/ui/icons", () => ({ Sparkles: () => null, X: () => null }));
 import PreferenceForm from "@/components/recommend/PreferenceForm";
 import RecommendationResults from "@/components/recommend/RecommendationResults";
 describe("recommendation UI contracts", () => {
-  it.each(["pl", "en"])("offers an explicit watchlist-only switch and source badge (%s)", (language) => {
-    locale.value = language;
-    const t = language === "pl" ? pl : en;
-    const html = renderToStaticMarkup(createElement(PreferenceForm, {
-      initial: { ...preferences, source: "watchlist" }, initialReference: null, onSubmit: () => {}, remaining: 20, quotaLimit: 20, signedIn: true, watchlistCount: 6,
-    })).replaceAll("&#x27;", "'");
-    expect(html).toContain('role="switch"');
-    expect(html).toContain('checked=""');
-    expect(html).toContain(t.recommendation.watchlistCount(6));
-    expect(html).toContain(t.recommendation.watchlistSubmit);
-    expect(html).not.toContain('type="submit" disabled');
-    const result = renderToStaticMarkup(createElement(RecommendationResults, {
-      results: [], feedback: {}, pending: [], feedbackReady: true, onReact: () => {}, hasDescription: false,
-      meta: { source: "watchlist", watchlistUnavailable: 2, matching: "filters", interpretation: "local", relevance: "local", partial: false, personalized: false },
-    })).replaceAll("&#x27;", "'");
-    expect(result).toContain(t.recommendation.watchlistResults);
-    expect(result).toContain(t.recommendation.watchlistIncomplete(2));
-    expect(result).not.toContain(t.recommendation.degraded);
-  });
-  it("explains login and empty-list states instead of submitting unusable searches", () => {
+  it("does not report skipped description matching as a failure for explicit filters", () => {
     locale.value = "pl";
-    for (const signedIn of [false, true]) {
-      const html = renderToStaticMarkup(createElement(PreferenceForm, {
-        initial: { ...preferences, source: "watchlist" }, initialReference: null, onSubmit: () => {}, remaining: 1, quotaLimit: 1, signedIn, watchlistCount: 0,
-      }));
-      expect(html).toContain('type="submit" disabled=""');
-      expect(html).toContain(signedIn ? pl.recommendation.watchlistEmpty : pl.recommendation.watchlistLogin);
-    }
+    const base = { results: [], feedback: {}, pending: [], feedbackReady: true, onReact: () => {}, hasDescription: false };
+    const meta: RecommendationMeta = { matching: "filters", interpretation: "local", relevance: "local", partial: false, personalized: true };
+    const html = renderToStaticMarkup(createElement(RecommendationResults, { ...base, meta }));
+    expect(html).not.toContain(pl.recommendation.degraded);
+    expect(html).toContain(pl.recommendation.personalized);
+    expect(renderToStaticMarkup(createElement(RecommendationResults, { ...base, meta, hasDescription: true }))).toContain(pl.recommendation.degraded);
+    expect(renderToStaticMarkup(createElement(RecommendationResults, { ...base, meta, hasReference: true }))).toContain(pl.recommendation.degraded);
   });
   it.each(["pl", "en"])("renders localized advanced controls in %s", (language) => {
     locale.value = language;
@@ -69,14 +50,5 @@ describe("recommendation UI contracts", () => {
     const meta: RecommendationMeta = { matching: "semantic", interpretation: "local", relevance: "ai", partial: false, personalized: false };
     expect(renderToStaticMarkup(createElement(RecommendationResults, { ...base, meta }))).not.toContain(pl.recommendation.degraded);
     expect(renderToStaticMarkup(createElement(RecommendationResults, { ...base, meta: { ...meta, relevance: "local" } }))).toContain(pl.recommendation.degraded);
-  });
-  it.each(["catalog", "watchlist"] as const)("does not report skipped description matching as a failure for %s filters", (source) => {
-    locale.value = "pl";
-    const base = { results: [], feedback: {}, pending: [], feedbackReady: true, onReact: () => {}, hasDescription: false };
-    const meta: RecommendationMeta = { source, matching: "filters", interpretation: "local", relevance: "local", partial: false, personalized: true };
-    const html = renderToStaticMarkup(createElement(RecommendationResults, { ...base, meta }));
-    expect(html).not.toContain(pl.recommendation.degraded);
-    expect(html).toContain(pl.recommendation.personalized);
-    expect(renderToStaticMarkup(createElement(RecommendationResults, { ...base, meta, hasDescription: true }))).toContain(pl.recommendation.degraded);
   });
 });

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 const mocks = vi.hoisted(() => ({ limit: vi.fn() }));
-vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: mocks.limit }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: mocks.limit }));
 vi.mock("@/lib/higher-lower-catalog", () => ({
   getHigherLowerCatalog: () => ({
     version: "test-catalog",
@@ -27,7 +27,6 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(now);
   vi.stubEnv("HIGHER_LOWER_SECRET", "test-only-api-secret");
-  vi.stubEnv("TRUSTED_PROXY", "forwarded");
   mocks.limit.mockReturnValue({ success: true });
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); });

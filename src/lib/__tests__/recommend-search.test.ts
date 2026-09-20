@@ -6,6 +6,19 @@ import { buildRecommendationSearch, findRecommendationCandidates } from "@/lib/r
 import { candidate, filters } from "@/lib/__tests__/fixtures/recommendations";
 beforeEach(() => { vi.clearAllMocks(); mocks.query.mockResolvedValue([candidate()]); });
 describe("one retrieval filter contract", () => {
+  it("does not send an empty optional mood to the embedding provider", async () => {
+    await findRecommendationCandidates({ ...search, queryText: "" });
+    expect(mocks.embed).not.toHaveBeenCalled();
+  });
+  it("recognizes semantic retrieval in mixed pools while preserving a true unindexed fallback", async () => {
+    mocks.embed.mockResolvedValue([1, 2, 3]);
+    mocks.query.mockResolvedValue([candidate(1, { hasEmbedding: true }), candidate(2, { hasEmbedding: false })]);
+    expect((await findRecommendationCandidates(search)).matching).toBe("semantic");
+    mocks.query.mockResolvedValue([candidate(2, { hasEmbedding: false })]);
+    expect((await findRecommendationCandidates(search)).matching).toBe("filters");
+    mocks.query.mockResolvedValue([candidate(1, { hasEmbedding: true })]);
+    expect((await findRecommendationCandidates(search)).matching).toBe("semantic");
+  });
   const search = { filters: { ...filters, genres: ["Drama"], excludedGenres: ["Horror"], providerIds: [8], maxRuntime: 90, popularity: "niche" as const, excludeIds: [123] }, queryText: "drama" };
   it("uses identical WHERE conditions for semantic and fallback queries", () => {
     const semantic = buildRecommendationSearch(search, [1, 2, 3]);
@@ -34,29 +47,5 @@ describe("one retrieval filter contract", () => {
     expect(params).toContainEqual(["Drama"]);
     expect(params).toContainEqual([8]);
     expect(params).toContain(90);
-  });
-  it("limits both retrieval paths to server-owned watchlist IDs", () => {
-    const scope = { ...search, filters: { ...search.filters, source: "watchlist" as const, includeIds: [3, 5] } };
-    for (const vector of [undefined, [1, 2, 3]]) {
-      const { query, params } = buildRecommendationSearch(scope, vector);
-      expect(query).toMatch(/"tmdbId" = ANY\(\$\d+::int\[\]\)/);
-      expect(params).toContainEqual([3, 5]);
-    }
-    const missing = buildRecommendationSearch({ ...scope, filters: { ...scope.filters, includeIds: undefined } });
-    expect(missing.params).toContainEqual([]);
-    expect(missing.query).toContain('"tmdbId" = ANY(');
-  });
-  it("does not send an empty optional mood to the embedding provider", async () => {
-    await findRecommendationCandidates({ ...search, queryText: "" });
-    expect(mocks.embed).not.toHaveBeenCalled();
-  });
-  it("recognizes semantic retrieval in mixed pools while preserving a true unindexed fallback", async () => {
-    mocks.embed.mockResolvedValue([1, 2, 3]);
-    mocks.query.mockResolvedValue([candidate(1, { hasEmbedding: true }), candidate(2, { hasEmbedding: false })]);
-    expect((await findRecommendationCandidates(search)).matching).toBe("semantic");
-    mocks.query.mockResolvedValue([candidate(2, { hasEmbedding: false })]);
-    expect((await findRecommendationCandidates(search)).matching).toBe("filters");
-    mocks.query.mockResolvedValue([candidate(1, { hasEmbedding: true })]);
-    expect((await findRecommendationCandidates(search)).matching).toBe("semantic");
   });
 });

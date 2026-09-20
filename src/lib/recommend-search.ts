@@ -19,7 +19,6 @@ export function buildRecommendationSearch(
     `year >= ${bind(f.yearFrom)} AND year <= ${bind(f.yearTo)}`,
     `"tmdbId" != ALL(${bind(f.excludeIds)}::int[])`,
   ];
-  if (f.source === "watchlist") where.push(`"tmdbId" = ANY(${bind(f.includeIds ?? [])}::int[])`);
   if (f.genres.length) where.push(`genres && ${bind(f.genres)}::text[]`);
   if (f.excludedGenres.length) where.push(`NOT (genres && ${bind(f.excludedGenres)}::text[])`);
   if (f.maxRuntime !== null) where.push(`runtime > 0 AND runtime <= ${bind(f.maxRuntime)}`);

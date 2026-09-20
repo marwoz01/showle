@@ -10,19 +10,29 @@ import ConfirmModal from "@/components/collection/ConfirmModal";
 import MovieDetailsModal from "@/components/movie/MovieDetailsModal";
 import { localizeGenre } from "@/lib/localization";
 
-import type { SavedMovie } from "@/types/collection";
+interface SavedMovie {
+  id: string;
+  tmdbId: number;
+  title: string;
+  year: number;
+  posterPath: string;
+  category: string;
+  rating: number | null;
+  review: string | null;
+  genres: string[];
+  director: string;
+  overview: string;
+}
 
 interface CollectionCardProps {
-  pending?: boolean;
   movie: SavedMovie;
   onRate: (id: string, rating: number) => void;
   onChangeCategory: (id: string, category: "watched" | "watchlist") => void;
-  onDelete: (id: string) => Promise<boolean>;
+  onDelete: (id: string) => void;
   onReview: (movie: SavedMovie) => void;
 }
 
 export default function CollectionCard({
-  pending = false,
   movie,
   onRate,
   onChangeCategory,
@@ -36,12 +46,20 @@ export default function CollectionCard({
 
   // Stop nested actions (menu, save) from firing the card click that opens details.
   const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setShowDetails(true);
+    }
+  };
 
   return (
     <>
-    <article
-      aria-busy={pending}
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => setShowDetails(true)}
+      onKeyDown={handleKey}
       className="soft-card soft-card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-xl focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none">
       {/* Poster */}
       <div className="p-2.5 pb-0">
@@ -63,9 +81,6 @@ export default function CollectionCard({
           {/* Menu button */}
           <div className="absolute right-1.5 top-1.5" onClick={stopPropagation}>
             <button
-              disabled={pending}
-              aria-label={t.collection.chooseCategory}
-              aria-expanded={menuOpen}
               onClick={() => setMenuOpen(!menuOpen)}
               className="rounded-lg bg-black/60 p-1.5 text-white/70 backdrop-blur-sm transition-colors hover:bg-black/80 hover:text-white"
             >
@@ -132,7 +147,7 @@ export default function CollectionCard({
       {/* Info */}
       <div className="flex flex-1 flex-col p-2.5">
         <h3 className="mb-0.5 text-sm font-bold leading-tight text-foreground">
-          <button type="button" onClick={() => setShowDetails(true)} className="text-left outline-none focus-visible:ring-2 focus-visible:ring-accent-purple">{normalizeDisplayText(movie.title)}</button>
+          {normalizeDisplayText(movie.title)}
         </h3>
 
         {/* Year + Director */}
@@ -144,12 +159,12 @@ export default function CollectionCard({
         {/* Rating + Genre badges */}
         <div className="mb-1.5 flex flex-wrap items-center gap-1">
           {movie.category === "watched" && (
-            <fieldset disabled={pending} onClick={stopPropagation}>
+            <div onClick={stopPropagation}>
               <StarRating
                 value={movie.rating}
                 onChange={(rating) => onRate(movie.id, rating)}
               />
-            </fieldset>
+            </div>
           )}
           {movie.genres.slice(0, 2).map((genre) => (
             <span
@@ -173,16 +188,15 @@ export default function CollectionCard({
         <div onClick={stopPropagation}>
           <ConfirmModal
             message={t.collection.removeConfirm}
-            onConfirm={async () => {
-              const success = await onDelete(movie.id);
-              if (success) setShowDeleteConfirm(false);
-              return success;
+            onConfirm={() => {
+              onDelete(movie.id);
+              setShowDeleteConfirm(false);
             }}
             onCancel={() => setShowDeleteConfirm(false)}
           />
         </div>
       )}
-    </article>
+    </div>
 
     {showDetails && (
       <MovieDetailsModal

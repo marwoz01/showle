@@ -1,19 +1,19 @@
-import { checkRateLimit } from "@/lib/rate-limit";
-import { requestIp } from "@/lib/request-ip";
+import { isIP } from "node:net";
+import { rateLimit } from "@/lib/rate-limit";
 
 const budgets = {
   room: { global: 120, ip: 20 },
-  state: { global: 6000, ip: 1200 },
+  state: { global: 6000, ip: 240 },
   mutation: { global: 600, ip: 120 },
 } as const;
 
-export async function allowDuelRequest(request: Request, kind: keyof typeof budgets): Promise<boolean> {
+/** Per-process load shedding; deployment-wide protection still belongs at the edge. */
+export function allowDuelRequest(request: Request, kind: keyof typeof budgets): boolean {
   const budget = budgets[kind];
   // This fixed key cannot be rotated with either a player token or an IP header.
-  if (!(await checkRateLimit(`duel-global:${kind}`, { limit: budget.global, windowMs: 60000 })).success) return false;
-  if (!(await checkRateLimit(`duel-ip:${kind}:${requestIp(request)}`, { limit: budget.ip, windowMs: 60000 })).success) return false;
-  if (kind !== "state") return true;
-  const player = request.headers.get("x-duel-player") ?? "";
-  if (!/^[a-zA-Z0-9_-]{8,100}$/.test(player)) return true;
-  return (await checkRateLimit(`duel-state:${player}`, { limit: 120, windowMs: 60000 })).success;
+  if (!rateLimit(`duel-global:${kind}`, { limit: budget.global, windowMs: 60000 }).success) return false;
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",", 1)[0].trim() ?? "";
+  // Only trust forwarded IPs when the deployment proxy overwrites the header.
+  const ip = forwarded.length <= 64 && isIP(forwarded) ? forwarded : "unknown";
+  return rateLimit(`duel-ip:${kind}:${ip}`, { limit: budget.ip, windowMs: 60000 }).success;
 }

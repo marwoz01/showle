@@ -1,7 +1,6 @@
 import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 import { recommendationPl } from "@/i18n/recommendation";
-import { recommendationHomePl } from "@/i18n/recommendation-home";
 
 function polishMovieCount(count: number): string {
   const lastDigit = count % 10;
@@ -24,7 +23,6 @@ function polishGameCount(count: number): string {
 }
 
 const pl: Translations = {
-  recommendationHome: recommendationHomePl,
   recommendation: recommendationPl,
   meta: {
     title: "Showle · Film dnia",
@@ -32,7 +30,6 @@ const pl: Translations = {
       "Odgadnij film dnia, porównując rok, gatunek, reżysera, budżet i inne cechy. Codziennie nowe wyzwanie!",
   },
   common: {
-    loading: "Ładowanie...",
     genericError: "Coś poszło nie tak. Spróbuj ponownie.",
     tryAgain: "Spróbuj ponownie",
     unknown: "Nieznane",
@@ -259,7 +256,6 @@ const pl: Translations = {
     accuracy: "Trafność",
     share: "Udostępnij wynik",
     copied: "Skopiowano!",
-    shared: "Udostępniono!",
     playAgain: "Zagraj ponownie",
     storyline: "Fabuła",
     gallery: "Galeria",
@@ -368,10 +364,6 @@ const pl: Translations = {
 
   // Collection
   collection: {
-    selectionLimit: "Możesz dodać do 20 filmów naraz.",
-    noSearchResults: "Nie znaleziono filmów.",
-    loadError: "Nie udało się pobrać kolekcji. Spróbuj ponownie.",
-    saveError: "Nie udało się potwierdzić zapisu. Spróbuj ponownie.",
     title: "Moja kolekcja",
     tabs: {
       watched: "Obejrzane",
@@ -421,7 +413,6 @@ const pl: Translations = {
     saved: "Zapisano",
     alreadySaved: "Już w kolekcji",
     addToCollection: "Dodaj do kolekcji",
-    signInToSave: "Zaloguj się, aby zapisać",
     chooseCategory: "Wybierz kategorię",
     watched: "Obejrzane",
     watchlist: "Do obejrzenia",

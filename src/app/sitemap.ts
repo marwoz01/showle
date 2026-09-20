@@ -1,11 +1,32 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "@/lib/site";
-import { seoCopy } from "@/i18n/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return Object.keys(seoCopy.pl).map((path) => ({
-    url: new URL(path, siteUrl()).href,
-    changeFrequency: path === "/play/movie" ? "daily" : "weekly",
-    priority: path === "/" ? 1 : path === "/play/movie" ? 0.9 : 0.6,
-  }));
+  const siteUrl = "https://showle.vercel.app";
+
+  return [
+    {
+      url: siteUrl,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 1,
+    },
+    {
+      url: `${siteUrl}/play`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/play/movie`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/stats`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.5,
+    },
+  ];
 }

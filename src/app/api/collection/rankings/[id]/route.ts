@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(
   _request: NextRequest,
@@ -35,10 +35,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rl = (await checkRateLimit(`collection-write:${userId}`, {
+  const rl = rateLimit(`collection-write:${userId}`, {
     limit: 30,
     windowMs: 60_000,
-  }));
+  });
   if (!rl.success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

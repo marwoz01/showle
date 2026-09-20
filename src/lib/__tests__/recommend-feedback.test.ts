@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 const mocks = vi.hoisted(() => ({ userId: "viewer" as string | null, allowed: true, upsert: vi.fn(), remove: vi.fn(), movie: vi.fn() }));
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ userId: mocks.userId }) }));
-vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: async () => ({ success: mocks.allowed }) }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: () => ({ success: mocks.allowed }) }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   recommendationFeedback: { upsert: mocks.upsert, deleteMany: mocks.remove },
   recommendationMovie: { findUnique: mocks.movie },

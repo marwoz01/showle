@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit --incremental false",
     "test": "vitest run",
     "test:watch": "vitest",
     "catalog:sync": "node scripts/sync-frame-catalog.mjs",
@@ -15,7 +14,6 @@
     "recommendations:sync": "node scripts/sync-recommendation-catalog.mjs",
     "recommendations:embed": "node scripts/embed-recommendation-catalog.mjs",
     "recommendations:check": "node scripts/check-recommendation-health.mjs",
-    "production:check": "node scripts/check-production.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

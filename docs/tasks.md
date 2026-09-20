@@ -1,46 +1,53 @@
 # Tasks
 
-## Completed locally
+## TODO
 
-- [x] Server-authoritative daily movie game, hints, anonymous/account progress, frozen metadata and transactional completion.
-- [x] Frame duels, invitations, rematches and repeatable solo practice.
-- [x] History, heatmap, statistics, PL/EN and responsive daily layout.
-- [x] Sentry configuration, Open Graph image, robots and sitemap routes.
-- [x] Recommendation catalog, preferences, reference films, feedback and relevance checks.
-- [x] Collection write confirmation and recoverable errors, including partial add failures.
-- [x] Exact batched collection membership lookup and lightweight counters.
-- [x] Cancelled stale collection reads and success-based pagination.
-- [x] Accessible collection tabs and native review/confirmation/add dialogs.
-- [x] Server-side collection body, field, date, score and pagination validation.
-- [x] Shared streak calculation for skipped days and transactional freeze consumption.
-- [x] Split frame-game and result-screen responsibilities into focused hooks/components.
-- [x] GitHub Actions for tests, types, lint and build; bounded Vitest workers.
-- [x] Refresh README and architecture/status documentation.
-- [x] Personal home page with three picks, persistent favorites/services and optional refinements; existing games preserved.
-- [x] Catalog-only default recommendations, shared AI quota, guarded cold metadata imports and honest empty results.
-- [x] Account data export/reset, signed Clerk deletion webhook and deferred cleanup queue.
-- [x] Shared PostgreSQL request budgets, TMDB deadlines, safe Sentry/error data and bearer-protected health/maintenance routes.
-- [x] Native result sharing, guest save/login CTA, settings navigation and storage-blocked locale fallback.
-- [x] Gated legal templates and a read-only production configuration/migration/catalog check.
+### Error Tracking
+- [ ] Integrate Sentry for error monitoring
+- [ ] Add error boundaries for client components
+- [ ] Structured error logging in API routes
 
-These entries describe source code, not a production deployment. The existing recommendation/watchlist work remains part of the user's working tree.
+### SEO & Social
+- [ ] Add Open Graph meta tags (title, description, image)
+- [ ] Create `robots.txt` and `sitemap.xml`
+- [ ] Add social sharing preview image
 
-## Next
+### Security
+- [ ] Add rate limiting on `/api/movies/search` (public, abuse-prone)
+- [ ] Add CSP headers in `next.config.ts`
+- [ ] Remove committed `.env` from git history (contains DATABASE_URL)
 
-- [ ] Complete authenticated and two-player browser regressions against a configured staging environment; test tooling alone does not prove provider-backed flows.
-- [ ] Verify deployment-wide rate limits and trusted proxy headers.
-- [x] Add a full empty-database baseline, migration-chain/drift CI checks, and a guarded existing-database/restore runbook.
-- [ ] Execute and record the restore drill and migration adoption against the operator's actual staging database.
-- [x] Centralize site URLs, expose crawler metadata publicly, give public routes distinct metadata, and remove private pages from the sitemap.
-- [ ] Confirm anonymous crawler responses and final canonical domain on the deployed service.
-- [ ] Verify scheduled catalog refresh and provider/vector coverage in the intended environment.
-- [ ] Decide collection search/filter/bulk operations, shared evening choices and shareable rankings in a separate product iteration.
-- [ ] Expanded user statistics and product analytics.
-- [ ] TV-series mode and any future Pro/payment offering.
+### Testing
+- [ ] Set up Vitest
+- [ ] Unit tests for `lib/comparer.ts` (comparison logic)
+- [ ] Unit tests for `lib/daily.ts` (deterministic selection, no-repeat window)
+- [ ] Unit tests for `lib/hints.ts` (hint generation and reveal logic)
+- [ ] API route integration tests
 
-## Verification for the personal-home change
+### Features
+- [ ] Series mode (`/play/series`) — daily TV series guessing
+- [ ] Unlimited mode (`/play/unlimited`) — play as many as you want
+- [ ] Pro subscription system (Stripe integration)
+- [ ] Share result as image/text to social media
+- [ ] Game history page (past results)
 
-- TypeScript, ESLint and the production build passed. Default Vitest: 663 passed, 14 opt-in tests skipped.
-- Real isolated PostgreSQL: 8 tests passed across quota/ranking concurrency and shared rate limiter suites. The owned cluster was stopped afterward.
-- Full pgvector migration replay/drift checking is configured in CI but has not been executed locally; local PostgreSQL lacks pgvector.
-- Browser smoke tests could not complete because Clerk entered a handshake redirect loop in the current local environment, also outside the network sandbox. Verify the Clerk instance keys/origin and rerun against configured staging services. These checks are not recorded as passing.
+## IN PROGRESS
+
+_(nothing currently)_
+
+## DONE
+
+- [x] Core daily movie game mode
+- [x] 8-field comparison engine (year, genres, country, director, runtime, budget, popularity, rating)
+- [x] Progressive hint system (3 hints at attempts 2, 4, 6)
+- [x] User authentication (Clerk)
+- [x] Game state persistence (localStorage + server sync)
+- [x] User statistics tracking (games played, won, streaks, average)
+- [x] Responsive sidebar navigation
+- [x] i18n support (Polish + English)
+- [x] Countdown timer to next daily reset
+- [x] Streak tracking with animated flame
+- [x] Auth pages with decorative blob animations
+- [x] Migrate from NextAuth to Clerk
+- [x] Wrap game completion in Prisma transaction
+- [x] Create `.env.example`

@@ -4,26 +4,36 @@ import { useTranslation } from "@/i18n";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "@/components/ui/icons";
 import CollectionCard from "@/components/collection/CollectionCard";
 
-import type { SavedMovie } from "@/types/collection";
+interface SavedMovie {
+  id: string;
+  tmdbId: number;
+  title: string;
+  year: number;
+  posterPath: string;
+  category: string;
+  rating: number | null;
+  review: string | null;
+  genres: string[];
+  director: string;
+  overview: string;
+}
 
 type SortOption = "date" | "rating" | "title" | "year";
 
 interface MovieGridProps {
-  pending?: string[];
   movies: SavedMovie[];
   sort: SortOption;
   order: "asc" | "desc";
   onSortChange: (sort: SortOption) => void;
   onRate: (id: string, rating: number) => void;
   onChangeCategory: (id: string, category: "watched" | "watchlist") => void;
-  onDelete: (id: string) => Promise<boolean>;
+  onDelete: (id: string) => void;
   onReview: (movie: SavedMovie) => void;
 }
 
 const SORT_OPTIONS: SortOption[] = ["date", "rating", "title", "year"];
 
 export default function MovieGrid({
-  pending = [],
   movies,
   sort,
   order,
@@ -76,7 +86,6 @@ export default function MovieGrid({
           <CollectionCard
             key={movie.id}
             movie={movie}
-            pending={pending.length > 0}
             onRate={onRate}
             onChangeCategory={onChangeCategory}
             onDelete={onDelete}

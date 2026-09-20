@@ -7,14 +7,6 @@ import { explainRecommendation } from "@/lib/recommend-explanations";
 import { candidate, filters, preferences } from "@/lib/__tests__/fixtures/recommendations";
 
 describe("fixed bilingual recommendation intent scenarios", () => {
-  it("validates source explicitly, defaults old clients to the catalog and ignores supplied watchlist IDs", () => {
-    expect(parseRecommendRequest({ ...preferences, source: "watchlist", includeIds: [99], userId: "victim" })).toMatchObject({ source: "watchlist" });
-    expect(parseRecommendRequest({ ...preferences, genres: ["Drama"], source: undefined })?.source).toBe("catalog");
-    for (const source of ["all", true, {}, ["watchlist"], null]) expect(parseRecommendRequest({ ...preferences, source })).toBeNull();
-    const parsed = parseRecommendRequest({ ...preferences, source: "watchlist", includeIds: [99], userId: "victim" });
-    expect(parsed).not.toHaveProperty("includeIds");
-    expect(parsed).not.toHaveProperty("userId");
-  });
   it.each([
     ["bez horroru", [], ["Horror"]], ["heartwarming story", [], []], ["award winning", [], []],
     ["drama without war", ["Drama"], ["War"]], ["komedia bez horroru", ["Comedy"], ["Horror"]],
@@ -49,17 +41,6 @@ describe("fixed bilingual recommendation intent scenarios", () => {
 });
 
 describe("ranking quality and hard constraints", () => {
-  it("requires watchlist membership even when scope is empty or missing", () => {
-    for (const includeIds of [undefined, []]) {
-      expect(rankRecommendations([candidate()], { ...filters, source: "watchlist", includeIds }, [], null)).toEqual([]);
-    }
-    expect(rankRecommendations([candidate(1), candidate(2)], { ...filters, source: "watchlist", includeIds: [2] }, [], null).map((movie) => movie.tmdbId)).toEqual([2]);
-  });
-  it("preserves positive watchlist choices while excluding watched, negative and previously shown films", () => {
-    const scoped = resolveRecommendationFilters({ ...preferences, source: "watchlist", positiveIds: [1], negativeIds: [2], exclude: [3] }, inferRecommendationIntent(""), [4]);
-    expect(scoped.excludeIds).not.toContain(1);
-    expect(scoped.excludeIds.sort()).toEqual([2, 3, 4]);
-  });
   it.each([
     { year: 1980 }, { genres: ["Horror"] }, { runtime: 121 }, { runtime: 0 },
     { voteCount: 999 }, { providerIds: [119] },

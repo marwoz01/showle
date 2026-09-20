@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   const { userId } = await auth();
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { success } = (await checkRateLimit(`history:${userId}`, { limit: 30, windowMs: 60_000 }));
+  const { success } = rateLimit(`history:${userId}`, { limit: 30, windowMs: 60_000 });
   if (!success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

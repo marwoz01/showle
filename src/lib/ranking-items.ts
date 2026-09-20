@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { MAX_RANKING_ITEMS, MAX_RANKING_OPERATIONS, type RankingMovieInput, type RankingPositionInput } from "@/lib/ranking-input";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 export class RankingWriteError extends Error {
   constructor(public readonly status: 400 | 404 | 409 | 429, message: string) { super(message); }
@@ -68,7 +68,7 @@ export async function moveRankingItem(listId: string, userId: string, move: Rank
     // Legacy lists can exceed today's cap. One large move consumes the full budget,
     // but must not be split into independently committed chunks.
     const cost = Math.min(MAX_RANKING_OPERATIONS, Math.abs(source.ordinal - move.position) + 1);
-    if (!(await checkRateLimit(`ranking-operations:${userId}`, { limit: MAX_RANKING_OPERATIONS, windowMs: 60000, cost })).success) {
+    if (!rateLimit(`ranking-operations:${userId}`, { limit: MAX_RANKING_OPERATIONS, windowMs: 60000, cost }).success) {
       throw new RankingWriteError(429, "rate_limited");
     }
     const delta = source.ordinal < move.position ? -1 : 1;

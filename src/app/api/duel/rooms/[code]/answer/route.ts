@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDuelRoomView, normalizeDuelCode, normalizePlayerId } from "@/lib/duel-room";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 import { allowDuelRequest } from "@/lib/duel-rate-limit";
 import { isRecord, readJsonBody, RequestBodyError } from "@/lib/request-body";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
-  if (!await allowDuelRequest(request, "mutation"))
+  if (!allowDuelRequest(request, "mutation"))
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   try {
     const playerId = normalizePlayerId(request.headers.get("x-duel-player"));
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         typeof body.round !== "number" || !Number.isSafeInteger(body.round) || body.round < 0 || body.round > 5 ||
         typeof body.match !== "number" || !Number.isSafeInteger(body.match) || body.match < 1)
       return NextResponse.json({ error: "invalid_request" }, { status: 400 });
-    if (!(await checkRateLimit(`duel-answer:${playerId}`, { limit: 60, windowMs: 60000 })).success)
+    if (!rateLimit(`duel-answer:${playerId}`, { limit: 60, windowMs: 60000 }).success)
       return NextResponse.json({ error: "rate_limited" }, { status: 429 });
     const room = await getDuelRoomView(code, playerId, { type: "answer", answerIndex: body.answerIndex, round: body.round, match: body.match });
     return room ? NextResponse.json(room) : NextResponse.json({ error: "room_not_found" }, { status: 404 });

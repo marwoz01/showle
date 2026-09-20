@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
   const { userId } = await auth();
@@ -9,10 +9,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rl = (await checkRateLimit(`collection-read:${userId}`, {
+  const rl = rateLimit(`collection-read:${userId}`, {
     limit: 60,
     windowMs: 60_000,
-  }));
+  });
   if (!rl.success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rl = (await checkRateLimit(`collection-write:${userId}`, {
+  const rl = rateLimit(`collection-write:${userId}`, {
     limit: 30,
     windowMs: 60_000,
-  }));
+  });
   if (!rl.success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
