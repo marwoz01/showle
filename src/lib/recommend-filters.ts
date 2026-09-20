@@ -4,6 +4,7 @@ import type { RecommendationCandidate, RecommendationPreference } from "@/types/
 
 export interface RecommendationFilters extends RecommendationPreference {
   excludeIds: number[];
+  includeIds?: number[];
 }
 export function resolveRecommendationFilters(
   request: RecommendRequest, intent: RecommendationIntent, excludedIds: number[],
@@ -15,7 +16,7 @@ export function resolveRecommendationFilters(
     excludedGenres: [...new Set([...request.excludedGenres, ...intent.excludedGenres])],
     maxRuntime: limits.length ? Math.min(...limits) : null,
     excludeIds: [...new Set([...request.exclude, ...excludedIds, ...request.negativeIds,
-      ...request.positiveIds, ...(request.referenceMovieId ? [request.referenceMovieId] : [])])],
+      ...(request.source === "watchlist" ? [] : request.positiveIds), ...(request.referenceMovieId ? [request.referenceMovieId] : [])])],
   };
 }
 export function popularityMatches(votes: number, preference: RecommendationPreference["popularity"]): boolean {
@@ -23,6 +24,7 @@ export function popularityMatches(votes: number, preference: RecommendationPrefe
 }
 export function satisfiesRecommendationFilters(movie: RecommendationCandidate, filters: RecommendationFilters): boolean {
   return movie.year >= filters.yearFrom && movie.year <= filters.yearTo &&
+    (filters.source !== "watchlist" || Boolean(filters.includeIds?.includes(movie.tmdbId))) &&
     !filters.excludeIds.includes(movie.tmdbId) &&
     (!filters.genres.length || filters.genres.some((g) => movie.genres.includes(g))) &&
     !filters.excludedGenres.some((g) => movie.genres.includes(g)) &&

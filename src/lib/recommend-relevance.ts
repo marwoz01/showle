@@ -1,6 +1,7 @@
 import { getOpenRouter } from "@/lib/gemini";
 import { RECOMMENDATION_CHAT_MODEL } from "@/lib/recommend-ai";
 import { isRecord } from "@/lib/request-body";
+import { reportRecommendationFallback } from "@/lib/recommend-diagnostics";
 import type { RecommendationCandidate } from "@/types/recommendation";
 import type { ReferenceMovie } from "@/lib/recommend-ranking";
 
@@ -25,14 +26,17 @@ export async function reviewRecommendationRelevance(
       ],
     }, { timeout: 6000, maxRetries: 0 });
     const raw: unknown = JSON.parse(response.choices[0]?.message.content ?? "null");
-    if (!isRecord(raw) || !Array.isArray(raw.scores) || raw.scores.length !== movies.length) return { scores: null, source: "local" };
+    if (!isRecord(raw) || !Array.isArray(raw.scores) || raw.scores.length !== movies.length) throw new SyntaxError("invalid_relevance");
     const expected = new Set(movies.map((movie) => movie.tmdbId));
     const scores = new Map<number, number>();
     for (const item of raw.scores) {
       if (!isRecord(item) || typeof item.id !== "number" || !expected.has(item.id) || scores.has(item.id) ||
-        typeof item.score !== "number" || !Number.isInteger(item.score) || item.score < 0 || item.score > 3) return { scores: null, source: "local" };
+        typeof item.score !== "number" || !Number.isInteger(item.score) || item.score < 0 || item.score > 3) throw new SyntaxError("invalid_relevance");
       scores.set(item.id, item.score);
     }
     return { scores, source: "ai" };
-  } catch { return { scores: null, source: "local" }; }
+  } catch (error) {
+    reportRecommendationFallback("relevance", error);
+    return { scores: null, source: "local" };
+  }
 }

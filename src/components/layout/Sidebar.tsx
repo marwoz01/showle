@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useTranslation, Locale } from "@/i18n";
+import { Settings } from "lucide-react";
 import {
   Clapperboard,
   Home,
@@ -51,6 +52,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { key: "stats", icon: BarChart3, href: "/stats" },
       { key: "history", icon: History, href: "/history" },
+      { key: "settings", icon: Settings, href: "/settings" },
     ],
   },
 ];
@@ -144,7 +146,7 @@ export default function Sidebar() {
       <nav className="flex flex-col gap-4 px-3">
         {NAV_SECTIONS.map((section) => (
           <div key={section.labelKey}>
-            <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted/50">
+            <p className="mb-1 px-3 font-display text-[10px] font-semibold uppercase tracking-wider text-muted/50">
               {navLabel(section.labelKey)}
             </p>
             <div className="flex flex-col gap-0.5">
@@ -154,6 +156,7 @@ export default function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    aria-current={active ? "page" : undefined}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                       active
                         ? "text-foreground"
@@ -198,18 +201,6 @@ export default function Sidebar() {
             {t.lang[lang]}
           </button>
         ))}
-      </div>
-
-      {/* Unlock Pro */}
-      <div className="mx-3 mb-4 rounded-xl border border-white/6 bg-white/4 p-4">
-        <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="text-accent-purple">
-            <Sparkles size={16} />
-          </span>
-          {t.pro.title}
-        </div>
-        <p className="mb-3 text-xs text-muted">{t.pro.description}</p>
-        <span className="inline-flex rounded-full bg-white/5 px-2.5 py-1 text-[10px] text-muted">{t.pro.comingSoon}</span>
       </div>
 
       {/* Auth button */}

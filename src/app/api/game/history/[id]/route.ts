@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getMovieDetails } from "@/lib/tmdb";
 
 export async function GET(
@@ -13,7 +13,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { success } = rateLimit(`history-detail:${userId}`, { limit: 20, windowMs: 60_000 });
+  const { success } = (await checkRateLimit(`history-detail:${userId}`, { limit: 20, windowMs: 60_000 }));
   if (!success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

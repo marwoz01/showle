@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Clapperboard, Swords, Film, ArrowUpDown } from "@/components/ui/icons";
 import GameModeCard from "@/components/home/GameModeCard";
 import { useTranslation } from "@/i18n";
@@ -21,6 +22,13 @@ export default function PlayModePage() {
         <p className="mt-3 text-base leading-relaxed text-muted sm:text-lg">
           {t.duel.selectSubtitle}
         </p>
+        <Link
+          href="/play/duel#room-code"
+          className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl bg-accent-purple/15 px-4 py-3 text-sm font-semibold text-accent-purple hover:bg-accent-purple/25"
+        >
+          <Swords size={18} />
+          {t.duel.joinWithCode}
+        </Link>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { COST_STREAK_FREEZE, MAX_STREAK_FREEZES } from "@/lib/coins";
 import { getTodayKey } from "@/lib/game-date";
+import { resolveStreak } from "@/lib/streak";
 
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
@@ -22,15 +23,21 @@ export async function POST(request: NextRequest) {
       const wallet = await tx.userWallet.findUnique({ where: { userId } });
       if (!wallet || wallet.balance < COST_STREAK_FREEZE)
         throw new Error("insufficient_balance");
-      if (wallet.streakFreezes >= MAX_STREAK_FREEZES)
+      const stats = await tx.userStats.findUnique({ where: { userId } });
+      const streak = resolveStreak(stats, wallet.streakFreezes, getTodayKey());
+      if (wallet.streakFreezes - streak.freezesUsed >= MAX_STREAK_FREEZES)
         throw new Error("max_reached");
       const updated = await tx.userWallet.update({
         where: { userId },
         data: {
           balance: { decrement: COST_STREAK_FREEZE },
-          streakFreezes: { increment: 1 },
+          streakFreezes: { increment: 1 - streak.freezesUsed },
         },
       });
+      if (stats && streak.missedDays > 0) {
+        await tx.userStats.update({ where: { userId }, data: { currentStreak: streak.currentStreak, lastPlayedDate: streak.lastPlayedDate } });
+        if (streak.freezesUsed > 0) await tx.coinTransaction.create({ data: { userId, amount: 0, reason: "use_freeze_missed_days", dateKey: getTodayKey() } });
+      }
       await tx.coinTransaction.create({
         data: {
           userId,

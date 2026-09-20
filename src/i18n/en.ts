@@ -1,8 +1,10 @@
 import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 import { recommendationEn } from "@/i18n/recommendation";
+import { recommendationHomeEn } from "@/i18n/recommendation-home";
 
 const en: Translations = {
+  recommendationHome: recommendationHomeEn,
   recommendation: recommendationEn,
   meta: {
     title: "Showle · Daily Movie",
@@ -10,6 +12,7 @@ const en: Translations = {
       "Guess the daily movie by comparing its year, genre, director, budget, and more. A new challenge every day!",
   },
   common: {
+    loading: "Loading...",
     genericError: "Something went wrong. Please try again.",
     tryAgain: "Try again",
     unknown: "Unknown",
@@ -90,6 +93,8 @@ const en: Translations = {
     roomCode: "Room code",
     roomCodePlaceholder: "E.G. K7W2QP",
     joinRoom: "Join room",
+    joinWithCode: "Join with a code",
+    orCreate: "or create a new room",
     connecting: "Connecting...",
     waitingTitle: "Waiting for player two",
     waitingDesc: "Send your friend the link. They just enter their name and join. The first round starts when you are both ready.",
@@ -107,10 +112,10 @@ const en: Translations = {
     copyCode: "Copy code",
     copied: "Copied",
     round: (current, total) => `Round ${current} of ${total}`,
-    points: (count) => `${count} pts`,
+    points: (count) => `${count}`,
     chooseAnswer: "Which movie is it?",
     answerLocked: "Answer locked - waiting for the result",
-    correctAnswer: (points) => `Correct! +${points} pts`,
+    correctAnswer: (points) => `Correct! +${points}`,
     wrongAnswer: "That wasn't the right movie",
     timeUp: "Time's up",
     finished: "Duel complete",
@@ -233,6 +238,7 @@ const en: Translations = {
     accuracy: "Accuracy",
     share: "Share Result",
     copied: "Copied!",
+    shared: "Shared!",
     playAgain: "Play Again",
     storyline: "Storyline",
     gallery: "Gallery",
@@ -242,6 +248,8 @@ const en: Translations = {
     whereToWatch: "Where to watch",
     rent: "Rent",
     seeAllProviders: "Full list",
+    openProvider: (name: string) => `Open ${name}`,
+    openStremio: "Open Stremio",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle · Daily Movie\n\nI guessed "${normalizeDisplayText(title)}" in ${attempts}/${max} attempts!\n\nhttps://showle.app`,
   },
@@ -340,6 +348,10 @@ const en: Translations = {
 
   // Collection
   collection: {
+    selectionLimit: "You can add up to 20 movies at once.",
+    noSearchResults: "No movies found.",
+    loadError: "Could not load your collection. Please try again.",
+    saveError: "Could not confirm the change. Please try again.",
     title: "My Collection",
     tabs: {
       watched: "Watched",
@@ -388,6 +400,7 @@ const en: Translations = {
     saved: "Saved",
     alreadySaved: "Already saved",
     addToCollection: "Add to collection",
+    signInToSave: "Sign in to save",
     chooseCategory: "Choose category",
     watched: "Watched",
     watchlist: "Watchlist",

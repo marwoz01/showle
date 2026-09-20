@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 const db = vi.hoisted(() => ({ tx: vi.fn(), raw: vi.fn(), query: vi.fn(), limit: vi.fn() }));
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ userId: "owner" }) }));
 vi.mock("@/lib/prisma", () => ({ prisma: { $transaction: db.tx } }));
-vi.mock("@/lib/rate-limit", () => ({ rateLimit: db.limit }));
+vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: db.limit }));
 import { PUT } from "@/app/api/collection/rankings/[id]/items/route";
 const request = (body: unknown) => new NextRequest("http://localhost/api/collection/rankings/mine/items", { method: "PUT", body: JSON.stringify(body) });
 const context = { params: Promise.resolve({ id: "mine" }) };

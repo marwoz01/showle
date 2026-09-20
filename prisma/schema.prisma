@@ -230,8 +230,31 @@ model RecommendationFeedback {
   tmdbId    Int
   reaction  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@id([userId, tmdbId])
   @@index([userId, updatedAt])
+}
+
+model RecommendationSettings {
+  userId      String   @id
+  favoriteIds Int[]    @default([])
+  providerIds Int[]    @default([])
+  onboarded   Boolean  @default(false)
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model RateLimitBucket {
+  key       String   @id
+  count     Int
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+model AccountDeletionTask {
+  userId     String   @id
+  retryAfter DateTime
+
+  @@index([retryAfter])
 }

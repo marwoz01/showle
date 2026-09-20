@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createCipheriv, createHash } from "node:crypto";
 vi.mock("server-only", () => ({}));
 import { openHigherLowerRun, sealHigherLowerRun } from "@/lib/higher-lower-session";
 import type { HigherLowerRun } from "@/lib/higher-lower";
 
 const run: HigherLowerRun = {
-  version: 1, catalogVersion: "example", expiresAt: Date.now() + 1000,
+  version: 2, catalogVersion: "example", expiresAt: Date.now() + 1000,
   round: 1, score: 0, status: "guessing", outcome: null,
   leftId: 1, rightId: 2, seenIds: [1, 2], recentIds: [1, 2],
 };
@@ -34,6 +35,19 @@ describe("higher/lower session encryption", () => {
     }
     vi.stubEnv("HIGHER_LOWER_SECRET", "a-different-secret");
     expect(() => openHigherLowerRun(token)).toThrow("invalid_session");
+  });
+
+  it("rejects previously issued runtime-game tokens even with the same secret", () => {
+    const secret = "test-only-secret-higher-lower";
+    vi.stubEnv("HIGHER_LOWER_SECRET", secret);
+    const context = Buffer.from("showle:higher-lower:runtime:v1");
+    const key = createHash("sha256").update(context).update("\0").update(secret).digest();
+    const iv = Buffer.alloc(12, 1);
+    const cipher = createCipheriv("aes-256-gcm", key, iv);
+    cipher.setAAD(context);
+    const ciphertext = Buffer.concat([cipher.update(JSON.stringify({ ...run, version: 1 }), "utf8"), cipher.final()]);
+    const previousToken = Buffer.concat([iv, cipher.getAuthTag(), ciphertext]).toString("base64url");
+    expect(() => openHigherLowerRun(previousToken)).toThrow("invalid_session");
   });
 
   it("fails closed without a production secret and supports the existing Clerk secret", () => {

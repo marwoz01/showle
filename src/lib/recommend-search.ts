@@ -3,6 +3,7 @@ import { getEmbedding } from "@/lib/recommend-embedding";
 import type { RecommendationFilters } from "@/lib/recommend-filters";
 import type { RecommendationCandidate } from "@/types/recommendation";
 import { RECOMMENDATION_CANDIDATES } from "@/constants/recommendation";
+import { reportRecommendationFallback } from "@/lib/recommend-diagnostics";
 
 export interface RecommendationSearch {
   filters: RecommendationFilters;
@@ -18,6 +19,7 @@ export function buildRecommendationSearch(
     `year >= ${bind(f.yearFrom)} AND year <= ${bind(f.yearTo)}`,
     `"tmdbId" != ALL(${bind(f.excludeIds)}::int[])`,
   ];
+  if (f.source === "watchlist") where.push(`"tmdbId" = ANY(${bind(f.includeIds ?? [])}::int[])`);
   if (f.genres.length) where.push(`genres && ${bind(f.genres)}::text[]`);
   if (f.excludedGenres.length) where.push(`NOT (genres && ${bind(f.excludedGenres)}::text[])`);
   if (f.maxRuntime !== null) where.push(`runtime > 0 AND runtime <= ${bind(f.maxRuntime)}`);
@@ -45,8 +47,12 @@ export function buildRecommendationSearch(
 
 export async function findRecommendationCandidates(search: RecommendationSearch) {
   let vector: number[] | undefined;
-  try { vector = await getEmbedding(search.queryText); } catch { /* Keep identical hard filters when the provider is unavailable. */ }
+  try { if (search.queryText.trim()) vector = await getEmbedding(search.queryText); } catch (error) {
+    reportRecommendationFallback("embedding", error);
+    // Keep identical hard filters when the provider is unavailable.
+  }
   const { query, params } = buildRecommendationSearch(search, vector);
   const movies = await prisma.$queryRawUnsafe<RecommendationCandidate[]>(query, ...params);
-  return { movies, matching: vector && movies.every((movie) => movie.hasEmbedding) ? "semantic" as const : "filters" as const };
+  // Semantic scoring still participates in a mixed pool; one unindexed movie is not a provider outage.
+  return { movies, matching: vector && movies.some((movie) => movie.hasEmbedding) ? "semantic" as const : "filters" as const };
 }

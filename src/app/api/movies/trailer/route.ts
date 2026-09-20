@@ -1,13 +1,14 @@
+import { requestIp } from "@/lib/request-ip";
 import { NextRequest, NextResponse } from "next/server";
 import { getMovieTrailer } from "@/lib/tmdb";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { success } = rateLimit(`trailer:${ip}`, {
+  const ip = requestIp(request);
+  const { success } = (await checkRateLimit(`trailer:${ip}`, {
     limit: 60,
     windowMs: 60_000,
-  });
+  }));
 
   if (!success) {
     return NextResponse.json(

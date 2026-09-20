@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Clock, Copy, Flame, Loader2, RefreshCw, Trophy, X } from "@/components/ui/icons";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Copy, Flame, Loader2, RefreshCw, Trophy, X } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { higherLowerCopy } from "@/i18n/higher-lower";
 import { useHigherLower } from "@/hooks/useHigherLower";
-import HigherLowerMovie from "./HigherLowerMovie";
-import styles from "./higher-lower.module.css";
+import HigherLowerMovie from "@/components/game/higher-lower/HigherLowerMovie";
+import styles from "@/components/game/higher-lower/higher-lower.module.css";
 
 export default function HigherLowerGame() {
   const { locale } = useTranslation();
@@ -15,8 +15,6 @@ export default function HigherLowerGame() {
   const { game, pending, error, best, recordSaved, isNewBest, answer, next, restart, retry } = useHigherLower(locale);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
   const page = useRef<HTMLElement>(null);
-  const rules = useRef<HTMLDialogElement>(null);
-  const rulesTrigger = useRef<HTMLButtonElement>(null);
   const primaryAction = useRef<HTMLButtonElement>(null);
   const previousStatus = useRef<string | null>(null);
   const previousRound = useRef<number | null>(null);
@@ -32,7 +30,7 @@ export default function HigherLowerGame() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (pending || error || game?.status !== "guessing" || rules.current?.open || event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (pending || error || game?.status !== "guessing" || event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       const target = event.target;
       if (target instanceof HTMLElement && target !== document.body && !page.current?.contains(target)) return;
       if (target instanceof HTMLElement && (target.isContentEditable || target.closest("input, textarea, select, [role=dialog], nav, aside"))) return;
@@ -56,27 +54,20 @@ export default function HigherLowerGame() {
 
   const feedback = game?.outcome === "equal" ? copy.equal : game?.outcome === "correct" ? copy.correct : game?.outcome === "wrong" ? copy.wrong : "";
   const errorMessage = error === "invalid_session" ? copy.sessionExpired : error === "rate_limit" ? copy.rateLimited : copy.error;
-  const closeRules = () => { rules.current?.close(); rulesTrigger.current?.focus(); };
 
   return (
-    <section ref={page} className={styles.page} aria-labelledby="higher-lower-heading">
+    <section ref={page} className={styles.page} aria-label={copy.title}>
       <header className={styles.header}>
-        <div className={styles.headingGroup}>
-          <Link href="/play" className={styles.back} aria-label={copy.back} title={copy.back}><ArrowLeft size={19} /></Link>
-          <div>
-            <p className={styles.eyebrow}>{copy.eyebrow}</p>
-            <h1 id="higher-lower-heading" className={styles.heading}>{copy.title}</h1>
-          </div>
-        </div>
+        <Link href="/play" className={styles.back} aria-label={copy.back} title={copy.back}><ArrowLeft size={19} /></Link>
         <div className={styles.stats}>
-          <div className={styles.stat}><Flame size={17} /><span>{copy.streak}</span><strong>{game?.score ?? 0}</strong></div>
-          <div className={`${styles.stat} ${styles.best}`} title={copy.recordHint}><Trophy size={16} /><span>{copy.best}</span><strong>{best}</strong></div>
+          <div className={styles.stat} role="group" aria-label={`${copy.streak}: ${game?.score ?? 0}`}><Flame size={17} aria-hidden="true" /><strong>{game?.score ?? 0}</strong></div>
+          <div className={`${styles.stat} ${styles.best}`} role="group" aria-label={`${copy.best}: ${best}`} title={recordSaved ? copy.recordHint : copy.recordUnavailable}><Trophy size={16} aria-hidden="true" /><strong>{best}</strong></div>
         </div>
       </header>
 
       <p className="sr-only">{copy.subtitle}</p>
       <div className={styles.liveStatus} role="status" aria-live="polite" aria-atomic="true">
-        {pending ? copy.checking : feedback && game ? `${feedback} ${game.right.title}: ${game.right.runtime} ${copy.minutes}. ${copy.streak}: ${game.score}.` : ""}
+        {pending ? copy.checking : feedback && game ? `${feedback} ${game.right.title}: ${game.right.year}. ${copy.streak}: ${game.score}.` : ""}
       </div>
 
       {game ? (
@@ -92,7 +83,7 @@ export default function HigherLowerGame() {
                   <button ref={primaryAction} type="button" className={styles.primary} disabled={pending || Boolean(error)} onClick={() => answer("higher")} aria-keyshortcuts="ArrowUp"><ArrowUp size={19} />{copy.higher}</button>
                   <button type="button" className={styles.secondary} disabled={pending || Boolean(error)} onClick={() => answer("lower")} aria-keyshortcuts="ArrowDown"><ArrowDown size={19} />{copy.lower}</button>
                 </div>
-                <p className={styles.hint}>{pending ? copy.checking : copy.noTimer}</p>
+                {pending && <p className={styles.hint}>{copy.checking}</p>}
               </div>
             ) : (
               <div className={styles.answerArea}>
@@ -116,7 +107,6 @@ export default function HigherLowerGame() {
       ) : (
         <div className={styles.empty}>
           <div className={styles.emptyGlow} />
-          <Clock size={42} className="text-accent-purple" />
           <p>{error ? errorMessage : copy.loading}</p>
           {!error && <span className={styles.loadingLine} />}
         </div>
@@ -125,24 +115,8 @@ export default function HigherLowerGame() {
       {error && <div className={styles.error} role="alert"><p>{errorMessage}</p><button type="button" onClick={retry} disabled={pending}>{error === "invalid_session" ? copy.playAgain : copy.tryAgain}<RefreshCw size={15} /></button></div>}
 
       <footer className={styles.footer}>
-        <button ref={rulesTrigger} type="button" className={styles.rulesButton} onClick={() => rules.current?.showModal()}><span aria-hidden="true">?</span>{copy.rules}</button>
-        <p className={styles.keyboardHint}>{copy.keyboardHint}</p>
         <p className={styles.round}>{copy.round} <strong>{game?.round ?? 1}</strong></p>
       </footer>
-
-      <dialog ref={rules} aria-labelledby="higher-lower-rules" className={styles.dialog} onClose={() => rulesTrigger.current?.focus()} onClick={(event) => {
-        if (event.target !== event.currentTarget) return;
-        const bounds = event.currentTarget.getBoundingClientRect();
-        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeRules();
-      }}>
-        <button type="button" className={styles.close} aria-label={copy.close} onClick={closeRules}><X size={19} /></button>
-        <p className={styles.eyebrow}>{copy.eyebrow}</p>
-        <h2 id="higher-lower-rules">{copy.rulesTitle}</h2>
-        <p>{copy.rulesBody}</p>
-        <p className={styles.recordNote}>{recordSaved ? copy.recordHint : copy.recordUnavailable}</p>
-        <p className={styles.attribution}>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
-        <button type="button" className={styles.primary} onClick={closeRules}>{copy.close}</button>
-      </dialog>
     </section>
   );
 }

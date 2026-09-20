@@ -5,7 +5,8 @@ import { getMovieSnapshot } from "@/lib/movie-snapshot";
 import { compareMedia } from "@/lib/comparer";
 import { generateHints, getRevealedHints } from "@/lib/hints";
 import { getWinReward, STREAK_MILESTONES } from "@/lib/coins";
-import { previousDateKey, normalizeStoredDate } from "@/lib/game-date";
+import { previousDateKey } from "@/lib/game-date";
+import { resolveStreak } from "@/lib/streak";
 import pl from "@/i18n/pl";
 import en from "@/i18n/en";
 import type { DailyGameView } from "@/types/daily-game";
@@ -85,11 +86,12 @@ export async function applyDailyAction(
         update: {},
         create: { userId: actorId },
       });
+      const streak = resolveStreak(stats, wallet.streakFreezes, dateKey);
       const previousStreak =
-        normalizeStoredDate(stats?.lastPlayedDate) === previousDateKey(dateKey)
-          ? stats!.currentStreak
+        streak.lastPlayedDate === previousDateKey(dateKey)
+          ? streak.currentStreak
           : 0;
-      const freezeUsed = !won && previousStreak > 0 && wallet.streakFreezes > 0;
+      const freezeUsed = !won && previousStreak > 0 && wallet.streakFreezes > streak.freezesUsed;
       const currentStreak = won
         ? previousStreak + 1
         : freezeUsed
@@ -120,7 +122,7 @@ export async function applyDailyAction(
         where: { userId: actorId },
         data: {
           balance: { increment: reward },
-          streakFreezes: { decrement: Number(freezeUsed) },
+          streakFreezes: { decrement: streak.freezesUsed + Number(freezeUsed) },
         },
       });
       await tx.coinTransaction.create({
@@ -135,6 +137,9 @@ export async function applyDailyAction(
           dateKey,
         },
       });
+      if (streak.freezesUsed > 0) {
+        await tx.coinTransaction.create({ data: { userId: actorId, amount: 0, reason: "use_freeze_missed_days", dateKey } });
+      }
       return result;
     },
     { timeout: 15000 },

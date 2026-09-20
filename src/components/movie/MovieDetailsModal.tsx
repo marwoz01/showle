@@ -11,6 +11,7 @@ import MovieGallery from "@/components/movie/MovieGallery";
 import CastList from "@/components/movie/CastList";
 import WatchProviders from "@/components/movie/WatchProviders";
 import { localizeCountry, localizeGenre } from "@/lib/localization";
+import { shortenSynopsis } from "@/lib/synopsis";
 
 interface MovieDetailsModalProps {
   tmdbId: number;
@@ -232,7 +233,7 @@ export default function MovieDetailsModal({
                       {t.result.storyline}
                     </h4>
                     <p className="text-sm leading-relaxed text-muted">
-                      {normalizeDisplayText(movie.overview)}
+                      {shortenSynopsis(movie.overview, locale)}
                     </p>
                   </div>
                 )}

@@ -1,4 +1,5 @@
-import { isIP } from "node:net";
+import { reportServerError } from "@/lib/server-error";
+import { requestIp } from "@/lib/request-ip";
 import { NextResponse } from "next/server";
 import { getHigherLowerCatalog } from "@/lib/higher-lower-catalog";
 import {
@@ -12,7 +13,7 @@ import {
   validateHigherLowerRun,
 } from "@/lib/higher-lower";
 import { openHigherLowerRun, sealHigherLowerRun } from "@/lib/higher-lower-session";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
 import type { HigherLowerResponse } from "@/types/higher-lower";
 
@@ -20,11 +21,9 @@ export const runtime = "nodejs";
 const headers = { "Cache-Control": "private, no-store" };
 
 export async function POST(request: Request) {
-  // Per-process load shedding; this does not coordinate budgets across instances.
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",", 1)[0].trim() ?? "";
-  const ip = forwarded.length <= 64 && isIP(forwarded) ? forwarded : "unknown";
-  if (!rateLimit("higher-lower:global", { limit: 2400, windowMs: 60_000 }).success
-    || !rateLimit(`higher-lower:ip:${ip}`, { limit: 180, windowMs: 60_000 }).success) {
+  const ip = requestIp(request);
+  if (!(await checkRateLimit("higher-lower:global", { limit: 2400, windowMs: 60_000 })).success
+    || !(await checkRateLimit(`higher-lower:ip:${ip}`, { limit: 180, windowMs: 60_000 })).success) {
     return NextResponse.json({ error: "rate_limit" }, { status: 429, headers: { ...headers, "Retry-After": "60" } });
   }
   try {
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const code = error instanceof RequestBodyError ? "invalid_request"
       : error instanceof HigherLowerError ? error.code : "game_unavailable";
-    if (code === "game_unavailable") console.error("Higher/lower game unavailable");
+    if (code === "game_unavailable") reportServerError("higher-lower", error);
     const status = code === "invalid_request" ? 400 : code === "invalid_session" ? 409 : 503;
     return NextResponse.json({ error: code }, { status, headers });
   }

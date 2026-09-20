@@ -54,7 +54,7 @@ export default function FrameGameEntry({
           event.preventDefault();
           if (!disabled) onEnter(!solo && (invited || code) ? "join" : "create");
         }}
-        className="soft-panel flex min-w-0 flex-col justify-center gap-4 rounded-3xl p-7"
+        className={`soft-panel ${solo ? "" : "order-first lg:order-last"} flex min-w-0 flex-col justify-center gap-3 rounded-3xl p-5 sm:gap-4 sm:p-7`}
       >
         {invited && (
           <div className="mb-2 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-accent-purple/10 px-4 py-3 text-accent-purple">
@@ -80,30 +80,19 @@ export default function FrameGameEntry({
               value={name}
               onChange={(event) => onNameChange(event.target.value)}
               placeholder={t.duel.namePlaceholder}
-              className="min-w-0 rounded-xl bg-white/5 p-3.5 outline-accent-purple disabled:opacity-50"
+              className="min-h-12 min-w-0 rounded-xl bg-white/5 p-3.5 text-base outline-accent-purple disabled:opacity-50"
             />
           </>
         )}
-        <button
-          type={solo || invited ? "submit" : "button"}
-          disabled={disabled}
-          onClick={solo || invited ? undefined : () => onEnter("create")}
-          className={actionClass}
-        >
-          {pending && <LoaderCircle size={18} className="animate-spin" />}
-          {pending ? t.duel.connecting : solo ? copy.practiceAction : invited ? t.duel.joinRoom : t.duel.createRoom}
-        </button>
-        {invited ? (
-          <Link href="/play/duel" className="py-2 text-center text-sm text-muted hover:text-foreground">
-            {t.duel.otherRoom}
-          </Link>
-        ) : !solo && (
+        {!solo && !invited && (
           <>
-            <p className="text-center text-xs text-muted">{t.duel.or}</p>
             <label htmlFor="room-code" className="text-sm text-muted">{t.duel.roomCode}</label>
             <input
               id="room-code"
               name="roomCode"
+              type="text"
+              inputMode="text"
+              enterKeyHint="go"
               autoComplete="off"
               autoCapitalize="characters"
               spellCheck={false}
@@ -112,16 +101,31 @@ export default function FrameGameEntry({
               value={code}
               onChange={(event) => onCodeChange(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
               placeholder={t.duel.roomCodePlaceholder}
-              className="min-w-0 rounded-xl bg-white/5 p-3.5 text-center text-lg tracking-widest outline-accent-purple"
+              className="min-h-12 min-w-0 scroll-mt-24 rounded-xl bg-white/5 p-3.5 text-center text-lg tracking-widest outline-accent-purple"
             />
             <button
               type="submit"
               disabled={disabled || code.length !== 6}
-              className="min-h-12 rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold disabled:opacity-50"
+              className={actionClass}
             >
-              {t.duel.joinRoom}
+              {pending ? t.duel.connecting : t.duel.joinWithCode}
             </button>
+            <p className="text-center text-xs text-muted">{t.duel.orCreate}</p>
           </>
+        )}
+        <button
+          type={solo || invited ? "submit" : "button"}
+          disabled={disabled}
+          onClick={solo || invited ? undefined : () => onEnter("create")}
+          className={solo || invited ? actionClass : "min-h-12 rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold hover:bg-white/15 disabled:opacity-50"}
+        >
+          {pending && <LoaderCircle size={18} className="animate-spin" />}
+          {pending ? t.duel.connecting : solo ? copy.practiceAction : invited ? t.duel.joinRoom : t.duel.createRoom}
+        </button>
+        {invited && (
+          <Link href="/play/duel" className="py-2 text-center text-sm text-muted hover:text-foreground">
+            {t.duel.otherRoom}
+          </Link>
         )}
       </form>
     </div>

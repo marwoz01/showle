@@ -23,7 +23,7 @@ export class HigherLowerError extends Error {
 }
 
 export interface HigherLowerRun {
-  version: 1;
+  version: 2;
   catalogVersion: string;
   expiresAt: number;
   round: number;
@@ -74,19 +74,19 @@ export function selectNextMovie(
   const seen = new Set(seenIds);
   const available = movies.filter((movie) => movie.id !== left.id && !seen.has(movie.id));
   if (!available.length) throw new HigherLowerError("game_unavailable");
-  const [minGap, maxGap] = score < 5 ? [20, 90] : score < 12 ? [10, 50] : [5, 30];
+  const [minGap, maxGap] = score < 5 ? [10, 40] : score < 12 ? [4, 20] : [1, 10];
   const preferred = available.filter((movie) => {
-    const gap = Math.abs(movie.runtime - left.runtime);
+    const gap = Math.abs(movie.year - left.year);
     return gap >= minGap && gap <= maxGap;
   });
-  // Ties are fair; never force a 1-minute distinction while clearer options exist.
+  // Ties are fair; prefer distinct eras before introducing close release years.
   const readable = available.filter((movie) => {
-    const gap = Math.abs(movie.runtime - left.runtime);
-    return gap === 0 || gap >= 5;
+    const gap = Math.abs(movie.year - left.year);
+    return gap === 0 || gap >= minGap;
   });
   const candidates = preferred.length ? preferred : readable.length ? readable : available;
-  const higher = candidates.filter((movie) => movie.runtime > left.runtime);
-  const lower = candidates.filter((movie) => movie.runtime < left.runtime);
+  const higher = candidates.filter((movie) => movie.year > left.year);
+  const lower = candidates.filter((movie) => movie.year < left.year);
   const balanced = higher.length && lower.length ? (draw(2) === 0 ? higher : lower) : candidates;
   return balanced[draw(balanced.length)];
 }
@@ -101,7 +101,7 @@ export function startHigherLowerRun(
   const left = movies[draw(movies.length)];
   const right = selectNextMovie(movies, left, [left.id], 0, draw);
   return {
-    version: 1, catalogVersion, expiresAt: now + HIGHER_LOWER_SESSION_MS,
+    version: 2, catalogVersion, expiresAt: now + HIGHER_LOWER_SESSION_MS,
     round: 1, score: 0, status: "guessing", outcome: null,
     leftId: left.id, rightId: right.id,
     seenIds: [left.id, right.id], recentIds: [left.id, right.id],
@@ -115,7 +115,7 @@ export function validateHigherLowerRun(
   now = Date.now(),
 ): HigherLowerRun {
   const invalid = () => { throw new HigherLowerError("invalid_session"); };
-  if (!isRecord(value) || value.version !== 1 || value.catalogVersion !== catalogVersion) return invalid();
+  if (!isRecord(value) || value.version !== 2 || value.catalogVersion !== catalogVersion) return invalid();
   const ids = new Set(movies.map((movie) => movie.id));
   const validIds = (list: unknown, maximum: number) => Array.isArray(list)
     && list.length >= 2 && list.length <= maximum
@@ -150,8 +150,8 @@ export function answerHigherLowerRun(
   if (run.status !== "guessing") throw new HigherLowerError("invalid_session");
   const left = movieById(movies, run.leftId);
   const right = movieById(movies, run.rightId);
-  const equal = left.runtime === right.runtime;
-  const correct = equal || (choice === "higher" ? right.runtime > left.runtime : right.runtime < left.runtime);
+  const equal = left.year === right.year;
+  const correct = equal || (choice === "higher" ? right.year > left.year : right.year < left.year);
   return {
     ...run, score: run.score + (correct ? 1 : 0),
     status: correct ? "revealed" : "finished",
@@ -187,11 +187,11 @@ export function getHigherLowerView(
   const right = movieById(movies, run.rightId);
   const movieView = (movie: HigherLowerCatalogMovie) => ({
     id: movie.id, title: movie.titles[locale], year: movie.year,
-    backdropPath: movie.backdropPath, runtime: movie.runtime,
+    backdropPath: movie.backdropPath,
   });
   return {
     round: run.round, score: run.score, status: run.status, outcome: run.outcome,
     left: movieView(left),
-    right: { ...movieView(right), runtime: run.status === "guessing" ? null : right.runtime },
+    right: { ...movieView(right), year: run.status === "guessing" ? null : right.year },
   };
 }

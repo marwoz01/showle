@@ -8,8 +8,8 @@ import type {
   HigherLowerResponse,
 } from "@/types/higher-lower";
 
-const SESSION_KEY = "showle:higher-lower:runtime:session:v1";
-const BEST_KEY = "showle:higher-lower:runtime:best:v1";
+const SESSION_KEY = "showle:higher-lower:year:session:v1";
+const BEST_KEY = "showle:higher-lower:year:best:v1";
 
 function readBest() {
   try {

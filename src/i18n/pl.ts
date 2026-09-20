@@ -1,6 +1,7 @@
 import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 import { recommendationPl } from "@/i18n/recommendation";
+import { recommendationHomePl } from "@/i18n/recommendation-home";
 
 function polishMovieCount(count: number): string {
   const lastDigit = count % 10;
@@ -23,6 +24,7 @@ function polishGameCount(count: number): string {
 }
 
 const pl: Translations = {
+  recommendationHome: recommendationHomePl,
   recommendation: recommendationPl,
   meta: {
     title: "Showle · Film dnia",
@@ -30,6 +32,7 @@ const pl: Translations = {
       "Odgadnij film dnia, porównując rok, gatunek, reżysera, budżet i inne cechy. Codziennie nowe wyzwanie!",
   },
   common: {
+    loading: "Ładowanie...",
     genericError: "Coś poszło nie tak. Spróbuj ponownie.",
     tryAgain: "Spróbuj ponownie",
     unknown: "Nieznane",
@@ -111,6 +114,8 @@ const pl: Translations = {
     roomCode: "Kod pokoju",
     roomCodePlaceholder: "NP. K7W2QP",
     joinRoom: "Dołącz do pokoju",
+    joinWithCode: "Dołącz kodem",
+    orCreate: "lub utwórz nowy pokój",
     connecting: "Łączenie...",
     waitingTitle: "Czekamy na drugiego gracza",
     waitingDesc: "Wyślij znajomemu link. Wystarczy, że wpisze swoją nazwę i dołączy. Pierwsza runda ruszy, gdy oboje będziecie gotowi.",
@@ -128,10 +133,10 @@ const pl: Translations = {
     copyCode: "Kopiuj kod",
     copied: "Skopiowano",
     round: (current, total) => `Runda ${current} z ${total}`,
-    points: (count) => `${count} pkt`,
+    points: (count) => `${count}`,
     chooseAnswer: "Który to film?",
     answerLocked: "Odpowiedź zapisana - czekamy na wynik",
-    correctAnswer: (points) => `Dobra odpowiedź! +${points} pkt`,
+    correctAnswer: (points) => `Dobra odpowiedź! +${points}`,
     wrongAnswer: "Niestety, to nie ten film",
     timeUp: "Czas minął",
     finished: "Koniec pojedynku",
@@ -254,6 +259,7 @@ const pl: Translations = {
     accuracy: "Trafność",
     share: "Udostępnij wynik",
     copied: "Skopiowano!",
+    shared: "Udostępniono!",
     playAgain: "Zagraj ponownie",
     storyline: "Fabuła",
     gallery: "Galeria",
@@ -263,6 +269,8 @@ const pl: Translations = {
     whereToWatch: "Gdzie obejrzeć",
     rent: "Wypożycz",
     seeAllProviders: "Pełna lista",
+    openProvider: (name: string) => `Otwórz ${name}`,
+    openStremio: "Otwórz Stremio",
     shareText: (title: string, attempts: number, max: number) =>
       `Showle · Film dnia\n\nOdgadłem "${normalizeDisplayText(title)}" w ${attempts}/${max} próbach!\n\nhttps://showle.app`,
   },
@@ -360,6 +368,10 @@ const pl: Translations = {
 
   // Collection
   collection: {
+    selectionLimit: "Możesz dodać do 20 filmów naraz.",
+    noSearchResults: "Nie znaleziono filmów.",
+    loadError: "Nie udało się pobrać kolekcji. Spróbuj ponownie.",
+    saveError: "Nie udało się potwierdzić zapisu. Spróbuj ponownie.",
     title: "Moja kolekcja",
     tabs: {
       watched: "Obejrzane",
@@ -409,6 +421,7 @@ const pl: Translations = {
     saved: "Zapisano",
     alreadySaved: "Już w kolekcji",
     addToCollection: "Dodaj do kolekcji",
+    signInToSave: "Zaloguj się, aby zapisać",
     chooseCategory: "Wybierz kategorię",
     watched: "Obejrzane",
     watchlist: "Do obejrzenia",

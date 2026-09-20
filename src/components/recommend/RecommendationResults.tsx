@@ -15,8 +15,10 @@ export default function RecommendationResults({ results, meta, hasDescription, h
   return (
     <div className="space-y-5">
       {meta && <div role="status" className="space-y-2 text-sm text-muted">
-        {(meta.matching === "filters" || (hasDescription && meta.interpretation === "local") ||
-          ((hasDescription || hasReference) && meta.relevance === "local")) && <p>{t.recommendation.degraded}</p>}
+        {meta.source === "watchlist" && <p className="inline-flex rounded-full bg-accent-purple/15 px-3 py-1.5 text-xs font-semibold text-accent-purple">{t.recommendation.watchlistResults}</p>}
+        {!!meta.watchlistUnavailable && <p>{t.recommendation.watchlistIncomplete(meta.watchlistUnavailable)}</p>}
+        {(hasDescription || hasReference) && (meta.matching === "filters" ||
+          (hasDescription && meta.interpretation === "local") || meta.relevance === "local") && <p>{t.recommendation.degraded}</p>}
         {meta.partial && <p>{t.recommendation.partial(results.length)}</p>}
         {meta.personalized && <p>{t.recommendation.personalized}</p>}
       </div>}

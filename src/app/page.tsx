@@ -2,17 +2,23 @@
 import GameModeCard from "@/components/home/GameModeCard";
 import DailyEntry from "@/components/home/DailyEntry";
 import HowItWorks from "@/components/home/HowItWorks";
+import RecommendationHome from "@/components/recommend/RecommendationHome";
+import RecommendationLoading from "@/components/recommend/RecommendationLoading";
+import { useAuth } from "@clerk/nextjs";
 import { useTranslation } from "@/i18n";
-import { Sparkles, Swords, Film, ArrowUpDown } from "@/components/ui/icons";
+import { Swords, Film, ArrowUpDown } from "@/components/ui/icons";
 import experience from "@/i18n/experience";
 import { higherLowerCopy } from "@/i18n/higher-lower";
 
 export default function Home() {
   const { t, locale } = useTranslation();
+  const { userId, isLoaded } = useAuth();
   return (
     <div className="relative space-y-10">
-      <header>
-        <h1 className="mb-2 text-4xl font-semibold">{t.home.title}</h1>
+      {isLoaded ? <RecommendationHome key={`${userId ?? "guest"}:${locale}`} userId={userId ?? null} embedded />
+        : <RecommendationLoading />}
+      <header id="games" className="scroll-mt-24 border-t border-white/6 pt-8">
+        <h2 className="mb-2 text-2xl font-semibold">{t.home.title}</h2>
         <p className="max-w-xl text-base text-muted">{t.home.subtitle}</p>
       </header>
       <div className="grid gap-5 md:grid-cols-3">
@@ -28,7 +34,7 @@ export default function Home() {
           badge={t.duel.badge}
         />
       </div>
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2">
         <GameModeCard
           icon={<ArrowUpDown size={22} idle />}
           title={higherLowerCopy[locale].modeTitle}
@@ -44,13 +50,6 @@ export default function Home() {
           href="/play/practice"
           actionLabel={experience[locale].practiceAction}
           badge={t.modes.new}
-        />
-        <GameModeCard
-          icon={<Sparkles size={22} idle />}
-          title={t.recommend.modeTitle}
-          description={t.recommend.modeDesc}
-          href="/recommend"
-          actionLabel={t.recommend.getRecommendations}
         />
       </div>
       <div className="border-t border-white/6" />

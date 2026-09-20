@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useEffect, useSyncExternalStore } from "react";
 import en from "@/i18n/en";
 import pl from "@/i18n/pl";
+import { spaceGrotesk } from "@/lib/fonts";
 
 function readLocale() {
   return localStorage.getItem("showle-locale") === "en" ? "en" : "pl";
@@ -31,7 +32,7 @@ export default function GlobalError({
     <html lang={locale} suppressHydrationWarning>
       <body style={{ background: "#101012", color: "#f0f0f5", fontFamily: "system-ui" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", gap: "1rem" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: 600 }}>
+          <h2 className={spaceGrotesk.className} style={{ fontSize: "1.5rem", fontWeight: 600 }}>
             {t.common.genericError}
           </h2>
           <button

@@ -1,10 +1,12 @@
+import { reportServerError } from "@/lib/server-error";
+import { requestIp } from "@/lib/request-ip";
 import { NextRequest, NextResponse } from "next/server";
 import { searchMovies } from "@/lib/tmdb";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { success } = rateLimit(`search:${ip}`, { limit: 30, windowMs: 60_000 });
+  const ip = requestIp(request);
+  const { success } = (await checkRateLimit(`search:${ip}`, { limit: 30, windowMs: 60_000 }));
 
   if (!success) {
     return NextResponse.json(
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest) {
     const results = await searchMovies(query, language);
     return NextResponse.json(results);
   } catch (error) {
-    console.error("TMDB search error:", error);
+    reportServerError("movies.search", error);
     return NextResponse.json([], { status: 500 });
   }
 }

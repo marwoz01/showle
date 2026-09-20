@@ -22,25 +22,10 @@ export default function FrameScoreboard({
   frameRef,
   rewardLayer,
 }: { room: DuelRoomView } & RewardPosition) {
-  const { t, locale } = useTranslation();
-  const copy = experience[locale];
   const own = room.players.find((player) => player.role === room.you)!;
   const opponent = room.players.find((player) => player.role !== room.you);
-  const difference = own.score - (opponent?.score ?? 0);
   return (
-    <div className="shrink-0 space-y-1.5" data-testid="frame-scoreboard">
-      <div className="flex items-center justify-between gap-3 text-[11px] text-muted sm:text-xs">
-        <span>{t.duel.round(room.currentRound + 1, room.totalRounds)}</span>
-        {opponent && (
-          <span>
-            {difference === 0
-              ? copy.tiedScore
-              : difference > 0
-                ? copy.aheadBy(difference)
-                : copy.behindBy(-difference)}
-          </span>
-        )}
-      </div>
+    <div className="shrink-0" data-testid="frame-scoreboard">
       <div className={`grid gap-2 ${opponent ? "grid-cols-2" : "grid-cols-1"}`}>
         <PlayerScore
           player={own}
@@ -251,9 +236,6 @@ function PlayerScore({
           data-testid={`score-${player.role}`}
         >
           {format(score)}
-        </span>
-        <span aria-hidden="true" className="ml-1 text-[10px] text-muted">
-          {copy.pointsShort}
         </span>
       </div>
       {own ? (

@@ -1,3 +1,4 @@
+import { requestIp } from "@/lib/request-ip";
 import { randomUUID } from "node:crypto";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,7 +9,8 @@ import {
   getDailyGameView,
   parseDailyAction,
 } from "@/lib/daily-game";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { reportServerError } from "@/lib/server-error";
 
 export async function dailyResponse(request: NextRequest, mutate = false) {
   const dateKey = getTodayKey();
@@ -23,13 +25,12 @@ export async function dailyResponse(request: NextRequest, mutate = false) {
       ? rawGuestId
       : randomUUID();
   const actorId = userId ?? `guest:${guestId}`;
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const ip = requestIp(request);
   if (
-    !rateLimit(`daily:${mutate ? "write" : "read"}:${userId ?? ip}`, {
+    !(await checkRateLimit(`daily:${mutate ? "write" : "read"}:${userId ?? ip}`, {
       limit: mutate ? 30 : 90,
       windowMs: 60000,
-    }).success
+    })).success
   ) {
     return NextResponse.json({ error: "rate_limit" }, { status: 429 });
   }
@@ -90,10 +91,7 @@ export async function dailyResponse(request: NextRequest, mutate = false) {
       });
     return response;
   } catch (error) {
-    console.error(
-      "Daily game request failed",
-      error instanceof Error ? error.message : "unknown",
-    );
-    return NextResponse.json({ error: "game_unavailable" }, { status: 503 });
+    const errorId = reportServerError("daily.request", error);
+    return NextResponse.json({ error: "game_unavailable", errorId }, { status: 503 });
   }
 }

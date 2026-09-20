@@ -6,7 +6,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
-  if (!allowDuelRequest(request, "state")) {
+  if (!await allowDuelRequest(request, "state")) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 

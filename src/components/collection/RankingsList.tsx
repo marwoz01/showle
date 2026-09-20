@@ -8,6 +8,8 @@ import { Plus, Loader2, Trash2, Trophy } from "@/components/ui/icons";
 import EmptyState from "@/components/collection/EmptyState";
 import RankingDetail from "@/components/collection/RankingDetail";
 import ConfirmModal from "@/components/collection/ConfirmModal";
+import { useAuth } from "@clerk/nextjs";
+import { collectionChanged, collectionRequest } from "@/lib/collection-client";
 
 interface RankedListSummary {
   id: string;
@@ -18,6 +20,7 @@ interface RankedListSummary {
 }
 
 export default function RankingsList() {
+  const { userId } = useAuth();
   const { t } = useTranslation();
   const [lists, setLists] = useState<RankedListSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,14 +30,17 @@ export default function RankingsList() {
   const [newDesc, setNewDesc] = useState("");
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   const fetchLists = useCallback(async () => {
+    setError(false);
     try {
       const res = await fetch("/api/collection/rankings");
+      if (!res.ok) throw new Error("rankings");
       const data = await res.json();
       setLists(Array.isArray(data) ? data : []);
     } catch {
-      // silently fail
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -49,7 +55,7 @@ export default function RankingsList() {
     setCreating(true);
 
     try {
-      await fetch("/api/collection/rankings", {
+      await collectionRequest("/api/collection/rankings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -60,18 +66,23 @@ export default function RankingsList() {
       setNewName("");
       setNewDesc("");
       setShowCreate(false);
+      if (userId) collectionChanged(userId);
       fetchLists();
     } catch {
-      // silently fail
+      setError(true);
     } finally {
       setCreating(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    setLists((prev) => prev.filter((l) => l.id !== id));
-    setDeleteId(null);
-    await fetch(`/api/collection/rankings/${id}`, { method: "DELETE" });
+    try {
+      await collectionRequest(`/api/collection/rankings/${id}`, { method: "DELETE" });
+      setLists((prev) => prev.filter((list) => list.id !== id));
+      setDeleteId(null);
+      if (userId) collectionChanged(userId);
+      return true;
+    } catch { return false; }
   };
 
   if (activeListId) {
@@ -96,6 +107,7 @@ export default function RankingsList() {
 
   return (
     <div className="space-y-4">
+      {error && <p role="alert" className="text-sm text-muted">{t.common.genericError} <button type="button" onClick={() => void fetchLists()} className="min-h-11 text-accent-purple">{t.common.tryAgain}</button></p>}
       {/* Create button */}
       <button
         onClick={() => setShowCreate(!showCreate)}
@@ -194,7 +206,7 @@ export default function RankingsList() {
 
               {/* Info */}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-foreground">
+                <p className="truncate font-display text-sm font-bold text-foreground">
                   {normalizeDisplayText(list.name)}
                 </p>
                 {list.description && (

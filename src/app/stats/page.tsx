@@ -28,6 +28,8 @@ export default function StatsPage() {
   const { isSignedIn, isLoaded } = useUser();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -35,12 +37,14 @@ export default function StatsPage() {
       return;
     }
 
-    fetch("/api/user/stats")
-      .then((res) => res.json())
-      .then(setStats)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [isSignedIn, isLoaded]);
+    const ac = new AbortController();
+    fetch("/api/user/stats", { signal: ac.signal, cache: "no-store" })
+      .then((res) => { if (!res.ok) throw new Error("stats"); return res.json(); })
+      .then((data) => { if (!ac.signal.aborted) setStats(data); })
+      .catch(() => { if (!ac.signal.aborted) setError(true); })
+      .finally(() => { if (!ac.signal.aborted) setLoading(false); });
+    return () => ac.abort();
+  }, [isSignedIn, isLoaded, revision]);
 
   if (!isLoaded || (isSignedIn && loading)) {
     return (
@@ -64,6 +68,9 @@ export default function StatsPage() {
       </div>
     );
   }
+
+  if (error) return <div role="alert" className="space-y-3 p-6 text-sm"><p>{t.common.genericError}</p>
+    <button type="button" onClick={() => { setLoading(true); setError(false); setRevision((value) => value + 1); }} className="min-h-11 text-accent-purple">{t.common.tryAgain}</button></div>;
 
   const winRate = stats && stats.gamesPlayed > 0
     ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100)

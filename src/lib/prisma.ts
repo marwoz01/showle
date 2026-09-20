@@ -10,7 +10,13 @@ function createPrismaClient() {
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set");
   }
-  const adapter = new PrismaNeon({ connectionString });
+  const adapter = new PrismaNeon({
+    connectionString,
+    connectionTimeoutMillis: 5000,
+    statement_timeout: 8000,
+    query_timeout: 10000,
+    max: 5,
+  });
   return new PrismaClient({ adapter });
 }
 

@@ -21,12 +21,13 @@ const request = (player = "host-1234", ip = "203.0.113.1", body: unknown = { typ
   });
 beforeEach(() => {
   vi.resetModules(); vi.clearAllMocks(); vi.useFakeTimers(); vi.setSystemTime(now);
+  vi.stubEnv("TRUSTED_PROXY", "forwarded");
   const tx = { $executeRaw: db.lock, duelRoom: { findUnique: db.saved, update: db.update } };
   db.transaction.mockImplementation(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx));
   db.member.mockResolvedValue({ code: "ABCDEF" });
   db.saved.mockResolvedValue(room);
 });
-afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllEnvs(); });
 
 describe("duel membership and request budgets", () => {
   it("rejects non-members and expired rooms before locking", async () => {

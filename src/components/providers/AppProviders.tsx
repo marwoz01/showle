@@ -5,6 +5,7 @@ import { dark } from "@clerk/themes";
 import { I18nProvider, useTranslation } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { clerkEn, clerkPl } from "@/i18n/clerk";
+import CollectionProvider from "@/components/providers/CollectionProvider";
 
 const appearance = {
   baseTheme: dark,
@@ -24,7 +25,7 @@ const appearance = {
   elements: {
     rootBox: "w-full",
     card: "!bg-transparent !shadow-none w-full",
-    headerTitle: "!text-white",
+    headerTitle: "!font-display !text-white",
     headerSubtitle: "!text-[#b0b0c0]",
     socialButtonsBlockButton:
       "!border-[#3a3a42] !bg-[#28282e] hover:!bg-[#32323a] !text-white",
@@ -54,7 +55,7 @@ function LocalizedClerkProvider({ children }: { children: React.ReactNode }) {
       appearance={appearance}
       localization={locale === "pl" ? clerkPl : clerkEn}
     >
-      {children}
+      <CollectionProvider>{children}</CollectionProvider>
     </ClerkProvider>
   );
 }

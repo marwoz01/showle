@@ -40,7 +40,7 @@ describe("invitation entry screens", () => {
     const html = renderToStaticMarkup(createElement(FrameGameEntry, entryProps));
     expect(html).toContain('id="room-code"');
     expect(html).toContain(pl.duel.createRoom);
-    expect(html).toContain(pl.duel.joinRoom);
+    expect(html).toContain(pl.duel.joinWithCode);
   });
   it("offers recovery for a broken invitation", () => {
     language.locale = "pl";

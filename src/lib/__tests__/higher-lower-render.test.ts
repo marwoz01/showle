@@ -40,14 +40,12 @@ function game(status: HigherLowerGameView["status"] = "guessing"): HigherLowerGa
       id: 1,
       title: mocks.locale === "pl" ? "Incepcja" : "Inception",
       year: 2010,
-      runtime: 148,
       backdropPath: "/inception.jpg",
     },
     right: {
       id: 2,
       title: "Interstellar",
-      year: 2014,
-      runtime: status === "guessing" ? null : 169,
+      year: status === "guessing" ? null : 2014,
       backdropPath: "/interstellar.jpg",
     },
     outcome: status === "guessing" ? null : status === "revealed" ? "correct" : "wrong",
@@ -87,17 +85,17 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
     mocks.useHigherLower.mockClear();
   });
 
-  it("keeps the candidate runtime hidden until the answer and labels both choices", () => {
+  it("keeps the candidate release year hidden everywhere until the answer and labels both choices", () => {
     const html = render();
     const candidate = html.match(/<article\b[^>]*data-side="right"[^>]*>[\s\S]*?<\/article>/)?.[0];
     expect(candidate).toBeDefined();
     expect(candidate).toContain('aria-labelledby="higher-lower-right-title"');
     expect(candidate).toContain(`aria-label="${copy.unknown}"`);
     expect(candidate).toContain("<span>?</span>");
-    expect(candidate).not.toContain(">169<");
-    expect(candidate).not.toContain(`>${copy.minutes}</span>`);
-    expect(html).not.toContain("169 min");
-    expect(html).toContain("<span>148</span>");
+    expect(candidate).not.toContain("2014");
+    expect(html).not.toContain("2014");
+    expect(html).toContain("<span>2010</span>");
+    expect(html).toContain(copy.releaseYear);
     expect(button(html, copy.higher)).toContain('aria-keyshortcuts="ArrowUp"');
     expect(button(html, copy.lower)).toContain('aria-keyshortcuts="ArrowDown"');
     expect(button(html, copy.higher)).not.toContain("disabled");
@@ -109,11 +107,11 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
   it.each(["correct", "equal"] as const)("reveals the %s result and allows only advancing", (outcome) => {
     const nextGame = game("revealed");
     nextGame.outcome = outcome;
-    if (outcome === "equal") nextGame.right.runtime = nextGame.left.runtime;
+    if (outcome === "equal") nextGame.right.year = nextGame.left.year;
     const html = render({ game: nextGame });
-    expect(html).toContain(`<span>${nextGame.right.runtime}</span>`);
+    expect(html).toContain(`<span>${nextGame.right.year}</span>`);
     expect(html).toContain(outcome === "equal" ? copy.equal : copy.correct);
-    expect(html).toContain(`Interstellar: ${nextGame.right.runtime} ${copy.minutes}`);
+    expect(html).toContain(`Interstellar: ${nextGame.right.year}.`);
     expect(html).toContain('aria-live="polite"');
     expect(html).not.toContain(`aria-label="${copy.unknown}"`);
     expect(button(html, copy.continue)).toBeDefined();
@@ -124,7 +122,7 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
 
   it("ends a failed streak with replay and a named share action", () => {
     const html = render({ game: game("finished") });
-    expect(html).toContain("<span>169</span>");
+    expect(html).toContain("<span>2014</span>");
     expect(html).toContain(copy.wrong);
     expect(html).toContain(copy.gameOver);
     expect(button(html, copy.playAgain)).toBeDefined();
@@ -146,7 +144,7 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
     expect(button(html, copy.lower)).toContain('disabled=""');
     expect(html).toContain(copy.checking);
     expect(html).toContain(`aria-label="${copy.unknown}"`);
-    expect(html).not.toContain(">169<");
+    expect(html).not.toContain("2014");
   });
 
   it.each([
@@ -162,19 +160,21 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
     expect(button(html, copy.lower)).toContain('disabled=""');
   });
 
-  it("renders initial loading without guess actions and provides a labelled rules dialog", () => {
+  it("renders initial loading and keeps accessible navigation without the removed labels", () => {
     const html = render({ game: null, pending: true });
     expect(html).toContain(copy.loading);
-    expect(html).toContain(`>${copy.title}</h1>`);
+    expect(html).toContain(`aria-label="${copy.title}"`);
+    expect(html).not.toContain("<h1");
+    expect(html).toContain(`aria-label="${copy.streak}: 0"`);
+    expect(html).toContain(`aria-label="${copy.best}: 8"`);
+    expect(html).not.toContain(`<span>${copy.streak}</span>`);
+    expect(html).not.toContain(`<span>${copy.best}</span>`);
     expect(html).toContain('href="/play"');
     expect(html).toContain(`aria-label="${copy.back}"`);
     expect(html).not.toContain("<article");
     expect(button(html, copy.higher)).toBeUndefined();
     expect(button(html, copy.lower)).toBeUndefined();
-    expect(html).toMatch(/<dialog\b[^>]*aria-labelledby="higher-lower-rules"/);
-    expect(html).toContain('id="higher-lower-rules"');
-    expect(html).toContain(copy.rulesTitle);
-    expect(html).toContain(copy.rulesBody);
-    expect(buttons(html).find((markup) => markup.includes(`aria-label="${copy.close}"`))).toBeDefined();
+    expect(html).not.toContain("<dialog");
+    expect(html).not.toMatch(/CZAS TRWANIA|RUNTIME|BEZ KOŃCA|ENDLESS|Bez limitu czasu|No time limit|Jak grać|How to play|dłuższy|krótszy|longer|shorter/);
   });
 });

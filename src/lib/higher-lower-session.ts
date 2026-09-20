@@ -3,7 +3,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 import { HIGHER_LOWER_MAX_TOKEN_LENGTH, HigherLowerError } from "@/lib/higher-lower";
 import type { HigherLowerRun } from "@/lib/higher-lower";
 
-const TOKEN_CONTEXT = Buffer.from("showle:higher-lower:runtime:v1");
+const TOKEN_CONTEXT = Buffer.from("showle:higher-lower:release-year:v2");
 let developmentKey: Buffer | undefined;
 
 function getKey(): Buffer {

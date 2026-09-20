@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 const mocks = vi.hoisted(() => ({ limit: vi.fn() }));
-vi.mock("@/lib/rate-limit", () => ({ rateLimit: mocks.limit }));
+vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: mocks.limit }));
 vi.mock("@/lib/higher-lower-catalog", () => ({
   getHigherLowerCatalog: () => ({
     version: "test-catalog",
     movies: [
-      { id: 1, titles: { pl: "Film pierwszy", en: "First movie" }, year: 2000, runtime: 100, backdropPath: "/first.jpg", voteCount: 4000 },
+      { id: 1, titles: { pl: "Film pierwszy", en: "First movie" }, year: 2002, runtime: 100, backdropPath: "/first.jpg", voteCount: 4000 },
       { id: 2, titles: { pl: "Film drugi", en: "Second movie" }, year: 2001, runtime: 150, backdropPath: "/second.jpg", voteCount: 4000 },
-      { id: 3, titles: { pl: "Film trzeci", en: "Third movie" }, year: 2002, runtime: 200, backdropPath: "/third.jpg", voteCount: 4000 },
+      { id: 3, titles: { pl: "Film trzeci", en: "Third movie" }, year: 2000, runtime: 200, backdropPath: "/third.jpg", voteCount: 4000 },
     ],
   }),
 }));
@@ -21,39 +21,42 @@ const request = (body: unknown) => new Request("http://localhost/api/higher-lowe
   method: "POST", headers: { "x-forwarded-for": "203.0.113.1" }, body: JSON.stringify(body),
 });
 const start = async () => (await POST(request({ action: "start", locale: "pl" }))).json() as Promise<HigherLowerResponse>;
-const runtimeFor = (id: number) => 50 + id * 50;
+const yearFor = (id: number) => 2003 - id;
 beforeEach(() => {
   vi.clearAllMocks();
   vi.useFakeTimers();
   vi.setSystemTime(now);
   vi.stubEnv("HIGHER_LOWER_SECRET", "test-only-api-secret");
+  vi.stubEnv("TRUSTED_PROXY", "forwarded");
   mocks.limit.mockReturnValue({ success: true });
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); });
 
 describe("higher/lower public API", () => {
-  it("plays, resumes in another locale, reveals and advances without sending hidden runtimes", async () => {
+  it("plays, resumes in another locale, reveals and advances without sending hidden release years", async () => {
     const started = await start();
-    expect(started.game.right.runtime).toBeNull();
+    expect(started.game.right.year).toBeNull();
+    expect(started.game.right).not.toHaveProperty("runtime");
+    expect(started.game.left.year).toBe(yearFor(started.game.left.id));
     const resumed = await POST(request({ action: "resume", locale: "en", token: started.token }));
     const resumedBody: HigherLowerResponse = await resumed.json();
-    expect(resumedBody.game.right).toMatchObject({ id: started.game.right.id, runtime: null });
+    expect(resumedBody.game.right).toMatchObject({ id: started.game.right.id, year: null });
     expect(resumedBody.game.left.title).toContain("movie");
-    const choice = runtimeFor(started.game.right.id) > started.game.left.runtime ? "higher" : "lower";
+    const choice = yearFor(started.game.right.id) > started.game.left.year ? "higher" : "lower";
     const answered = await POST(request({ action: "answer", locale: "pl", token: started.token, choice }));
     const revealed: HigherLowerResponse = await answered.json();
     expect(answered.status).toBe(200);
     expect(answered.headers.get("Cache-Control")).toContain("no-store");
-    expect(revealed.game).toMatchObject({ score: 1, status: "revealed", right: { runtime: runtimeFor(started.game.right.id) } });
+    expect(revealed.game).toMatchObject({ score: 1, status: "revealed", right: { year: yearFor(started.game.right.id) } });
     const duplicate = await POST(request({ action: "answer", locale: "pl", token: revealed.token, choice }));
     expect(duplicate.status).toBe(409);
     const next: HigherLowerResponse = await (await POST(request({ action: "next", locale: "pl", token: revealed.token }))).json();
-    expect(next.game).toMatchObject({ round: 2, score: 1, left: { id: started.game.right.id }, right: { runtime: null } });
+    expect(next.game).toMatchObject({ round: 2, score: 1, left: { id: started.game.right.id }, right: { year: null } });
   });
 
   it("does not inflate score when an old guessing token is replayed", async () => {
     const started = await start();
-    const choice = runtimeFor(started.game.right.id) > started.game.left.runtime ? "higher" : "lower";
+    const choice = yearFor(started.game.right.id) > started.game.left.year ? "higher" : "lower";
     const body = { action: "answer", locale: "pl", token: started.token, choice };
     const first: HigherLowerResponse = await (await POST(request(body))).json();
     const replay: HigherLowerResponse = await (await POST(request(body))).json();

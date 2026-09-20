@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/"],
+      disallow: ["/api/", "/collection", "/history", "/stats", "/settings", "/sign-in", "/sign-up", "/recommend/watchlist-preview"],
     },
-    sitemap: "https://showle.vercel.app/sitemap.xml",
+    sitemap: `${siteUrl()}/sitemap.xml`,
   };
 }

@@ -13,7 +13,6 @@ export function getHigherLowerCatalog() {
   const valid = catalog.version === 1 && movies.length >= 2 && movies.length <= 2000
     && movies.every((movie) => {
       if (!Number.isSafeInteger(movie.id) || movie.id < 1 || unique.has(movie.id)
-        || !Number.isInteger(movie.runtime) || movie.runtime < 40 || movie.runtime > 400
         || !Number.isInteger(movie.year) || movie.year < 1888 || movie.year > new Date().getUTCFullYear()
         || !movie.titles.pl.trim() || !movie.titles.en.trim()
         || !/^\/[A-Za-z0-9]+\.(jpg|png|webp)$/.test(movie.backdropPath)) return false;
@@ -23,8 +22,8 @@ export function getHigherLowerCatalog() {
   if (!valid) throw new HigherLowerError("game_unavailable");
   snapshot = {
     movies,
-    // Changed runtimes or membership invalidate old sessions rather than change an answer mid-run.
-    version: createHash("sha256").update(JSON.stringify(movies.map(({ id, runtime }) => [id, runtime]))).digest("hex").slice(0, 24),
+    // Changed years, membership or the metric invalidate sessions instead of changing an answer mid-run.
+    version: createHash("sha256").update("release-year:v2").update(JSON.stringify(movies.map(({ id, year }) => [id, year]))).digest("hex").slice(0, 24),
   };
   return snapshot;
 }

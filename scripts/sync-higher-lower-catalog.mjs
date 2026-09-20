@@ -1,5 +1,5 @@
 /**
- * Offline TMDB snapshot for the runtime comparison game.
+ * Offline TMDB snapshot for the release-year comparison game.
  *
  * node scripts/sync-higher-lower-catalog.mjs --limit=350
  * node scripts/sync-higher-lower-catalog.mjs --ids=157336,27205 --refresh
@@ -103,9 +103,7 @@ function toEntry(movie, expectedId) {
     movie.status !== "Released" ||
     !/^\d{4}-\d{2}-\d{2}$/.test(movie.release_date ?? "") ||
     movie.release_date > today ||
-    !Number.isInteger(movie.runtime) ||
-    movie.runtime < 40 ||
-    movie.runtime > 240 ||
+    Number(movie.release_date.slice(0, 4)) < 1888 ||
     !Number.isInteger(movie.vote_count) ||
     movie.vote_count < 500
   ) return null;
@@ -132,7 +130,6 @@ function toEntry(movie, expectedId) {
       en: english.trim(),
     },
     year: Number(movie.release_date.slice(0, 4)),
-    runtime: movie.runtime,
     backdropPath,
     voteCount: movie.vote_count,
   };

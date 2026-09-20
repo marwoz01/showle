@@ -1,78 +1,52 @@
 "use client";
-import { normalizeDisplayText } from "@/lib/typography";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTranslation } from "@/i18n";
 import { X } from "@/components/ui/icons";
+import Modal from "@/components/ui/Modal";
+import { normalizeDisplayText } from "@/lib/typography";
+import { MAX_REVIEW_LENGTH } from "@/lib/collection-input";
 
 interface ReviewModalProps {
   movieTitle: string;
   initialReview: string | null;
-  onSave: (review: string) => void;
+  onSave: (review: string) => Promise<boolean>;
   onClose: () => void;
 }
-
-const MAX_CHARS = 1000;
-
-export default function ReviewModal({
-  movieTitle,
-  initialReview,
-  onSave,
-  onClose,
-}: ReviewModalProps) {
+export default function ReviewModal({ movieTitle, initialReview, onSave, onClose }: ReviewModalProps) {
   const { t } = useTranslation();
-  const [text, setText] = useState(initialReview || "");
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/6 bg-background shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/6 px-6 py-4">
-          <div>
-            <h3 className="text-base font-semibold text-foreground">
-              {initialReview ? t.collection.editReview : t.collection.writeReview}
-            </h3>
-            <p className="text-xs text-muted">{normalizeDisplayText(movieTitle)}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted transition-colors hover:bg-white/4 hover:text-foreground"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-6">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
-            placeholder={t.collection.reviewPlaceholder}
-            rows={6}
-            className="w-full resize-none rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:border-accent-purple focus:outline-none"
-          />
-          <div className="mt-2 text-right text-xs text-muted">
-            {text.length}/{MAX_CHARS}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3 border-t border-white/6 px-6 py-4">
-          <button
-            onClick={onClose}
-            className="rounded-lg border border-white/6 bg-white/3 px-4 py-2 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground"
-          >
-            {t.game.back}
-          </button>
-          <button
-            onClick={() => onSave(text)}
-            className="rounded-lg bg-accent-purple px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            {t.collection.saveReview}
-          </button>
-        </div>
+  const id = useId();
+  const [text, setText] = useState(initialReview ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
+  const busy = useRef(false);
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    if (busy.current) return;
+    busy.current = true; setSaving(true); setError(false);
+    try { if (await onSave(text)) onClose(); else setError(true); }
+    catch { setError(true); }
+    finally { busy.current = false; setSaving(false); }
+  }
+  return <Modal titleId={id} onClose={onClose} busy={saving}>
+    <form onSubmit={(event) => void save(event)}>
+      <div className="flex items-center justify-between gap-3 border-b border-white/6 px-6 py-4">
+        <div><h2 id={id} className="font-semibold">{initialReview ? t.collection.editReview : t.collection.writeReview}</h2>
+          <p className="text-xs text-muted">{normalizeDisplayText(movieTitle)}</p></div>
+        <button type="button" onClick={onClose} disabled={saving} aria-label={t.collection.cancel} className="rounded-lg p-3 text-muted"><X size={18} /></button>
       </div>
-    </div>
-  );
+      <div className="space-y-2 p-6">
+        <label htmlFor={`${id}-review`} className="sr-only">{t.collection.review}</label>
+        <textarea id={`${id}-review`} autoFocus value={text} onChange={(event) => setText(event.target.value)} maxLength={MAX_REVIEW_LENGTH}
+          disabled={saving} placeholder={t.collection.reviewPlaceholder} rows={6} aria-describedby={`${id}-count`}
+          className="w-full resize-none rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-sm outline-none focus:border-accent-purple" />
+        <p id={`${id}-count`} className="text-right text-xs text-muted">{text.length}/{MAX_REVIEW_LENGTH}</p>
+        {error && <p role="alert" className="text-sm text-muted">{t.collection.saveError}</p>}
+      </div>
+      <div className="flex justify-end gap-3 border-t border-white/6 px-6 py-4">
+        <button type="button" onClick={onClose} disabled={saving} className="min-h-11 rounded-lg bg-white/5 px-4 text-sm">{t.collection.cancel}</button>
+        <button type="submit" disabled={saving} className="min-h-11 rounded-lg bg-accent-purple px-4 text-sm font-semibold text-white disabled:opacity-50">{t.collection.saveReview}</button>
+      </div>
+    </form>
+  </Modal>;
 }

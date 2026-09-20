@@ -16,13 +16,13 @@ export async function getEmbedding(text: string): Promise<number[]> {
       const retrySeconds = Number(response.headers.get("Retry-After"));
       unavailableUntil = Date.now() + Math.min(3600, Math.max(60, retrySeconds || 60)) * 1000;
     }
-    throw new Error(`embedding_${response.status}`);
+    throw Object.assign(new Error(`embedding_${response.status}`), { status: response.status });
   }
   const data = await response.json();
   const vector: unknown = data?.embedding?.values;
   if (!Array.isArray(vector) || vector.length !== 1536 ||
     !vector.every((value) => typeof value === "number" && Number.isFinite(value)) ||
-    !vector.some((value) => value !== 0)) throw new Error("invalid_embedding");
+    !vector.some((value) => value !== 0)) throw new SyntaxError("invalid_embedding");
   if (cache.size >= 500) cache.delete(cache.keys().next().value!);
   cache.set(key, { vector, expires: Date.now() + 86400_000 });
   return vector;

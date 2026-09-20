@@ -2,6 +2,7 @@ import type { CastMember, MediaDetails } from "@/types";
 
 export type RecommendationReaction = "more" | "less";
 export interface RecommendationPreference {
+  source: "catalog" | "watchlist";
   genres: string[];
   excludedGenres: string[];
   yearFrom: number;
@@ -46,6 +47,9 @@ export interface Recommendation {
   justification: string;
 }
 export interface RecommendationMeta {
+  mode?: "personal" | "search";
+  source?: RecommendationPreference["source"];
+  watchlistUnavailable?: number;
   matching: "semantic" | "filters";
   interpretation: "ai" | "local";
   relevance: "ai" | "local";

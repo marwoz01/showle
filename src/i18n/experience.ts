@@ -25,6 +25,7 @@ const experience = {
     readyWaiting: "Gotowe - czekamy na drugiego gracza",
     prepare: "Przygotowanie rundy",
     countdown: "Odliczanie przed rundą",
+    remainingTime: "Pozostały czas",
     you: "Ty",
     opponent: "Przeciwnik",
     pointsShort: "pkt",
@@ -44,8 +45,6 @@ const experience = {
     roundPoints: "Punkty",
     newPractice: "Nowy trening",
     unavailable: "Rozgrywka wygasła. Utwórz nową.",
-    readyHint:
-      "Gdy oboje będziecie gotowi, ruszy odliczanie 3-2-1. Kadr i odpowiedzi odsłonią się na starcie rundy.",
   },
   en: {
     continueGame: "Continue game",
@@ -71,6 +70,7 @@ const experience = {
     readyWaiting: "Ready - waiting for the other player",
     prepare: "Preparing round",
     countdown: "Round countdown",
+    remainingTime: "Time remaining",
     you: "You",
     opponent: "Opponent",
     pointsShort: "pts",
@@ -90,8 +90,6 @@ const experience = {
     roundPoints: "Points",
     newPractice: "New practice",
     unavailable: "This game has expired. Start a new one.",
-    readyHint:
-      "When both players are ready, the 3-2-1 countdown begins. The frame and answers are revealed when the round starts.",
   },
 };
 export default experience;

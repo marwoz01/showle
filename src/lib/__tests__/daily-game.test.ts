@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   wallet: vi.fn(),
   coins: vi.fn(),
   lock: vi.fn(),
+  previousStats: vi.fn(),
+  walletState: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => {
   const key = (args: {
@@ -25,9 +27,9 @@ vi.mock("@/lib/prisma", () => {
         return structuredClone(row);
       }),
     },
-    userStats: { findUnique: vi.fn(async () => null), upsert: mocks.stats },
+    userStats: { findUnique: mocks.previousStats, upsert: mocks.stats },
     userWallet: {
-      upsert: vi.fn(async () => ({ balance: 0, streakFreezes: 0 })),
+      upsert: mocks.walletState,
       update: mocks.wallet,
     },
     coinTransaction: { create: mocks.coins },
@@ -70,8 +72,26 @@ import {
 beforeEach(() => {
   mocks.rows.clear();
   vi.clearAllMocks();
+  mocks.previousStats.mockResolvedValue(null);
+  mocks.walletState.mockResolvedValue({ balance: 0, streakFreezes: 0 });
 });
 describe("authoritative daily game", () => {
+  it("atomically covers missed days and rewards the continued streak only once", async () => {
+    mocks.previousStats.mockResolvedValue({ currentStreak: 4, maxStreak: 4, lastPlayedDate: "2026-09-03", gamesPlayed: 4, gamesWon: 4, averageGuesses: 2 });
+    mocks.walletState.mockResolvedValue({ balance: 100, streakFreezes: 3 });
+    await applyDailyAction("user", "2026-09-06", { type: "guess", movieId: 42 }, true);
+    expect(mocks.stats.mock.calls[0][0].update.currentStreak).toBe(5);
+    expect(mocks.wallet.mock.calls[0][0].data).toEqual({ balance: { increment: 75 }, streakFreezes: { decrement: 2 } });
+    await applyDailyAction("user", "2026-09-06", { type: "guess", movieId: 42 }, true);
+    expect(mocks.wallet).toHaveBeenCalledOnce();
+  });
+  it("does not spend the same freeze on a missed day and today's loss", async () => {
+    mocks.previousStats.mockResolvedValue({ currentStreak: 4, maxStreak: 4, lastPlayedDate: "2026-09-04", gamesPlayed: 4, gamesWon: 4, averageGuesses: 2 });
+    mocks.walletState.mockResolvedValue({ balance: 100, streakFreezes: 1 });
+    await applyDailyAction("user", "2026-09-06", { type: "give-up" }, true);
+    expect(mocks.stats.mock.calls[0][0].update.currentStreak).toBe(0);
+    expect(mocks.wallet.mock.calls[0][0].data.streakFreezes.decrement).toBe(1);
+  });
   it("rejects legacy client-supplied outcomes and malformed IDs", () => {
     expect(
       parseDailyAction({ status: "won", attemptCount: 1, targetMovieId: 42 }),

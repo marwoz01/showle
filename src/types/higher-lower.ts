@@ -6,16 +6,15 @@ export type HigherLowerOutcome = "correct" | "equal" | "wrong";
 export interface HigherLowerMovieView {
   id: number;
   title: string;
-  year: number;
+  year: number | null;
   backdropPath: string;
-  runtime: number | null;
 }
 
 export interface HigherLowerGameView {
   round: number;
   score: number;
   status: HigherLowerStatus;
-  left: HigherLowerMovieView & { runtime: number };
+  left: HigherLowerMovieView & { year: number };
   right: HigherLowerMovieView;
   outcome: HigherLowerOutcome | null;
 }
@@ -36,7 +35,6 @@ export interface HigherLowerCatalogMovie {
   id: number;
   titles: { pl: string; en: string };
   year: number;
-  runtime: number;
   backdropPath: string;
   voteCount: number;
 }

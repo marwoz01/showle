@@ -25,18 +25,19 @@ function validGenres(value: unknown): value is string[] {
     new Set(value).size === value.length;
 }
 
-export function parseRecommendRequest(value: unknown): RecommendRequest | null {
+export function parseRecommendRequest(value: unknown, options: { allowEmpty?: boolean } = {}): RecommendRequest | null {
   if (!isRecord(value)) return null;
   const {
     genres, yearFrom, yearTo, popularity, locale = "en", exclude = [], freeformText = "",
     excludedGenres = [], maxRuntime = null, providerIds = [], referenceMovieId = null,
-    positiveIds = [], negativeIds = [],
+    positiveIds = [], negativeIds = [], source = "catalog",
   } = value;
   if (
+    (source !== "catalog" && source !== "watchlist") ||
     !validGenres(genres) || !validGenres(excludedGenres) || genres.some((g) => excludedGenres.includes(g)) ||
     typeof freeformText !== "string" || freeformText.length > 400 ||
     (referenceMovieId !== null && !validMovieId(referenceMovieId)) ||
-    (!genres.length && !freeformText.trim() && referenceMovieId === null) ||
+    (!options.allowEmpty && !genres.length && !freeformText.trim() && referenceMovieId === null && source !== "watchlist") ||
     typeof yearFrom !== "number" || !Number.isInteger(yearFrom) || yearFrom < 1888 ||
     typeof yearTo !== "number" || !Number.isInteger(yearTo) || yearTo > new Date().getUTCFullYear() + 1 ||
     yearFrom > yearTo ||
@@ -49,7 +50,7 @@ export function parseRecommendRequest(value: unknown): RecommendRequest | null {
     positiveIds.some((id) => negativeIds.includes(id))
   ) return null;
   return {
-    genres, excludedGenres, yearFrom, yearTo, popularity, locale, exclude,
+    source, genres, excludedGenres, yearFrom, yearTo, popularity, locale, exclude,
     freeformText: freeformText.trim(), maxRuntime, providerIds, referenceMovieId, positiveIds, negativeIds,
   };
 }

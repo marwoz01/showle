@@ -1,106 +1,45 @@
 # Architecture
 
-The recommendation subsystem has a separate, current architecture and maintenance guide in [recommendations.md](recommendations.md). It uses RecommendationMovie, not the daily/frame game pools.
+## Application areas
 
-## Folder Structure
+- `src/app/play/movie`: daily game, driven by `useGame`, `daily-api` and `daily-game`.
+- `src/app/play/duel` and `play/practice`: a shared frame game engine; `useFrameRoom` owns requests and restoration, `useFramePolling` owns polling and clock updates, and `FrameRound`, `FrameAnswers` and `FrameResults` render the stages.
+- `src/app/collection`: account-only watched/watchlist collections and rankings.
+- `src/app/recommend`: bounded recommendation pipeline over `RecommendationMovie`.
+- `src/app/history` and `stats`: completed daily games and account aggregates.
 
-```
-src/
-├── app/                        # Next.js App Router
-│   ├── api/
-│   │   ├── game/
-│   │   │   ├── complete/       # POST - finish game, update stats (transactional)
-│   │   │   └── state/          # GET/PUT - save/load game progress
-│   │   ├── movies/
-│   │   │   ├── daily/          # GET - today's movie (cached 5min)
-│   │   │   ├── search/         # GET - search movies via TMDB
-│   │   │   └── details/        # GET - single movie details
-│   │   └── user/
-│   │       └── stats/          # GET - user statistics
-│   ├── play/movie/             # Game page
-│   ├── sign-in/[[...sign-in]]/ # Clerk sign-in
-│   ├── sign-up/[[...sign-up]]/ # Clerk sign-up
-│   ├── stats/                  # User stats page
-│   ├── layout.tsx              # Root layout (ClerkProvider, I18nProvider, Sidebar)
-│   ├── page.tsx                # Home page (game mode cards)
-│   └── globals.css             # Theme tokens, animations
-│
-├── components/
-│   ├── game/                   # SearchBar, GuessCard, ComparisonTable, HintsPanel, ResultScreen, CountdownTimer
-│   ├── home/                   # GameModeCard, HowItWorks
-│   ├── layout/                 # Sidebar
-│   └── ui/                     # Reusable primitives (currently empty)
-│
-├── hooks/
-│   └── useGame.ts              # Core game state machine (localStorage + server sync)
-│
-├── lib/
-│   ├── comparer.ts             # 8-field comparison engine
-│   ├── daily.ts                # Daily movie selection (deterministic hash, 90-day no-repeat)
-│   ├── hints.ts                # Progressive hint system (reveal at attempts 2, 4, 6)
-│   ├── prisma.ts               # Prisma client singleton
-│   └── tmdb.ts                 # TMDB API wrapper
-│
-├── i18n/                       # Translations (pl.ts, en.ts, context provider)
-├── types/                      # Shared TypeScript interfaces
-├── constants/                  # Game config (MAX_ATTEMPTS=7, modes, labels)
-└── data/
-    └── eligible-movies.json    # Curated pool of 4941 TMDB movie IDs
+## Daily game
 
-prisma/
-└── schema.prisma               # GameResult + UserStats models
-```
+The browser sends a movie ID or a give-up action. The server chooses the daily answer, checks guesses against frozen `DailyMovieSnapshot` metadata, and returns only the clues currently available. It never trusts a client-supplied outcome or reward.
 
-## Main Modules
+Guest identity comes from an HTTP-only cookie; authenticated identity comes from Clerk. Guest progress can be adopted only when the account has no game for the day. Completion updates results, statistics, wallet and transaction history under a per-player PostgreSQL advisory lock.
 
-### Game Engine (`lib/comparer.ts`, `lib/hints.ts`, `hooks/useGame.ts`)
-- `compareMedia()` compares 8 fields: year, genres, country, director, runtime, budget, popularity, rating
-- Each field returns `exact` / `partial` / `miss` status + optional `up`/`down` direction
-- Hints reveal at attempts 2 (genres), 4 (director), 6 (tagline/overview)
-- `useGame` hook manages full game lifecycle: restore → play → sync → complete
+`resolveStreak` is the shared calculation for gaps in play. Read endpoints project the current streak and remaining freezes without writing. A completed daily game or freeze purchase persists missed-day consumption under the same player lock. Calendar calculations use Europe/Warsaw date keys.
 
-### Daily Selection (`lib/daily.ts`)
-- Deterministic hash of date string selects movie from 4941-entry pool
-- 90-day sliding window prevents repeats
-- Warsaw timezone (Europe/Warsaw) defines "today"
+The browser's localStorage progress summary is an optimization for the home card, not the source of truth.
 
-### Persistence (`hooks/useGame.ts`, API routes)
-- **Primary**: localStorage (works without auth)
-- **Secondary**: Server sync for logged-in users (game state + completion)
-- Game completion writes `GameResult` + updates `UserStats` in a single Prisma transaction
+## Collection
 
-### Auth (Clerk)
-- `clerkMiddleware` protects `/api/game/*` and `/api/user/*`
-- Public routes: `/`, `/sign-in`, `/sign-up`, `/play/*`, `/api/movies/*`
-- `userId` from Clerk stored directly in `GameResult.userId` and `UserStats.userId`
+`CollectionContent` derives the selected tab from the URL. Category/sort changes mount a fresh `CollectionMovies` controller; reads use AbortController and page numbers advance only after successful responses.
 
-## Data Flow
+Writes are confirmed before changing the list. A failed review keeps the dialog and text open; failed deletions keep the film. Mutations rebase pagination from the first page. The add dialog retains unsaved selections after partial failure.
 
-```
-User types movie name
-  → SearchBar (300ms debounce + AbortController)
-  → GET /api/movies/search
-  → TMDB /search/movie → filter (votes≥50) → top 6 → fetch details
-  → Return MediaDetails[]
+`CollectionProvider` owns a separate status store per account. Mounted save buttons batch exact TMDB-ID lookups through `/api/collection/status` (up to 50 IDs), independent of collection pagination. Version checks prevent old lookup responses from overwriting a confirmed save. Account-tagged change events update status badges; `/api/collection/summary` returns counts without downloading movie lists.
 
-User selects a guess
-  → useGame.submitGuess()
-  → compareMedia(guess, answer) → ComparisonField[]
-  → Save to localStorage
-  → If logged in: PUT /api/game/state (or POST /api/game/complete if finished)
-  → If complete: update UserStats in transaction, dispatch "game-completed" event
+Create/patch bodies are limited to 16 KiB and validated by `collection-input`; reviews are limited to 1000 characters on both client and server. Ownership is checked in database predicates. Create/update use a per-account collection lock; delete is a single owner-scoped statement.
 
-Daily movie loading
-  → GET /api/movies/daily?dateKey=YYYY-MM-DD
-  → hashDate(dateKey) → index into eligible-movies.json
-  → TMDB /movie/{id} + /movie/{id}/credits
-  → Cache: CDN 5min, TMDB responses 1hr
-```
+Collection modals use native modal dialogs with focus containment, Escape and focus restoration. Collection tabs retain phone labels and use manual keyboard activation.
 
-## Key Architectural Decisions
+## Result presentation
 
-- **localStorage-first persistence**: Game works without login. Server sync is fire-and-forget.
-- **No User model in Prisma**: Clerk owns user data. DB only stores game-related data with Clerk userId as foreign key.
-- **Static movie pool**: 4941 pre-curated movie IDs in JSON. No runtime filtering of TMDB catalog.
-- **Deterministic daily selection**: Same date always produces same movie, regardless of server. Pure function of date string.
-- **Client components for game pages**: Game state is inherently client-side (localStorage, user interaction). API routes handle server logic.
+`ResultScreen` composes hero, details, trailer and footer components. `useResultMedia` handles optional gallery/trailer data, and `useResultCelebration` scopes GSAP to the result container and cleans up animations. Optional media failures do not prevent viewing a completed result.
+
+## Other subsystems
+
+See [recommendations](recommendations.md) for catalog search, feedback and AI budgets, and [game flows](game-flows.md) for frame synchronization and safe SQL deployment.
+
+Clerk owns account identity; application tables store only their Clerk user ID reference. Request limiters are process-local; recommendation daily quotas use persistent transactional storage. Local limiting is not a deployment-wide quota.
+
+## Verification
+
+Vitest covers pure logic, mocked routes and rendered markup. Integration suites using PostgreSQL or live providers are opt-in. GitHub Actions checks tests, types, lint and build for PRs and master pushes; the scheduled recommendation refresh is separate and explicitly gated.
