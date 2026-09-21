@@ -26,7 +26,7 @@ const en: Translations = {
     search: "Search...",
     other: "Other",
     login: "Sign In",
-    recommend: "Recommendations",
+    recommend: "Choose a film",
     collection: "Collection",
     sectionMain: "Main",
     sectionDiscover: "Discover",
@@ -299,9 +299,9 @@ const en: Translations = {
     title: "What to Watch Tonight?",
     subtitle:
       "Popcorn ready, blanket on - tell us what you're in the mood for and we'll handle the rest.",
-    modeTitle: "What to Watch?",
+    modeTitle: "Choose a film",
     modeDesc:
-      "Got the snacks but no movie? Tell us what you like and we'll pick something perfect for tonight.",
+      "Find something for yourself or choose a film for a shared movie night.",
     genresLabel: "What are you into?",
     selectGenre: "Select a genre or describe what you're looking for",
     freeformLabel: "Describe your mood",

@@ -2,7 +2,6 @@
 
 import { useId, useRef, useState } from "react";
 import { useTranslation } from "@/i18n";
-import experience from "@/i18n/experience";
 import { getGuessReceipt, getRevealedFields, type GuessReceipt } from "@/lib/daily-game-feedback";
 import { normalizeDisplayText } from "@/lib/typography";
 import type { DailyGameView } from "@/types/daily-game";
@@ -25,7 +24,7 @@ interface DailyPlayAreaProps {
 }
 
 export default function DailyPlayArea({ game, pending, error, onGuess, onRefresh }: DailyPlayAreaProps) {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const [panel, setPanel] = useState<DailyPanel>("guesses");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [receipt, setReceipt] = useState<GuessReceipt | null>(null);
@@ -108,10 +107,6 @@ export default function DailyPlayArea({ game, pending, error, onGuess, onRefresh
       </div>
 
       <div className="hidden space-y-6 lg:block">
-        <details className="text-sm text-muted">
-          <summary className="cursor-pointer">{experience[locale].comparisonTitle}</summary>
-          <p className="mt-2 max-w-3xl leading-relaxed">{experience[locale].comparisonHelp}</p>
-        </details>
         <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1fr)_280px]">
           <div className="min-w-0 space-y-4">
             <MovieRevealCard guesses={game.guesses} answer={game.revealedPeople} animate={receipt?.kind === "accepted"} />

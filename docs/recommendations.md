@@ -1,5 +1,28 @@
 # Recommendation system
 
+## Solo and shared selection
+
+`/recommend` is the choice screen: **Sam / Solo** opens the existing recommendation form at `/recommend/solo`; **Z kimś / Together** opens `/recommend/together`. Existing navigation keeps its structure and links to the choice screen.
+
+Shared selection supports two participants on separate browsers or phones without requiring accounts. Create a room, share its link or six-character code, submit individual preferences, then independently like or skip the same deck of up to 20 films. The first mutual like ends the selection and shows streaming links. If both participants finish without a match, the host can start a fresh batch. Refreshing restores membership through an HttpOnly cookie; the browser only stores the room code.
+
+Preferred genres influence ordering: shared interests first, then balanced individual interests. The union of excluded genres, the shorter runtime limit and the union of available streaming subscriptions are hard filters. Candidate retrieval reuses `RecommendationMovie` without AI requests. Previously offered films are excluded from later batches, up to 400 IDs. A room lasts 24 hours and allows up to 30 candidate generations. Expired rooms are cleaned up on later room creation.
+
+The shared API is `/api/recommend/together`. GET without a code initializes its anonymous session before any room write; GET with `code` returns a member-only view. POST supports create, join, preferences, vote and reset. Views reveal only the requester's preferences and votes. PostgreSQL advisory locks serialize room changes; candidate generation happens outside the transaction and is committed only while its generation token and batch still match. Browser polling pauses in hidden tabs and reconciles uncertain writes before enabling another action.
+
+### Shared-mode deployment
+
+Apply the additive SQL migration once to the intended database before publishing shared mode, using the project's existing SQL migration workflow:
+
+```sh
+npx prisma db execute --file prisma/migrations/20260921_movie_choice_rooms/migration.sql
+npx prisma generate
+```
+
+It creates only `MovieChoiceRoom` and its expiry index. The existing recommendation catalogue must already be populated. A missing or temporarily unavailable catalogue produces a recoverable error and retains both participants' preferences. No new environment variables or services are needed.
+
+Unit tests cover filtering, room transitions, concurrent repository calls and API/session boundaries. `movie-choice-postgres.integration.test.ts` additionally exercises the actual migration and persistence functions through the opt-in local PostgreSQL harness. It uses a fresh schema in `127.0.0.1:55439/showle_security_fix` and never reads the application database URL.
+
 ## Runtime flow
 
 1. Validate a bounded request, reject contradictory explicit preferences, then reserve the existing daily quota atomically.

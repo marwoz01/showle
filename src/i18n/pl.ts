@@ -46,7 +46,7 @@ const pl: Translations = {
     search: "Szukaj...",
     other: "Inne",
     login: "Zaloguj się",
-    recommend: "Rekomendacje",
+    recommend: "Wybór filmu",
     collection: "Kolekcja",
     sectionMain: "Główne",
     sectionDiscover: "Odkrywaj",
@@ -318,9 +318,9 @@ const pl: Translations = {
   recommend: {
     title: "Co dziś obejrzeć?",
     subtitle: "Powiedz, na co masz ochotę, resztą zajmiemy się my.",
-    modeTitle: "Co obejrzeć?",
+    modeTitle: "Wybór filmu",
     modeDesc:
-      "Nie wiesz, co obejrzeć? Dobierzemy film idealnie pasujący do Twojego nastroju.",
+      "Wybierz coś dla siebie albo znajdźcie film na wspólny wieczór.",
     genresLabel: "Na co masz dziś ochotę?",
     selectGenre: "Wybierz gatunek lub opisz, czego szukasz",
     freeformLabel: "Opisz swój nastrój",

@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslation } from "@/i18n";
-import experience from "@/i18n/experience";
 import { getRevealedFields } from "@/lib/daily-game-feedback";
 import { normalizeDisplayText } from "@/lib/typography";
 import type { DailyGameView } from "@/types/daily-game";
@@ -23,7 +22,7 @@ interface DailyMobileContentProps {
 }
 
 export default function DailyMobileContent({ game, panel, selectedId, animatedGuessId, pendingMovie, onSelectGuess }: DailyMobileContentProps) {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const { guesses, hints } = game;
   const ordered = [...guesses].sort((a, b) => a.attemptNumber - b.attemptNumber);
   const latest = ordered.at(-1);
@@ -71,10 +70,6 @@ export default function DailyMobileContent({ game, panel, selectedId, animatedGu
           })} />
         </section>
       )}
-      <details className="px-1 text-xs text-muted">
-        <summary className="min-h-11 cursor-pointer content-center rounded-lg focus-visible:outline-accent-purple">{experience[locale].comparisonTitle}</summary>
-        <p className="pb-3 leading-6">{experience[locale].comparisonHelp}</p>
-      </details>
     </div>
   );
 }

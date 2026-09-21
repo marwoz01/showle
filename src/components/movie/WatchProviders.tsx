@@ -3,10 +3,12 @@ import { normalizeDisplayText } from "@/lib/typography";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ExternalLink, Play } from "@/components/ui/icons";
+import { ExternalLink } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { getWatchProviderUrl } from "@/lib/watch-provider-links";
 import type { WatchProvider, WatchProvidersResult } from "@/lib/tmdb";
+
+const providerLinkClassName = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/5 transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-accent-purple";
 
 export default function WatchProviders({
   tmdbId,
@@ -40,15 +42,23 @@ export default function WatchProviders({
       </h4>
 
       <div className="flex flex-col gap-2.5">
-        {data?.flatrate && data.flatrate.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {data.flatrate.map((p: WatchProvider) => (
-              <ProviderLogo key={p.provider_id} provider={p} size={36}
-                href={getWatchProviderUrl(p.provider_name, allProvidersUrl)}
-                label={t.result.openProvider(normalizeDisplayText(p.provider_name))} />
-            ))}
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {data?.flatrate?.map((p: WatchProvider) => (
+            <ProviderLogo key={p.provider_id} provider={p} size={36}
+              href={getWatchProviderUrl(p.provider_name, allProvidersUrl)}
+              label={t.result.openProvider(normalizeDisplayText(p.provider_name))} />
+          ))}
+          <a
+            href="https://web.stremio.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t.result.openStremio}
+            title={t.result.openStremio}
+            className={providerLinkClassName}
+          >
+            <Image src="/providers/stremio.png" alt="Stremio" width={36} height={36} className="rounded-md" />
+          </a>
+        </div>
 
         {data?.rent && data.rent.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
@@ -60,17 +70,6 @@ export default function WatchProviders({
             ))}
           </div>
         )}
-
-        <a
-          href="https://web.stremio.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg bg-accent-purple/10 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent-purple/20 focus-visible:outline-2 focus-visible:outline-accent-purple"
-        >
-          <Play size={14} className="text-accent-purple" />
-          {t.result.openStremio}
-          <ExternalLink size={11} className="text-muted" />
-        </a>
 
         {data?.link && (
           <a
@@ -100,7 +99,7 @@ function ProviderLogo({ provider, size, href, label }: {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/5 transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-accent-purple"
+      className={providerLinkClassName}
       title={label}
     >
       <span className="relative block overflow-hidden rounded-md" style={{ width: size, height: size }}>

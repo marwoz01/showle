@@ -235,3 +235,31 @@ model RecommendationFeedback {
   @@id([userId, tmdbId])
   @@index([userId, updatedAt])
 }
+
+model MovieChoiceRoom {
+  code                String   @id
+  status              String   @default("waiting")
+  locale              String   @default("pl")
+  hostId              String
+  hostName            String
+  guestId             String?
+  guestName           String?
+  hostPreferences     Json     @default("null")
+  guestPreferences    Json     @default("null")
+  hostVotes           Json     @default("[]")
+  guestVotes          Json     @default("[]")
+  movies              Json     @default("[]")
+  excludedMovieIds     Int[]    @default([])
+  matchMovieId        Int?
+  batch               Int      @default(1)
+  revision            Int      @default(1)
+  generationToken     String?
+  generationStartedAt DateTime?
+  generationError     String?
+  generationAttempts  Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  expiresAt           DateTime
+
+  @@index([expiresAt])
+}
