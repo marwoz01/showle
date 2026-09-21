@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, useId } from "react";
 import type { MovieSuggestion } from "@/types/movie-suggestion";
 import { useTranslation } from "@/i18n";
 import experience from "@/i18n/experience";
+import { findCachedMovieSuggestions, readMovieSearchCache, rememberMovieSearch, warmMovieSelection } from "@/lib/movie-search-client";
 import { Film, Search, Loader2 } from "@/components/ui/icons";
 
 interface SearchBarProps {
@@ -13,8 +14,9 @@ interface SearchBarProps {
   disabled?: boolean;
   placeholder?: string;
   dismissKeyboardOnSelect?: boolean;
+  prepareSelection?: boolean;
 }
-export default function SearchBar({ onSelect, disabled, placeholder, dismissKeyboardOnSelect }: SearchBarProps) {
+export default function SearchBar({ onSelect, disabled, placeholder, dismissKeyboardOnSelect, prepareSelection = false }: SearchBarProps) {
   const { t, locale } = useTranslation();
   const copy = experience[locale];
   const [query, setQuery] = useState("");
@@ -29,17 +31,23 @@ export default function SearchBar({ onSelect, disabled, placeholder, dismissKeyb
   const listId = useId();
 
   useEffect(() => {
-    setResults([]);
     setActive(-1);
     setError(false);
     if (query.trim().length < 2 || disabled) {
+      setResults([]);
       setLoading(false);
       setOpen(false);
       return;
     }
+    const cached = readMovieSearchCache(query, locale);
+    setResults(cached ?? findCachedMovieSuggestions(query, locale));
+    setOpen(true);
+    if (cached !== undefined) {
+      setLoading(false);
+      return;
+    }
     const ac = new AbortController();
     setLoading(true);
-    setOpen(true);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch(
@@ -48,18 +56,29 @@ export default function SearchBar({ onSelect, disabled, placeholder, dismissKeyb
         );
         if (!response.ok) throw new Error("search");
         const movies: MovieSuggestion[] = await response.json();
-        if (!ac.signal.aborted) setResults(movies);
+        if (!ac.signal.aborted) {
+          rememberMovieSearch(query, locale, movies);
+          setResults(movies);
+        }
       } catch {
         if (!ac.signal.aborted) setError(true);
       } finally {
         if (!ac.signal.aborted) setLoading(false);
       }
-    }, 250);
+    }, 100);
     return () => {
       clearTimeout(timer);
       ac.abort();
     };
   }, [query, locale, disabled, retry]);
+
+  useEffect(() => {
+    if (!prepareSelection || disabled || !results.length) return;
+    const movie = results[active >= 0 ? active : 0];
+    if (!movie) return;
+    const timer = window.setTimeout(() => warmMovieSelection(movie.id, locale), active >= 0 ? 80 : 150);
+    return () => window.clearTimeout(timer);
+  }, [prepareSelection, disabled, results, active, locale]);
 
   useEffect(() => {
     if (active >= 0)
@@ -69,7 +88,8 @@ export default function SearchBar({ onSelect, disabled, placeholder, dismissKeyb
   }, [active, listId]);
 
   function select(movie: MovieSuggestion) {
-    if (disabled || loading) return;
+    if (disabled) return;
+    if (prepareSelection) warmMovieSelection(movie.id, locale);
     onSelect(movie);
     setQuery("");
     setResults([]);
@@ -165,7 +185,7 @@ export default function SearchBar({ onSelect, disabled, placeholder, dismissKeyb
       </span>
       {open && (
         <div className="soft-card absolute z-50 mt-2 w-full overflow-hidden rounded-xl bg-card-hover p-1">
-          {loading ? (
+          {loading && !results.length ? (
             <p className="px-4 py-5 text-sm text-muted">{copy.searchLoading}</p>
           ) : error ? (
             <div role="alert" className="px-4 py-5 text-sm text-muted">

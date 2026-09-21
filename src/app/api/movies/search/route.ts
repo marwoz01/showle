@@ -4,7 +4,7 @@ import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { success } = rateLimit(`search:${ip}`, { limit: 30, windowMs: 60_000 });
+  const { success } = rateLimit(`search:${ip}`, { limit: 90, windowMs: 60_000 });
 
   if (!success) {
     return NextResponse.json(
@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
   try {
     const language = request.nextUrl.searchParams.get("lang") === "pl" ? "pl-PL" : "en-US";
     const results = await searchMovies(query, language);
-    return NextResponse.json(results);
+    return NextResponse.json(results, {
+      headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch (error) {
     console.error("TMDB search error:", error);
     return NextResponse.json([], { status: 500 });

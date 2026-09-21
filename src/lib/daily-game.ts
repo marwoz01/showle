@@ -32,9 +32,13 @@ export async function applyDailyAction(
   action: DailyAction,
   rewarded: boolean,
 ) {
-  const answer = await getMovieSnapshot(dateKey, getDailyMovieId(dateKey));
   // Verify the selected ID exists before recording it; do network work outside the transaction.
-  if (action.type === "guess") await getMovieSnapshot(dateKey, action.movieId);
+  const [answer] = await Promise.all([
+    getMovieSnapshot(dateKey, getDailyMovieId(dateKey)),
+    action.type === "guess"
+      ? getMovieSnapshot(dateKey, action.movieId)
+      : undefined,
+  ]);
 
   return prisma.$transaction(
     async (tx) => {
@@ -148,9 +152,9 @@ export async function getDailyGameView(
   game?: GameResult | null,
 ): Promise<DailyGameView> {
   const t = locale === "pl" ? pl : en;
-  const saved =
+  const savedPromise =
     game === undefined
-      ? await prisma.gameResult.findUnique({
+      ? prisma.gameResult.findUnique({
           where: {
             userId_dateKey_mode: {
               userId: actorId,
@@ -159,31 +163,47 @@ export async function getDailyGameView(
             },
           },
         })
-      : game;
-  const answer = await getMovieSnapshot(dateKey, getDailyMovieId(dateKey));
+      : Promise.resolve(game);
+  const answerId = getDailyMovieId(dateKey);
+  const answerPromise = getMovieSnapshot(dateKey, answerId);
+  const localizedPromise =
+    locale === "en"
+      ? answerPromise
+      : getMovieSnapshot(dateKey, answerId, locale);
+  const moviesPromise = savedPromise.then((saved) =>
+    Promise.all(
+      (saved?.guessIds ?? []).map(async (id) => {
+        const moviePromise = getMovieSnapshot(dateKey, id);
+        const [movie, display] = await Promise.all([
+          moviePromise,
+          locale === "en" ? moviePromise : getMovieSnapshot(dateKey, id, locale),
+        ]);
+        return { id, movie, display };
+      }),
+    ),
+  );
+  const [saved, answer, localized, movies] = await Promise.all([
+    savedPromise,
+    answerPromise,
+    localizedPromise,
+    moviesPromise,
+  ]);
   const status =
     saved?.status === "won" || saved?.status === "lost"
       ? saved.status
       : "playing";
-  const guesses = await Promise.all(
-    (saved?.guessIds ?? []).map(async (id, index) => {
-      const movie = await getMovieSnapshot(dateKey, id);
-      const display = await getMovieSnapshot(dateKey, id, locale);
-      return {
-        guess: display,
-        attemptNumber: index + 1,
-        isCorrect: id === answer.id,
-        comparison: compareMedia(movie, answer, t, locale).map((field) => ({
-          ...field,
-          answerValue:
-            field.status === "exact" || status !== "playing"
-              ? field.answerValue
-              : "",
-        })),
-      };
-    }),
-  );
-  const localized = await getMovieSnapshot(dateKey, answer.id, locale);
+  const guesses = movies.map(({ id, movie, display }, index) => ({
+    guess: display,
+    attemptNumber: index + 1,
+    isCorrect: id === answer.id,
+    comparison: compareMedia(movie, answer, t, locale).map((field) => ({
+      ...field,
+      answerValue:
+        field.status === "exact" || status !== "playing"
+          ? field.answerValue
+          : "",
+    })),
+  }));
   const hintAnswer = {
     ...answer,
     title: localized.title,

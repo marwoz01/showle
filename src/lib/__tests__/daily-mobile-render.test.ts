@@ -7,7 +7,7 @@ import { mobileGame } from "@/lib/__tests__/fixtures/daily-mobile";
 
 const language = vi.hoisted(() => ({ locale: "pl" as "pl" | "en" }));
 vi.mock("@/i18n", () => ({ useTranslation: () => ({ t: language.locale === "pl" ? pl : en, locale: language.locale }) }));
-vi.mock("@/components/ui/icons", () => ({ Film: () => null, Lightbulb: () => null, Lock: () => null }));
+vi.mock("@/components/ui/icons", () => ({ Film: () => null, Lightbulb: () => null, Lock: () => null, UserRound: () => null, Check: () => null }));
 import DailyMobileContent from "@/components/game/DailyMobileContent";
 import DailyMobileTabs from "@/components/game/DailyMobileTabs";
 

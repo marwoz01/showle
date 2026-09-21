@@ -9,6 +9,7 @@ import type { DailyGameView } from "@/types/daily-game";
 import type { MovieSuggestion } from "@/types/movie-suggestion";
 import SearchBar from "@/components/game/SearchBar";
 import GuessCard from "@/components/game/GuessCard";
+import PendingGuessCard from "@/components/game/PendingGuessCard";
 import MovieRevealCard from "@/components/game/MovieRevealCard";
 import HintsPanel from "@/components/game/HintsPanel";
 import DailyMobileTabs, { type DailyPanel } from "@/components/game/DailyMobileTabs";
@@ -28,6 +29,7 @@ export default function DailyPlayArea({ game, pending, error, onGuess, onRefresh
   const [panel, setPanel] = useState<DailyPanel>("guesses");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [receipt, setReceipt] = useState<GuessReceipt | null>(null);
+  const [pendingMovie, setPendingMovie] = useState<MovieSuggestion | null>(null);
   const [seenHints, setSeenHints] = useState(game.hints.length);
   const regionRef = useRef<HTMLDivElement>(null);
   const id = useId();
@@ -41,6 +43,7 @@ export default function DailyPlayArea({ game, pending, error, onGuess, onRefresh
   }
 
   function changePanel(next: DailyPanel) {
+    setReceipt(null);
     setPanel(next);
     if (next === "hints") setSeenHints(game.hints.length);
     showMobileStart();
@@ -48,20 +51,25 @@ export default function DailyPlayArea({ game, pending, error, onGuess, onRefresh
 
   async function selectMovie(movie: MovieSuggestion) {
     setReceipt(null);
-    const next = await onGuess(movie);
-    const confirmation = getGuessReceipt(game, next, movie.id);
-    if (!confirmation) return;
-    setReceipt(confirmation);
-    setSelectedId(movie.id);
+    setPendingMovie(movie);
     setPanel("guesses");
-    // Show the saved comparison after the keyboard closes, not the old scroll position.
+    // Show the chosen film as soon as the keyboard closes while its comparison loads.
     showMobileStart();
+    try {
+      const next = await onGuess(movie);
+      const confirmation = getGuessReceipt(game, next, movie.id);
+      if (!confirmation) return;
+      setReceipt(confirmation);
+      setSelectedId(movie.id);
+    } finally {
+      setPendingMovie(null);
+    }
   }
 
   return (
     <div ref={regionRef} className="relative min-h-[calc(100svh-4rem)] scroll-mt-16 space-y-3 lg:min-h-0 lg:space-y-6" data-daily-play-area>
       <div className="sticky top-14 z-30 -mx-1 space-y-2 bg-background px-1 py-2 lg:static lg:z-auto lg:mx-0 lg:bg-transparent lg:p-0" data-daily-controls>
-        <SearchBar onSelect={selectMovie} disabled={pending || error} dismissKeyboardOnSelect />
+        <SearchBar onSelect={selectMovie} disabled={pending || error} dismissKeyboardOnSelect prepareSelection />
         <div role="status" aria-live="polite" aria-atomic="true">
           {pending ? (
             <p className="flex min-h-9 items-center gap-2 px-2 text-xs text-muted"><Loader2 size={14} className="animate-spin" />{t.game.mobile.checking}</p>
@@ -94,7 +102,7 @@ export default function DailyPlayArea({ game, pending, error, onGuess, onRefresh
         )}
         {(["guesses", "hints", "revealed"] as const).map((item) => (
           <div key={item} id={`${id}-${item}-panel`} role="tabpanel" aria-labelledby={`${id}-${item}-tab`} hidden={panel !== item} tabIndex={0} className="rounded-3xl outline-none focus-visible:ring-2 focus-visible:ring-accent-purple">
-            {panel === item && <DailyMobileContent game={game} panel={panel} selectedId={selectedId} onSelectGuess={(movieId) => { setSelectedId(movieId); showMobileStart(); }} />}
+            {panel === item && <DailyMobileContent game={game} panel={panel} selectedId={selectedId} pendingMovie={pendingMovie} animatedGuessId={receipt?.kind === "accepted" ? receipt.movieId : undefined} onSelectGuess={(movieId) => { setReceipt(null); setSelectedId(movieId); showMobileStart(); }} />}
           </div>
         ))}
       </div>
@@ -106,9 +114,10 @@ export default function DailyPlayArea({ game, pending, error, onGuess, onRefresh
         </details>
         <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1fr)_280px]">
           <div className="min-w-0 space-y-4">
-            <MovieRevealCard guesses={game.guesses} answer={game.revealedPeople} />
-            {!game.guesses.length && <div className="soft-card rounded-2xl px-6 py-8 text-center"><Search size={20} className="mx-auto mb-3 text-accent-purple" /><p className="text-sm text-muted">{t.game.emptyState}</p></div>}
-            {game.guesses.map((result) => <GuessCard key={result.guess.id} result={result} />)}
+            <MovieRevealCard guesses={game.guesses} answer={game.revealedPeople} animate={receipt?.kind === "accepted"} />
+            {pendingMovie && <PendingGuessCard movie={pendingMovie} />}
+            {!game.guesses.length && !pendingMovie && <div className="soft-card rounded-2xl px-6 py-8 text-center"><Search size={20} className="mx-auto mb-3 text-accent-purple" /><p className="text-sm text-muted">{t.game.emptyState}</p></div>}
+            {game.guesses.map((result) => <GuessCard key={result.guess.id} result={result} animate={receipt?.kind === "accepted" && receipt.movieId === result.guess.id} />)}
           </div>
           <div className="2xl:sticky 2xl:top-8 2xl:self-start"><HintsPanel revealedHints={game.hints} totalHints={3} /></div>
         </div>

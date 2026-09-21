@@ -1,64 +1,70 @@
 "use client";
-import { normalizeDisplayText } from "@/lib/typography";
 
-import Image from "next/image";
-import { GuessResult, MediaDetails } from "@/types";
+import { useRef } from "react";
+import type { GuessResult, MediaDetails } from "@/types";
 import { useTranslation } from "@/i18n";
-import { Film, UserRound } from "@/components/ui/icons";
+import { normalizeDisplayText } from "@/lib/typography";
+import { useDailyCardAnimation } from "@/hooks/useDailyCardAnimation";
+import { Film } from "@/components/ui/icons";
+import DailyMovieMetric from "./DailyMovieMetric";
+import DailyMoviePerson from "./DailyMoviePerson";
+import styles from "./daily-movie-card.module.css";
 
 interface MovieRevealCardProps {
   guesses: GuessResult[];
   answer: Pick<MediaDetails, "directorProfilePath" | "cast">;
+  animate?: boolean;
 }
 
 export default function MovieRevealCard({
   guesses,
   answer,
+  animate = false,
 }: MovieRevealCardProps) {
   const { t } = useTranslation();
-
-  // For each comparison label, capture the first exact value the player has revealed.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const latestAttempt = Math.max(0, ...guesses.map((guess) => guess.attemptNumber));
   const solved = new Map<string, string>();
-  for (const result of guesses) {
+  const previouslySolved = new Set<string>();
+
+  for (const result of [...guesses].sort((a, b) => a.attemptNumber - b.attemptNumber)) {
     for (const field of result.comparison) {
-      if (field.status === "exact" && !solved.has(field.label)) {
-        solved.set(field.label, field.answerValue);
-      }
+      // A completed game's response may contain answers for missed clues too.
+      if (field.status !== "exact" || !field.answerValue) continue;
+      const isPerson = field.label === t.comparison.director || field.label === t.comparison.leadActor;
+      if (isPerson && ["", "unknown", t.common.unknown.toLowerCase()].includes(field.answerValue.trim().toLowerCase())) continue;
+      if (!solved.has(field.label)) solved.set(field.label, field.answerValue);
+      if (result.attemptNumber < latestAttempt) previouslySolved.add(field.label);
     }
   }
 
-  const year = solved.get(t.comparison.year);
+  const celebrate = (label: string) =>
+    animate && solved.has(label) && !previouslySolved.has(label);
   const director = solved.get(t.comparison.director);
-  const runtime = solved.get(t.comparison.runtime);
-  const country = solved.get(t.comparison.country);
   const leadActor = solved.get(t.comparison.leadActor);
   const genres = solved.get(t.comparison.genre);
-  const budget = solved.get(t.comparison.budget);
-  const popularity = solved.get(t.comparison.popularity);
-  const rating = solved.get(t.comparison.rating);
   const leadActorMember = leadActor
     ? answer.cast?.find(
         (member) => member.name.toLowerCase() === leadActor.toLowerCase(),
       )
     : undefined;
+  const metricLabels = [
+    t.comparison.year,
+    t.comparison.country,
+    t.comparison.runtime,
+    t.comparison.budget,
+    t.comparison.popularity,
+    t.comparison.rating,
+  ];
+  const revealedCount = Object.values(t.comparison).filter((label) => solved.has(label)).length;
 
-  const revealedCount = [
-    year,
-    genres,
-    country,
-    director,
-    leadActor,
-    runtime,
-    budget,
-    popularity,
-    rating,
-  ].filter(Boolean).length;
+  useDailyCardAnimation(rootRef, animate ? latestAttempt : undefined);
 
   return (
-    <div className="soft-panel overflow-hidden rounded-[2rem] p-2">
-      <div className="grid gap-2 sm:grid-cols-[170px_minmax(0,1fr)]">
-        <section className="soft-card rounded-[1.55rem] p-4">
-          <div className="mystery-poster relative mx-auto flex aspect-2/3 w-40 items-center justify-center overflow-hidden rounded-[1.35rem] bg-[#121214] text-muted/30 shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_18px_35px_rgba(0,0,0,.32)] sm:w-full">
+    <div ref={rootRef} className="soft-panel rounded-[2rem] p-2" data-movie-reveal-card>
+      <section className="soft-card rounded-[1.55rem] p-4 [container-type:inline-size] sm:p-5">
+        <div className={styles.summary}>
+          <div className={`${styles.poster} mystery-poster relative flex aspect-2/3 items-center justify-center overflow-hidden rounded-[1.1rem] bg-[#121214] text-muted/30 shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_18px_35px_rgba(0,0,0,.32)]`}>
             <div
               className="pointer-events-none absolute inset-0 opacity-40"
               style={{
@@ -68,142 +74,78 @@ export default function MovieRevealCard({
               }}
             />
             <div className="mystery-poster-scan absolute inset-y-0 w-20 bg-linear-to-r from-transparent via-accent-purple/12 to-transparent" />
-            <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[.035] shadow-[inset_0_1px_0_rgba(255,255,255,.05)]">
-              <Film size={34} strokeWidth={1.5} />
+            <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[.035] shadow-[inset_0_1px_0_rgba(255,255,255,.05)]">
+              <Film size={30} strokeWidth={1.5} />
             </span>
           </div>
 
-          <div
-            className="mt-4"
-            aria-label={`${t.game.revealed}: ${revealedCount}/9`}
-          >
-            <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted/55">
+          <header className={`${styles.identity} min-w-0`}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-purple">
+              {t.game.movieCard}
+            </p>
+            <h3 className="mt-1 font-display text-2xl font-bold tracking-wide text-muted/45 sm:text-3xl">
+              ???
+            </h3>
+            <dl className="mt-2">
+              <div data-card-celebrate={celebrate(t.comparison.genre) || undefined}>
+                <dt className="sr-only">{t.comparison.genre}</dt>
+                <dd className="flex flex-wrap gap-1.5">
+                  {(genres ? genres.split(", ") : ["?"]).map((genre) => (
+                    <span key={genre} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${genres ? "bg-match-exact/10 text-match-exact" : "bg-white/5 text-muted/40"}`}>
+                      {normalizeDisplayText(genre)}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            </dl>
+          </header>
+
+          <dl className={styles.metrics}>
+            {metricLabels.map((label) => (
+              <DailyMovieMetric
+                key={label}
+                label={label}
+                value={solved.get(label)}
+                status={solved.has(label) ? "exact" : undefined}
+                celebrate={celebrate(label)}
+              />
+            ))}
+          </dl>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-white/7 pt-4">
+          <div className={styles.people}>
+            <dl className={styles.personGroup}>
+              <DailyMoviePerson
+                label={t.comparison.director}
+                name={director}
+                profilePath={director ? answer.directorProfilePath : undefined}
+                status={director ? "exact" : undefined}
+                celebrate={celebrate(t.comparison.director)}
+              />
+            </dl>
+            <dl className={styles.personGroup}>
+              <DailyMoviePerson
+                label={t.comparison.leadActor}
+                name={leadActor}
+                profilePath={leadActorMember?.profilePath}
+                status={leadActor ? "exact" : undefined}
+                celebrate={celebrate(t.comparison.leadActor)}
+              />
+            </dl>
+          </div>
+
+          <div className="ml-auto w-36 max-w-full pb-1" aria-label={`${t.game.revealed}: ${revealedCount}/9`}>
+            <div className="mb-2 flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-wider text-muted/55">
               <span>{t.game.revealed}</span>
               <span className="text-foreground/75">{revealedCount}/9</span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-black/30">
-              <div
-                className="h-full rounded-full bg-linear-to-r from-accent-purple to-match-exact transition-[width] duration-500"
-                style={{ width: `${(revealedCount / 9) * 100}%` }}
-              />
+              <div className="h-full rounded-full bg-linear-to-r from-accent-purple to-match-exact transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${(revealedCount / 9) * 100}%` }} />
             </div>
           </div>
-        </section>
-
-        <section className="soft-card relative overflow-hidden rounded-[1.55rem] p-4 sm:p-5">
-          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-accent-purple/8 blur-3xl" />
-          <div
-            className="pointer-events-none absolute inset-0 opacity-20"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-            }}
-          />
-
-          <header className="relative flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-purple">
-                {t.game.movieCard}
-              </p>
-              <h3 className="mt-1 font-display text-2xl font-bold tracking-wide text-muted/45">
-                ???
-              </h3>
-            </div>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[.045] text-xs font-bold text-muted/40 shadow-[inset_0_1px_0_rgba(255,255,255,.05)]">
-              ?
-            </span>
-          </header>
-
-          <div className="relative mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-3">
-            <InfoSlot label={t.comparison.year} value={year} />
-            <InfoSlot label={t.comparison.genre} value={genres} />
-            <InfoSlot label={t.comparison.country} value={country} />
-            <RevealPerson
-              key={director ?? "director-locked"}
-              label={t.comparison.director}
-              name={director}
-              profilePath={director ? answer.directorProfilePath : undefined}
-            />
-            <RevealPerson
-              key={leadActor ?? "actor-locked"}
-              label={t.comparison.leadActor}
-              name={leadActor}
-              profilePath={leadActorMember?.profilePath}
-            />
-            <InfoSlot label={t.comparison.runtime} value={runtime} />
-            <InfoSlot label={t.comparison.budget} value={budget} />
-            <InfoSlot label={t.comparison.popularity} value={popularity} />
-            <InfoSlot label={t.comparison.rating} value={rating} />
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function RevealPerson({
-  label,
-  name,
-  profilePath,
-}: {
-  label: string;
-  name: string | undefined;
-  profilePath: string | undefined;
-}) {
-  return (
-    <div
-      className={`flex h-20 min-w-0 items-center gap-2.5 rounded-2xl px-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_8px_18px_rgba(0,0,0,.16)] ${
-        name
-          ? "animate-person-reveal bg-match-exact/8"
-          : "bg-white/[.035]"
-      }`}
-    >
-      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white/5">
-        {name && profilePath ? (
-          <Image
-            src={`https://image.tmdb.org/t/p/w185${profilePath}`}
-            alt={normalizeDisplayText(name)}
-            fill
-            sizes="40px"
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted/35">
-            <UserRound size={18} />
-          </div>
-        )}
-      </div>
-      <span className="min-w-0">
-        <span className="block text-[9px] uppercase tracking-wider text-muted/60">
-          {label}
-        </span>
-        <span
-          className={`block truncate text-xs font-semibold ${name ? "text-match-exact" : "text-muted/40"}`}
-        >
-          {normalizeDisplayText(name ?? "?")}
-        </span>
-      </span>
-    </div>
-  );
-}
-
-function InfoSlot({ label, value }: { label: string; value: string | undefined }) {
-  return (
-    <div
-      className={`flex h-20 min-w-0 flex-col items-start justify-center gap-1 rounded-2xl px-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.045),0_8px_18px_rgba(0,0,0,.16)] ${
-        value ? "bg-match-exact/8" : "bg-white/[.035]"
-      }`}
-    >
-      <span className="text-[10px] uppercase tracking-wider text-muted/60">
-        {label}
-      </span>
-      <span
-        className={`line-clamp-2 w-full max-w-full text-xs font-semibold leading-tight [overflow-wrap:break-word] ${value ? "text-match-exact" : "text-muted/40"}`}
-        title={normalizeDisplayText(value)}
-      >
-        {normalizeDisplayText(value ?? "?")}
-      </span>
+        </div>
+      </section>
     </div>
   );
 }

@@ -113,7 +113,7 @@ export default function PlayMoviePage() {
       {finished && (
         <div className="space-y-4">
           {guesses.map((result) => (
-            <GuessCard key={result.guess.id} result={result} />
+            <GuessCard key={result.guess.id} result={result} animate={celebrate && result.isCorrect} />
           ))}
         </div>
       )}

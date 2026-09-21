@@ -9,14 +9,14 @@ export async function GET(request: NextRequest) {
   if (!success) {
     return NextResponse.json(
       { error: "Too many requests" },
-      { status: 429, headers: { "Retry-After": "60" } }
+      { status: 429, headers: { "Retry-After": "60", "Cache-Control": "no-store" } }
     );
   }
 
   const id = request.nextUrl.searchParams.get("id");
 
   if (!id || isNaN(Number(id))) {
-    return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid movie ID" }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 
   try {
@@ -25,12 +25,14 @@ export async function GET(request: NextRequest) {
     const movie = await getMovieDetails(Number(id), language);
 
     if (!movie) {
-      return NextResponse.json({ error: "Movie not found" }, { status: 404 });
+      return NextResponse.json({ error: "Movie not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
     }
 
-    return NextResponse.json(movie);
+    return NextResponse.json(movie, {
+      headers: { "Cache-Control": "public, max-age=300, s-maxage=3600" },
+    });
   } catch (error) {
     console.error("TMDB details error:", error);
-    return NextResponse.json({ error: "Failed to fetch movie" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch movie" }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

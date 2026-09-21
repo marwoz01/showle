@@ -1,0 +1,51 @@
+.summary {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  grid-template-areas: "poster identity" "metrics metrics";
+  align-items: start;
+  gap: 1rem;
+}
+
+.poster {
+  grid-area: poster;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: .9rem;
+  background: rgb(255 255 255 / 4%);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 35%);
+}
+
+.identity { grid-area: identity; min-width: 0; }
+.metrics {
+  grid-area: metrics;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+  min-width: 0;
+}
+
+.people { display: flex; flex-wrap: wrap; align-items: start; gap: 1.25rem; }
+.personGroup { flex: 0 0 5rem; min-width: 0; }
+.supporting { flex: 1 1 15rem; min-width: 0; }
+
+@container (min-width: 18rem) {
+  .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@container (min-width: 34rem) {
+  .summary {
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    grid-template-areas: "poster identity" "poster metrics";
+    gap: .75rem 1.25rem;
+  }
+  .poster { height: 100%; min-height: 13.5rem; }
+  .supporting { border-left: 1px solid rgb(255 255 255 / 6%); padding-left: 1.25rem; }
+}
+
+@container (min-width: 48rem) {
+  .summary { grid-template-columns: 9.5rem minmax(0, 1fr); }
+  .personGroup { flex-basis: 5.5rem; }
+}

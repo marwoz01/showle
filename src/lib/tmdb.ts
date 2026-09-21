@@ -55,6 +55,11 @@ interface TmdbCredits {
 }
 
 const CAST_LIMIT = 8;
+const DETAILS_CACHE_TTL_MS = 10 * 60_000;
+const DETAILS_CACHE_LIMIT = 256;
+const DETAILS_IN_FLIGHT_LIMIT = 64;
+const detailsCache = new Map<string, { expiresAt: number; movie: MediaDetails }>();
+const detailsInFlight = new Map<string, Promise<MediaDetails | null>>();
 
 async function tmdbFetch<T>(path: string, params: Record<string, string> = {}): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`);
@@ -235,12 +240,13 @@ export async function getWatchProviders(id: number, region = "PL"): Promise<Watc
 /**
  * Get full movie details by ID, mapped to MediaDetails.
  */
-export async function getMovieDetails(id: number, language = "en-US"): Promise<MediaDetails | null> {
+async function loadMovieDetails(id: number, language: string): Promise<MediaDetails | null> {
   try {
-    const [movie, credits] = await Promise.all([
-      tmdbFetch<TmdbMovieDetails>(`/movie/${id}`, { language }),
-      tmdbFetch<TmdbCredits>(`/movie/${id}/credits`),
-    ]);
+    const movie = await tmdbFetch<TmdbMovieDetails & { credits: TmdbCredits }>(
+      `/movie/${id}`,
+      { language, append_to_response: "credits" },
+    );
+    const credits = movie.credits;
 
     const directorCredit = credits.crew.find((c) => c.job === "Director");
     const director = directorCredit?.name ?? "Unknown";
@@ -282,5 +288,37 @@ export async function getMovieDetails(id: number, language = "en-US"): Promise<M
   } catch {
     return null;
   }
+}
+
+/** Reuse public metadata between search prefetches and guesses in this instance. */
+export async function getMovieDetails(id: number, language = "en-US"): Promise<MediaDetails | null> {
+  const key = `${id}:${language}`;
+  const cached = detailsCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    detailsCache.delete(key);
+    detailsCache.set(key, cached);
+    return structuredClone(cached.movie);
+  }
+  detailsCache.delete(key);
+
+  let pending = detailsInFlight.get(key);
+  if (!pending) {
+    pending = loadMovieDetails(id, language).then((movie) => {
+      if (movie) {
+        detailsCache.set(key, { movie, expiresAt: Date.now() + DETAILS_CACHE_TTL_MS });
+        while (detailsCache.size > DETAILS_CACHE_LIMIT) {
+          detailsCache.delete(detailsCache.keys().next().value!);
+        }
+      }
+      return movie;
+    });
+    if (detailsInFlight.size < DETAILS_IN_FLIGHT_LIMIT) {
+      detailsInFlight.set(key, pending);
+      void pending.finally(() => detailsInFlight.delete(key));
+    }
+  }
+  const movie = await pending;
+  // Callers may customize the returned metadata; never mutate the shared entry.
+  return movie ? structuredClone(movie) : null;
 }
 
