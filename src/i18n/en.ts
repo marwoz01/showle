@@ -1,8 +1,10 @@
 import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 import { recommendationEn } from "@/i18n/recommendation";
+import { profileEn } from "@/i18n/profile";
 
 const en: Translations = {
+  profile: profileEn,
   recommendation: recommendationEn,
   meta: {
     title: "Showle · Daily Movie",
@@ -352,7 +354,20 @@ const en: Translations = {
     },
     addMovie: "Add movie",
     popularMovies: "Popular movies",
-    addSelected: (count: number) => `Add selected (${count})`,
+    addToWatchlistCount: (count: number) => `Add to watchlist (${count})`,
+    addAsWatchedCount: (count: number) => `Add as watched (${count})`,
+    savedToWatchlist: (count: number) => `Added ${count} ${count === 1 ? "movie" : "movies"} to your watchlist.`,
+    savedAsWatched: (count: number) => `Added ${count} ${count === 1 ? "movie" : "movies"} to watched.`,
+    deselectMovie: (title: string) => `Deselect: ${title}`,
+    noSearchResults: "No movies found.",
+    selectionLimit: "You can add up to 50 movies at a time.",
+    saveError: "Couldn't add the movies. Your selection has been kept. Please try again.",
+    undo: "Undo",
+    undone: "Adding movies was undone.",
+    undoError: "Couldn't undo. Please try again.",
+    undoConflict: "A movie was changed afterwards. You can move or remove it in your collection.",
+    undoExpired: "The undo period has expired. You can move or remove the movie in your collection.",
+    close: "Close",
     searchPlaceholder: "Search for a movie...",
     markWatched: "Mark as watched",
     moveToWatchlist: "Move to watchlist",

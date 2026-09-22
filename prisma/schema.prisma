@@ -236,6 +236,30 @@ model RecommendationFeedback {
   @@index([userId, updatedAt])
 }
 
+model UserProfile {
+  userId           String   @id
+  publicSlug       String   @unique
+  displayName      String   @default("Kinoman")
+  bio              String   @default("")
+  isPublic         Boolean  @default(false)
+  avatarUrl        String?
+  favoriteMovieIds Int[]    @default([])
+  favoriteMovies   Json     @default("[]")
+  providerIds      Int[]    @default([])
+  genres           String[] @default([])
+  excludedGenres   String[] @default([])
+  maxRuntime       Int?
+  locale           String   @default("pl")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model HigherLowerRecord {
+  userId    String   @id
+  bestScore Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
 model MovieChoiceRoom {
   code                String   @id
   status              String   @default("waiting")

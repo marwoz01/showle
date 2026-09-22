@@ -1,6 +1,7 @@
 import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 import { recommendationPl } from "@/i18n/recommendation";
+import { profilePl } from "@/i18n/profile";
 
 function polishMovieCount(count: number): string {
   const lastDigit = count % 10;
@@ -23,6 +24,7 @@ function polishGameCount(count: number): string {
 }
 
 const pl: Translations = {
+  profile: profilePl,
   recommendation: recommendationPl,
   meta: {
     title: "Showle · Film dnia",
@@ -372,7 +374,20 @@ const pl: Translations = {
     },
     addMovie: "Dodaj film",
     popularMovies: "Popularne filmy",
-    addSelected: (count: number) => `Dodaj zaznaczone (${count})`,
+    addToWatchlistCount: (count: number) => `Dodaj do obejrzenia (${count})`,
+    addAsWatchedCount: (count: number) => `Dodaj jako obejrzane (${count})`,
+    savedToWatchlist: (count: number) => `Dodano ${polishMovieCount(count)} do obejrzenia.`,
+    savedAsWatched: (count: number) => `Dodano ${polishMovieCount(count)} do obejrzanych.`,
+    deselectMovie: (title: string) => `Odznacz: ${title}`,
+    noSearchResults: "Nie znaleziono filmów.",
+    selectionLimit: "Możesz dodać maksymalnie 50 filmów naraz.",
+    saveError: "Nie udało się dodać filmów. Twój wybór został zachowany. Spróbuj ponownie.",
+    undo: "Cofnij",
+    undone: "Cofnięto dodawanie filmów.",
+    undoError: "Nie udało się cofnąć. Spróbuj ponownie.",
+    undoConflict: "Film został później zmieniony. Możesz przenieść go lub usunąć w kolekcji.",
+    undoExpired: "Minął czas na cofnięcie. Możesz przenieść film lub usunąć go w kolekcji.",
+    close: "Zamknij",
     searchPlaceholder: "Szukaj filmu...",
     markWatched: "Oznacz jako obejrzany",
     moveToWatchlist: "Przenieś do obejrzenia",

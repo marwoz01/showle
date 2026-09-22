@@ -12,6 +12,9 @@ import MovieGrid from "@/components/collection/MovieGrid";
 import ReviewModal from "@/components/collection/ReviewModal";
 import RankingsList from "@/components/collection/RankingsList";
 import EmptyState from "@/components/collection/EmptyState";
+import CollectionSaveNotice from "@/components/collection/CollectionSaveNotice";
+import type { AddMovieModalProps } from "@/components/collection/AddMovieModal";
+import type { CollectionSaveResult } from "@/types/collection";
 import Link from "next/link";
 
 interface SavedMovie {
@@ -66,6 +69,7 @@ function CollectionContent() {
   const [counts, setCounts] = useState({ watched: 0, watchlist: 0, rankings: 0 });
   const [reviewMovie, setReviewMovie] = useState<SavedMovie | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [saveResult, setSaveResult] = useState<CollectionSaveResult | null>(null);
 
   const defaultOrders: Record<SortOption, "asc" | "desc"> = {
     date: "desc",
@@ -308,22 +312,29 @@ function CollectionContent() {
       {/* Add Movie Modal */}
       {showAddModal && (
         <AddMovieModalLazy
-          onClose={() => {
+          onClose={() => setShowAddModal(false)}
+          onSaved={(result) => {
             setShowAddModal(false);
-            fetchMovies();
+            setSaveResult(result);
+            setPage(1);
+            if (activeTab === result.category) fetchMovies();
+            else handleTabChange(result.category);
             fetchCounts();
           }}
         />
+      )}
+      {saveResult && (
+        <CollectionSaveNotice key={saveResult.undoToken} result={saveResult}
+          onDismiss={() => setSaveResult(null)}
+          onUndone={() => { setPage(1); fetchMovies(); fetchCounts(); }} />
       )}
     </div>
   );
 }
 
 // Lazy-loaded AddMovieModal to avoid circular deps
-function AddMovieModalLazy({ onClose }: { onClose: () => void }) {
-  const [Component, setComponent] = useState<React.FC<{
-    onClose: () => void;
-  }> | null>(null);
+function AddMovieModalLazy(props: AddMovieModalProps) {
+  const [Component, setComponent] = useState<React.FC<AddMovieModalProps> | null>(null);
 
   useEffect(() => {
     import("@/components/collection/AddMovieModal").then((mod) => {
@@ -332,5 +343,5 @@ function AddMovieModalLazy({ onClose }: { onClose: () => void }) {
   }, []);
 
   if (!Component) return null;
-  return <Component onClose={onClose} />;
+  return <Component {...props} />;
 }

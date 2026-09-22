@@ -1,7 +1,9 @@
 import type { MovieGenre } from "@/constants/genres";
 import type { RecommendationCopy } from "@/i18n/recommendation";
+import type { ProfileCopy } from "@/i18n/profile";
 
 export interface Translations {
+  profile: ProfileCopy;
   recommendation: RecommendationCopy;
   meta: {
     title: string;
@@ -303,7 +305,20 @@ export interface Translations {
     };
     addMovie: string;
     popularMovies: string;
-    addSelected: (count: number) => string;
+    addToWatchlistCount: (count: number) => string;
+    addAsWatchedCount: (count: number) => string;
+    savedToWatchlist: (count: number) => string;
+    savedAsWatched: (count: number) => string;
+    deselectMovie: (title: string) => string;
+    noSearchResults: string;
+    selectionLimit: string;
+    saveError: string;
+    undo: string;
+    undone: string;
+    undoError: string;
+    undoConflict: string;
+    undoExpired: string;
+    close: string;
     searchPlaceholder: string;
     markWatched: string;
     moveToWatchlist: string;

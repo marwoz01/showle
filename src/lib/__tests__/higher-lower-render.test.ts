@@ -59,6 +59,7 @@ function render(overrides: Partial<HookState> = {}) {
     error: null,
     best: 8,
     recordSaved: true,
+    accountRecordStatus: "guest",
     isNewBest: false,
     answer: vi.fn(),
     next: vi.fn(),

@@ -15,7 +15,9 @@ vi.mock("@/lib/movie-choice-candidates", () => ({ generateMovieChoiceCandidates:
 let tail: Promise<void>;
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.spyOn(Date, "now").mockReturnValue(now);
+  // Both Date.now() and new Date() must use the fixture clock for expiry checks.
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(now);
   db.state = fixture();
   db.candidates.mockResolvedValue(movieChoiceMovies);
   db.remove.mockResolvedValue({ count: 0 });
@@ -55,7 +57,7 @@ beforeEach(() => {
     try { return await run(tx); } finally { release?.(); }
   });
 });
-afterEach(() => { vi.restoreAllMocks(); });
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe("shared choice persistence and races", () => {
   it("atomically gives the sole guest slot to one concurrent joiner", async () => {

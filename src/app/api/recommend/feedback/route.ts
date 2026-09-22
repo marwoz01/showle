@@ -5,6 +5,21 @@ import { rateLimit } from "@/lib/rate-limit";
 import { isRecord, readJsonBody, RequestBodyError } from "@/lib/request-body";
 import { validMovieId } from "@/lib/recommend-input";
 
+export async function GET() {
+  const headers = { "Cache-Control": "private, no-store" };
+  try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401, headers });
+    const feedback = await prisma.recommendationFeedback.findMany({
+      where: { userId }, orderBy: { updatedAt: "desc" }, take: 50,
+      select: { tmdbId: true, reaction: true },
+    });
+    return NextResponse.json({ feedback: feedback.reverse().map((entry) => [entry.tmdbId, entry.reaction]) }, { headers });
+  } catch {
+    return NextResponse.json({ error: "feedback_unavailable" }, { status: 503, headers });
+  }
+}
+
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

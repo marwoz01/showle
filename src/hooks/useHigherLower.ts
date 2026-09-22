@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { HIGHER_LOWER_ACCOUNT_RESET_EVENT, higherLowerStorageKeys, readHigherLowerBest } from "@/lib/higher-lower-storage";
 import type {
   HigherLowerChoice,
   HigherLowerLocale,
@@ -8,27 +10,23 @@ import type {
   HigherLowerResponse,
 } from "@/types/higher-lower";
 
-const SESSION_KEY = "showle:higher-lower:year:session:v1";
-const BEST_KEY = "showle:higher-lower:year:best:v1";
-
-function readBest() {
-  try {
-    const value = Number(localStorage.getItem(BEST_KEY));
-    return Number.isSafeInteger(value) && value >= 0 ? value : 0;
-  } catch {
-    return 0;
-  }
-}
-
 type Action = HigherLowerRequest["action"];
 
 export function useHigherLower(locale: HigherLowerLocale) {
-  const [response, setResponse] = useState<HigherLowerResponse | null>(null);
+  const { isLoaded, userId } = useAuth();
+  const owner = userId ?? "guest";
+  const { session: sessionKey, best: bestKey } = higherLowerStorageKeys(userId);
+  const [scopedResponse, setResponse] = useState<{ owner: string; value: HigherLowerResponse } | null>(null);
+  const response = scopedResponse?.owner === owner ? scopedResponse.value : null;
   const [pending, setPending] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [best, setBest] = useState(0);
   const [baseline, setBaseline] = useState(0);
   const [recordSaved, setRecordSaved] = useState(true);
+  const [account, setAccount] = useState<{ owner: string; best: number; available: boolean } | null>(null);
+  const [syncFailed, setSyncFailed] = useState(false);
+  const [resetVersion, setResetVersion] = useState(0);
+  const activeOwner = useRef<string | null>(null);
   const token = useRef<string | null>(null);
   const bestInMemory = useRef(0);
   const baselineReady = useRef(false);
@@ -36,6 +34,7 @@ export function useHigherLower(locale: HigherLowerLocale) {
   const lastRequest = useRef<{ action: Action; choice?: HigherLowerChoice }>({ action: "start" });
 
   const request = useCallback(async (action: Action, choice?: HigherLowerChoice) => {
+    if (!isLoaded || activeOwner.current !== owner) return;
     if (controller.current && action !== "start" && action !== "resume") return;
     controller.current?.abort();
     const current = new AbortController();
@@ -58,8 +57,8 @@ export function useHigherLower(locale: HigherLowerLocale) {
       if (controller.current !== current) return;
       const next = body as HigherLowerResponse;
       token.current = next.token;
-      setResponse(next);
-      const storedBest = Math.max(readBest(), bestInMemory.current);
+      setResponse({ owner, value: next });
+      const storedBest = Math.max(readHigherLowerBest(bestKey), bestInMemory.current);
       if (action === "start" || !baselineReady.current) {
         setBaseline(storedBest);
         baselineReady.current = true;
@@ -67,12 +66,12 @@ export function useHigherLower(locale: HigherLowerLocale) {
       bestInMemory.current = Math.max(storedBest, next.game.score);
       setBest(bestInMemory.current);
       try {
-        sessionStorage.setItem(SESSION_KEY, next.token);
+        sessionStorage.setItem(sessionKey, next.token);
       } catch {
         // Storage is optional: this tab can still finish its current run.
       }
       try {
-        localStorage.setItem(BEST_KEY, String(bestInMemory.current));
+        localStorage.setItem(bestKey, String(bestInMemory.current));
         setRecordSaved(true);
       } catch {
         setRecordSaved(false);
@@ -83,7 +82,7 @@ export function useHigherLower(locale: HigherLowerLocale) {
       setError(code);
       if (code === "invalid_session") {
         token.current = null;
-        try { sessionStorage.removeItem(SESSION_KEY); } catch { /* Optional storage. */ }
+        try { sessionStorage.removeItem(sessionKey); } catch { /* Optional storage. */ }
       }
     } finally {
       window.clearTimeout(timeout);
@@ -92,11 +91,43 @@ export function useHigherLower(locale: HigherLowerLocale) {
         setPending(false);
       }
     }
-  }, [locale]);
+  }, [locale, isLoaded, owner, bestKey, sessionKey]);
 
   useEffect(() => {
+    function resetAccount(event: Event) {
+      if (!userId || (event instanceof CustomEvent ? event.detail !== userId
+        : !(event instanceof StorageEvent) || event.key !== bestKey || event.newValue !== null)) return;
+      controller.current?.abort();
+      controller.current = null;
+      activeOwner.current = null;
+      token.current = null;
+      try { sessionStorage.removeItem(sessionKey); } catch { /* Optional storage. */ }
+      setAccount(null);
+      setResponse(null);
+      setResetVersion((value) => value + 1);
+    }
+    window.addEventListener(HIGHER_LOWER_ACCOUNT_RESET_EVENT, resetAccount);
+    window.addEventListener("storage", resetAccount);
+    return () => {
+      window.removeEventListener(HIGHER_LOWER_ACCOUNT_RESET_EVENT, resetAccount);
+      window.removeEventListener("storage", resetAccount);
+    };
+  }, [userId, bestKey, sessionKey]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (activeOwner.current !== owner) {
+      activeOwner.current = owner;
+      token.current = null;
+      bestInMemory.current = readHigherLowerBest(bestKey);
+      baselineReady.current = false;
+      setBest(bestInMemory.current);
+      setBaseline(bestInMemory.current);
+      setSyncFailed(false);
+      setResponse(null);
+    }
     if (!token.current) {
-      try { token.current = sessionStorage.getItem(SESSION_KEY); } catch { /* Optional storage. */ }
+      try { token.current = sessionStorage.getItem(sessionKey); } catch { /* Optional storage. */ }
     }
     void request(token.current ? "resume" : "start");
     return () => {
@@ -104,7 +135,59 @@ export function useHigherLower(locale: HigherLowerLocale) {
       controller.current = null;
       active?.abort();
     };
-  }, [request]);
+  }, [request, isLoaded, owner, bestKey, sessionKey, resetVersion]);
+
+  useEffect(() => {
+    if (!isLoaded || !userId) return;
+    const current = new AbortController();
+    let active = true;
+    const timeout = window.setTimeout(() => current.abort(), 6000);
+    void fetch("/api/user/higher-lower-record", { cache: "no-store", signal: current.signal })
+      .then(async (result) => {
+        if (!result.ok) throw new Error("record_unavailable");
+        const body = await result.json();
+        if (!Number.isSafeInteger(body.bestScore) || body.bestScore < 0) throw new Error("record_unavailable");
+        if (!active || activeOwner.current !== owner) return;
+        bestInMemory.current = Math.max(bestInMemory.current, body.bestScore);
+        setBest(bestInMemory.current);
+        setBaseline((previous) => Math.max(previous, body.bestScore));
+        setAccount({ owner, best: body.bestScore, available: true });
+        try { localStorage.setItem(bestKey, String(bestInMemory.current)); } catch { /* The account remains the source of truth. */ }
+      })
+      .catch(() => {
+        if (active && activeOwner.current === owner) {
+          setAccount({ owner, best: 0, available: false });
+          setSyncFailed(true);
+        }
+      })
+      .finally(() => window.clearTimeout(timeout));
+    return () => { active = false; window.clearTimeout(timeout); current.abort(); };
+  }, [isLoaded, userId, owner, bestKey, resetVersion]);
+
+  useEffect(() => {
+    if (!isLoaded || !userId || !response || response.game.score <= 0 || account?.owner !== owner
+      || (account.available && account.best >= response.game.score)) return;
+    const current = new AbortController();
+    let active = true;
+    const timeout = window.setTimeout(() => current.abort(), 6000);
+    // Only the authenticated server token is submitted, never the local best.
+    void fetch("/api/user/higher-lower-record", {
+      method: "POST", cache: "no-store", signal: current.signal,
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: response.token }),
+    }).then(async (result) => {
+      if (!result.ok) throw new Error("record_unavailable");
+      const body = await result.json();
+      if (!Number.isSafeInteger(body.bestScore) || body.bestScore < response.game.score) throw new Error("record_unavailable");
+      if (!active || activeOwner.current !== owner) return;
+      bestInMemory.current = Math.max(bestInMemory.current, body.bestScore);
+      setBest(bestInMemory.current);
+      setAccount({ owner, best: body.bestScore, available: true });
+      setSyncFailed(false);
+      try { localStorage.setItem(bestKey, String(bestInMemory.current)); } catch { /* Account sync succeeded. */ }
+    }).catch(() => { if (active && activeOwner.current === owner) setSyncFailed(true); })
+      .finally(() => window.clearTimeout(timeout));
+    return () => { active = false; window.clearTimeout(timeout); current.abort(); };
+  }, [isLoaded, userId, owner, response, account, bestKey]);
 
   const answer = useCallback((choice: HigherLowerChoice) => {
     if (response?.game.status === "guessing" && !error) void request("answer", choice);
@@ -114,8 +197,9 @@ export function useHigherLower(locale: HigherLowerLocale) {
     game: response?.game ?? null,
     pending,
     error,
-    best,
+    best: activeOwner.current === owner ? best : 0,
     recordSaved,
+    accountRecordStatus: !userId ? "guest" : syncFailed ? "unavailable" : account?.owner === owner && account.available && account.best >= best ? "synced" : "pending",
     isNewBest: Boolean(response && response.game.score > baseline),
     answer,
     next: () => void request("next"),

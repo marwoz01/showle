@@ -216,7 +216,7 @@ export default function Sidebar() {
       <div className="border-t border-white/6 px-4 py-4">
         {isSignedIn && user ? (
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
+            <Link href="/profile" aria-label={t.profile.title} className="flex items-center gap-3 rounded-lg transition-colors hover:bg-white/4 focus-visible:outline-accent-purple">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-purple/20 text-accent-purple">
                 <User size={16} />
               </div>
@@ -231,7 +231,7 @@ export default function Sidebar() {
                   {streak}
                 </div>
               )}
-            </div>
+            </Link>
             <button
               onClick={() => signOut()}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground"

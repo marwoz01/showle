@@ -10,6 +10,7 @@ interface Props { value: RecommendationPreference; onChange: (patch: Partial<Rec
 export default function RecommendationFilters({ value, onChange }: Props) {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
+  const runtimeOptions = [...new Set([60, 90, 120, 150, 180, 240, ...(value.maxRuntime === null ? [] : [value.maxRuntime])])].sort((a, b) => a - b);
   const inputClass = "min-h-12 w-full rounded-xl bg-white/5 px-4 py-3 text-sm outline-accent-purple";
   const chipClass = (selected: boolean) => `min-h-10 rounded-xl px-3 py-2 text-sm transition-colors ${selected ? "bg-accent-purple/15 text-accent-purple" : "bg-white/5 text-muted hover:bg-white/10"}`;
   return (
@@ -32,7 +33,7 @@ export default function RecommendationFilters({ value, onChange }: Props) {
         <label className="space-y-3 text-sm text-muted">{t.recommendation.maxRuntime}
           <select value={value.maxRuntime ?? ""} onChange={(event) => onChange({ maxRuntime: event.target.value ? Number(event.target.value) : null })} className={inputClass}>
             <option value="">{t.recommendation.noRuntimeLimit}</option>
-            {[60, 90, 120, 150, 180].map((minutes) => <option key={minutes} value={minutes}>{t.recommendation.minutes(minutes)}</option>)}
+            {runtimeOptions.map((minutes) => <option key={minutes} value={minutes}>{t.recommendation.minutes(minutes)}</option>)}
           </select>
         </label>
         <fieldset className="sm:col-span-2">

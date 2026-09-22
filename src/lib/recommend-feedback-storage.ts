@@ -2,6 +2,18 @@ import { validMovieId } from "@/lib/recommend-input";
 import type { RecommendationReaction } from "@/types/recommendation";
 
 export type FeedbackEntry = [number, RecommendationReaction];
+export const RECOMMENDATION_FEEDBACK_RESET_EVENT = "showle:recommendation:feedback-reset";
+
+export function recommendationFeedbackStorageKey(userId: string | null | undefined) {
+  return `showle-recommend-feedback:${userId ?? "guest"}`;
+}
+
+export function clearRecommendationAccountFeedback(userId: string) {
+  if (!userId) return;
+  try { localStorage.removeItem(recommendationFeedbackStorageKey(userId)); } catch { /* Optional browser cache. */ }
+  window.dispatchEvent(new CustomEvent(RECOMMENDATION_FEEDBACK_RESET_EVENT, { detail: userId }));
+}
+
 export function readFeedback(value: unknown): FeedbackEntry[] {
   const raw = Array.isArray(value) ? value : value && typeof value === "object" ? Object.entries(value) : [];
   const entries = new Map<number, RecommendationReaction>();

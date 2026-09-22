@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Copy, Flame, Loader2, RefreshCw, Trophy, X } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { higherLowerCopy } from "@/i18n/higher-lower";
+import { profileIntegrationCopy } from "@/i18n/profile-integrations";
 import { useHigherLower } from "@/hooks/useHigherLower";
 import HigherLowerMovie from "@/components/game/higher-lower/HigherLowerMovie";
 import styles from "@/components/game/higher-lower/higher-lower.module.css";
@@ -12,7 +13,10 @@ import styles from "@/components/game/higher-lower/higher-lower.module.css";
 export default function HigherLowerGame() {
   const { locale } = useTranslation();
   const copy = higherLowerCopy[locale];
-  const { game, pending, error, best, recordSaved, isNewBest, answer, next, restart, retry } = useHigherLower(locale);
+  const { game, pending, error, best, recordSaved, accountRecordStatus, isNewBest, answer, next, restart, retry } = useHigherLower(locale);
+  const recordHint = accountRecordStatus === "synced" ? profileIntegrationCopy[locale].accountRecord
+    : accountRecordStatus === "unavailable" ? profileIntegrationCopy[locale].recordSyncUnavailable
+      : recordSaved ? copy.recordHint : copy.recordUnavailable;
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
   const page = useRef<HTMLElement>(null);
   const primaryAction = useRef<HTMLButtonElement>(null);
@@ -61,7 +65,7 @@ export default function HigherLowerGame() {
         <Link href="/play" className={styles.back} aria-label={copy.back} title={copy.back}><ArrowLeft size={19} /></Link>
         <div className={styles.stats}>
           <div className={styles.stat} role="group" aria-label={`${copy.streak}: ${game?.score ?? 0}`}><Flame size={17} aria-hidden="true" /><strong>{game?.score ?? 0}</strong></div>
-          <div className={`${styles.stat} ${styles.best}`} role="group" aria-label={`${copy.best}: ${best}`} title={recordSaved ? copy.recordHint : copy.recordUnavailable}><Trophy size={16} aria-hidden="true" /><strong>{best}</strong></div>
+          <div className={`${styles.stat} ${styles.best}`} role="group" aria-label={`${copy.best}: ${best}`} title={recordHint}><Trophy size={16} aria-hidden="true" /><strong>{best}</strong></div>
         </div>
       </header>
 

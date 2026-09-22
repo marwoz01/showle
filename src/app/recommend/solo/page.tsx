@@ -8,13 +8,23 @@ import Link from "next/link";
 import PreferenceForm from "@/components/recommend/PreferenceForm";
 import RecommendationResults from "@/components/recommend/RecommendationResults";
 import { useRecommendationFeedback } from "@/hooks/useRecommendationFeedback";
+import { hasProfilePreferences, useProfilePreferences } from "@/hooks/useProfilePreferences";
+import { profileIntegrationCopy } from "@/i18n/profile-integrations";
 import { MAX_RECOMMEND_EXCLUDES } from "@/lib/recommend-input";
 import type { MovieSuggestion } from "@/types/movie-suggestion";
+import type { MovieChoicePreferences } from "@/types/movie-choice";
 import type { Recommendation, RecommendationMeta, RecommendationPreference, RecommendationReaction } from "@/types/recommendation";
 
 type ViewState = "form" | "loading" | "results" | "error";
 
 export default function SoloRecommendPage() {
+  const defaults = useProfilePreferences();
+  const { locale } = useTranslation();
+  if (defaults.loading) return <p role="status" className="py-12 text-center text-sm text-muted">{profileIntegrationCopy[locale].loading}</p>;
+  return <SoloRecommendContent key={defaults.owner} initialProfile={defaults.preferences} profileFailed={defaults.failed} />;
+}
+
+function SoloRecommendContent({ initialProfile, profileFailed }: { initialProfile: MovieChoicePreferences | null; profileFailed: boolean }) {
   const { t, locale } = useTranslation();
   const taste = useRecommendationFeedback();
   const [view, setView] = useState<ViewState>("form");
@@ -27,6 +37,7 @@ export default function SoloRecommendPage() {
   const [preferences, setPreferences] = useState<RecommendationPreference>({
     genres: [], excludedGenres: [], yearFrom: 1920, yearTo: new Date().getFullYear(),
     popularity: "any", freeformText: "", maxRuntime: null, providerIds: [], referenceMovieId: null,
+    ...initialProfile,
   });
   const [reference, setReference] = useState<MovieSuggestion | null>(null);
   const [excludeIds, setExcludeIds] = useState<number[]>([]);
@@ -57,7 +68,9 @@ export default function SoloRecommendPage() {
     try {
       const response = await fetch("/api/recommend", { method: "POST", signal: ac.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...prefs, locale, exclude: excludeIds, positiveIds: taste.positiveIds, negativeIds: taste.negativeIds }),
+        // Signed-in feedback is read from the account on the server. A stale
+        // browser cache must never resurrect reactions cleared in the profile.
+        body: JSON.stringify({ ...prefs, locale, exclude: excludeIds, positiveIds: taste.userId ? [] : taste.positiveIds, negativeIds: taste.userId ? [] : taste.negativeIds }),
       });
       const data = await response.json();
       if (ac.signal.aborted) return;
@@ -94,7 +107,10 @@ export default function SoloRecommendPage() {
         </div>
         <p className="max-w-xl text-sm text-muted">{t.recommend.subtitle}</p>
       </header>
-      {view === "form" && <PreferenceForm initial={preferences} initialReference={reference} onSubmit={handleSubmit} remaining={remaining} quotaLimit={quotaLimit} />}
+      {view === "form" && <>
+        {(profileFailed || hasProfilePreferences(initialProfile)) && <p role="status" className="text-sm text-muted">{profileFailed ? profileIntegrationCopy[locale].unavailable : profileIntegrationCopy[locale].applied}</p>}
+        <PreferenceForm initial={preferences} initialReference={reference} onSubmit={handleSubmit} remaining={remaining} quotaLimit={quotaLimit} />
+      </>}
       {view === "loading" && <div role="status" className="flex flex-col items-center gap-4 py-20 text-sm text-muted"><Loader2 size={30} className="animate-spin" />{t.recommend.loading}</div>}
       {view === "error" && <div role="alert" className="soft-card space-y-5 rounded-2xl p-8 text-center">
         <p className="text-sm text-muted">{errors[errorType] ?? t.recommend.error}</p>
@@ -110,7 +126,7 @@ export default function SoloRecommendPage() {
       </div>}
       {view === "results" && <>
         <RecommendationResults results={results} meta={meta} hasDescription={Boolean(preferences.freeformText.trim())} hasReference={Boolean(preferences.referenceMovieId)} feedback={taste.feedback}
-          pending={taste.pending} feedbackReady={taste.isLoaded} onReact={(id, reaction) => void react(id, reaction)} />
+          pending={taste.pending} feedbackReady={taste.feedbackReady} onReact={(id, reaction) => void react(id, reaction)} />
         <p role="status" className="min-h-5 text-sm text-muted">{feedbackMessage === "saved" ? t.recommendation.feedbackSaved : feedbackMessage === "error" ? t.recommendation.feedbackError : ""}</p>
         <div className="flex flex-wrap items-center gap-3">
           <button onClick={() => void handleSubmit(preferences)} disabled={remaining === 0 || taste.pending.length > 0} className={actionClass}><RefreshCw size={16} />{t.recommend.tryAgain}</button>

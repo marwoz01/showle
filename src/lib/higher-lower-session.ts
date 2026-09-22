@@ -16,7 +16,7 @@ function getKey(): Buffer {
 }
 
 /** Confidential and authenticated, but stateless: old tokens can be replayed.
- * This is a casual run with a local personal best, not a competitive score proof.
+ * This proves the server-issued personal best, not competitive anti-cheat.
  */
 export function sealHigherLowerRun(run: HigherLowerRun): string {
   const iv = randomBytes(12);

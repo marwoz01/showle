@@ -3,6 +3,8 @@
 import { useId, useState } from "react";
 import { useTranslation } from "@/i18n";
 import { movieChoiceRoomCopy } from "@/i18n/movie-choice-room";
+import { profileIntegrationCopy } from "@/i18n/profile-integrations";
+import { hasProfilePreferences, useProfilePreferences } from "@/hooks/useProfilePreferences";
 import { MOVIE_GENRES } from "@/constants/genres";
 import { RECOMMENDATION_PROVIDERS } from "@/constants/recommendation";
 import { localizeGenre } from "@/lib/localization";
@@ -20,6 +22,15 @@ const chipClass = (selected: boolean) =>
   }`;
 
 export default function MovieChoicePreferences({ initial, disabled, onSubmit }: Props) {
+  const defaults = useProfilePreferences();
+  const { locale } = useTranslation();
+  // Existing room settings always win; defaults only initialize a new choice.
+  if (!initial && defaults.loading) return <p role="status" className="py-8 text-center text-sm text-muted">{profileIntegrationCopy[locale].loading}</p>;
+  return <MovieChoicePreferencesForm key={initial ? "room" : defaults.owner} initial={initial ?? defaults.preferences} disabled={disabled} onSubmit={onSubmit}
+    notice={initial ? null : defaults.failed ? profileIntegrationCopy[locale].unavailable : hasProfilePreferences(defaults.preferences) ? profileIntegrationCopy[locale].applied : null} />;
+}
+
+function MovieChoicePreferencesForm({ initial, disabled, onSubmit, notice }: Props & { notice: string | null }) {
   const { t, locale } = useTranslation();
   const copy = movieChoiceRoomCopy[locale];
   const id = useId();
@@ -29,6 +40,7 @@ export default function MovieChoicePreferences({ initial, disabled, onSubmit }: 
     maxRuntime: initial?.maxRuntime ?? null,
     providerIds: [...(initial?.providerIds ?? [])],
   }));
+  const runtimeOptions = [...new Set([60, 90, 120, 150, 180, 240, ...(value.maxRuntime === null ? [] : [value.maxRuntime])])].sort((a, b) => a - b);
 
   function toggleGenre(genre: string, excluded: boolean) {
     setValue((previous) => {
@@ -52,6 +64,7 @@ export default function MovieChoicePreferences({ initial, disabled, onSubmit }: 
     >
       <fieldset disabled={disabled} className="min-w-0 space-y-5 disabled:opacity-60">
         <legend className="sr-only">{copy.preferencesTitle}</legend>
+        {notice && <p role="status" className="text-sm text-muted">{notice}</p>}
         <section className="soft-card space-y-5 rounded-2xl p-5 sm:p-6">
           <div>
             <h2 id={`${id}-title`} className="font-display text-xl font-semibold">{copy.preferencesTitle}</h2>
@@ -89,7 +102,7 @@ export default function MovieChoicePreferences({ initial, disabled, onSubmit }: 
                 className="min-h-12 w-full rounded-xl bg-white/5 px-4 py-3 text-sm outline-accent-purple"
               >
                 <option value="">{t.recommendation.noRuntimeLimit}</option>
-                {[60, 90, 120, 150, 180].map((minutes) => (
+                {runtimeOptions.map((minutes) => (
                   <option key={minutes} value={minutes}>{t.recommendation.minutes(minutes)}</option>
                 ))}
               </select>
