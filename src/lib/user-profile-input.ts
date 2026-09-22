@@ -3,6 +3,7 @@ import { RECOMMENDATION_PROVIDERS } from "@/constants/recommendation";
 import { isRecord } from "@/lib/request-body";
 import { validMovieId } from "@/lib/recommend-input";
 import type { ProfilePreferences } from "@/types/profile";
+import type { ActivityVisibility } from "@/types/social";
 
 export class ProfileError extends Error {
   constructor(message: string, public readonly status = 400) { super(message); }
@@ -12,6 +13,7 @@ export interface ProfilePatch {
   displayName?: string;
   bio?: string;
   isPublic?: boolean;
+  activityVisibility?: ActivityVisibility;
   favoriteMovieIds?: number[];
 }
 
@@ -34,6 +36,10 @@ export function parseProfilePatch(value: unknown): ProfilePatch {
     const ids = value.favoriteMovieIds;
     if (!Array.isArray(ids) || ids.length > 4 || ids.some((id) => !validMovieId(id)) || new Set(ids).size !== ids.length) throw new ProfileError("invalid_favorites");
     patch.favoriteMovieIds = ids;
+  }
+  if ("activityVisibility" in value) {
+    if (value.activityVisibility !== "private" && value.activityVisibility !== "friends" && value.activityVisibility !== "public") throw new ProfileError("invalid_activity_visibility");
+    patch.activityVisibility = value.activityVisibility;
   }
   if (!Object.keys(patch).length) throw new ProfileError("empty_patch");
   return patch;

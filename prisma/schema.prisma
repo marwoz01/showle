@@ -242,6 +242,7 @@ model UserProfile {
   displayName      String   @default("Kinoman")
   bio              String   @default("")
   isPublic         Boolean  @default(false)
+  activityVisibility String @default("friends")
   avatarUrl        String?
   favoriteMovieIds Int[]    @default([])
   favoriteMovies   Json     @default("[]")
@@ -252,6 +253,36 @@ model UserProfile {
   locale           String   @default("pl")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  following        UserFollow[] @relation("Follower")
+  followers        UserFollow[] @relation("Following")
+  friendshipsLow   UserFriendship[] @relation("FriendLow")
+  friendshipsHigh  UserFriendship[] @relation("FriendHigh")
+}
+
+model UserFollow {
+  followerId String
+  followingId String
+  createdAt DateTime @default(now())
+  follower UserProfile @relation("Follower", fields: [followerId], references: [userId], onDelete: Cascade)
+  following UserProfile @relation("Following", fields: [followingId], references: [userId], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId, createdAt])
+}
+
+model UserFriendship {
+  lowId String
+  highId String
+  requesterId String
+  status String @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  low UserProfile @relation("FriendLow", fields: [lowId], references: [userId], onDelete: Cascade)
+  high UserProfile @relation("FriendHigh", fields: [highId], references: [userId], onDelete: Cascade)
+
+  @@id([lowId, highId])
+  @@index([highId, status])
+  @@index([lowId, status])
 }
 
 model HigherLowerRecord {

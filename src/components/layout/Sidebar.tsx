@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useTranslation, Locale } from "@/i18n";
+import SidebarAvatar from "@/components/layout/SidebarAvatar";
 import {
   Clapperboard,
   Home,
@@ -217,9 +218,7 @@ export default function Sidebar() {
         {isSignedIn && user ? (
           <div className="space-y-3">
             <Link href="/profile" aria-label={t.profile.title} className="flex items-center gap-3 rounded-lg transition-colors hover:bg-white/4 focus-visible:outline-accent-purple">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-purple/20 text-accent-purple">
-                <User size={16} />
-              </div>
+              <SidebarAvatar key={`${user.id}:${user.imageUrl}`} imageUrl={user.imageUrl || null} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">
                   {user.fullName || user.primaryEmailAddress?.emailAddress}

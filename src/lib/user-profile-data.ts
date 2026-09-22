@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function exportProfileData(userId: string) {
   return prisma.$transaction(async (tx) => {
-    const [profile, collection, rankings, history, stats, feedback, wallet, transactions, higherLowerRecord, usage] = await Promise.all([
+    const [profile, collection, rankings, history, stats, feedback, wallet, transactions, higherLowerRecord, usage, follows, friendships] = await Promise.all([
       tx.userProfile.findUnique({ where: { userId } }),
       tx.savedMovie.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
       tx.rankedList.findMany({ where: { userId }, include: { items: { orderBy: { position: "asc" } } }, orderBy: { createdAt: "asc" } }),
@@ -14,12 +14,14 @@ export async function exportProfileData(userId: string) {
       tx.coinTransaction.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
       tx.higherLowerRecord.findUnique({ where: { userId } }),
       tx.dailyUsage.findMany({ where: { key: { startsWith: `recommend:${userId}:` } }, orderBy: { date: "asc" } }),
+      tx.userFollow.findMany({ where: { OR: [{ followerId: userId }, { followingId: userId }] }, orderBy: { createdAt: "asc" } }),
+      tx.userFriendship.findMany({ where: { OR: [{ lowId: userId }, { highId: userId }] }, orderBy: { createdAt: "asc" } }),
     ]);
     // A running game's solution is server state, not a revealed user result.
     const exportedHistory = history.map((game) => game.status === "playing"
       ? { ...game, targetMovieId: null, targetTitle: "", targetYear: null, targetPoster: "" }
       : game);
-    return { version: 1, exportedAt: new Date().toISOString(), profile, collection, rankings, history: exportedHistory, stats, feedback, wallet, transactions, higherLowerRecord, usage };
+    return { version: 2, exportedAt: new Date().toISOString(), profile, collection, rankings, history: exportedHistory, stats, feedback, wallet, transactions, higherLowerRecord, usage, follows, friendships };
   }, { isolationLevel: "RepeatableRead", timeout: 20_000 });
 }
 
@@ -48,6 +50,7 @@ export async function deleteProfileData(userId: string): Promise<void> {
     await tx.userWallet.deleteMany({ where: { userId } });
     await tx.higherLowerRecord.deleteMany({ where: { userId } });
     await tx.dailyUsage.deleteMany({ where: { key: { startsWith: `recommend:${userId}:` } } });
+    // Social edges in both directions are removed by the profile foreign keys.
     await tx.userProfile.deleteMany({ where: { userId } });
   }, { timeout: 20_000 });
 }

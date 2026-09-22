@@ -17,7 +17,9 @@ export function useHigherLower(locale: HigherLowerLocale) {
   const owner = userId ?? "guest";
   const { session: sessionKey, best: bestKey } = higherLowerStorageKeys(userId);
   const [scopedResponse, setResponse] = useState<{ owner: string; value: HigherLowerResponse } | null>(null);
+  const [prepared, setPrepared] = useState<{ owner: string; value: HigherLowerResponse } | null>(null);
   const response = scopedResponse?.owner === owner ? scopedResponse.value : null;
+  const preparedNext = prepared?.owner === owner ? prepared.value : null;
   const [pending, setPending] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [best, setBest] = useState(0);
@@ -57,7 +59,11 @@ export function useHigherLower(locale: HigherLowerLocale) {
       if (controller.current !== current) return;
       const next = body as HigherLowerResponse;
       token.current = next.token;
-      setResponse({ owner, value: next });
+      if (action === "next") setPrepared({ owner, value: next });
+      else {
+        setPrepared(null);
+        setResponse({ owner, value: next });
+      }
       const storedBest = Math.max(readHigherLowerBest(bestKey), bestInMemory.current);
       if (action === "start" || !baselineReady.current) {
         setBaseline(storedBest);
@@ -104,6 +110,7 @@ export function useHigherLower(locale: HigherLowerLocale) {
       try { sessionStorage.removeItem(sessionKey); } catch { /* Optional storage. */ }
       setAccount(null);
       setResponse(null);
+      setPrepared(null);
       setResetVersion((value) => value + 1);
     }
     window.addEventListener(HIGHER_LOWER_ACCOUNT_RESET_EVENT, resetAccount);
@@ -125,6 +132,7 @@ export function useHigherLower(locale: HigherLowerLocale) {
       setBaseline(bestInMemory.current);
       setSyncFailed(false);
       setResponse(null);
+      setPrepared(null);
     }
     if (!token.current) {
       try { token.current = sessionStorage.getItem(sessionKey); } catch { /* Optional storage. */ }
@@ -193,8 +201,20 @@ export function useHigherLower(locale: HigherLowerLocale) {
     if (response?.game.status === "guessing" && !error) void request("answer", choice);
   }, [response?.game.status, error, request]);
 
+  const next = useCallback(() => {
+    if (response?.game.status === "revealed" && !preparedNext && !error) void request("next");
+  }, [response?.game.status, preparedNext, error, request]);
+
+  const commitNext = useCallback(() => {
+    if (!preparedNext || activeOwner.current !== owner) return;
+    setResponse({ owner, value: preparedNext });
+    setPrepared(null);
+  }, [owner, preparedNext]);
+
   return {
+    scope: `${owner}:${resetVersion}:${locale}`,
     game: response?.game ?? null,
+    preparedNext: preparedNext?.game ?? null,
     pending,
     error,
     best: activeOwner.current === owner ? best : 0,
@@ -202,7 +222,8 @@ export function useHigherLower(locale: HigherLowerLocale) {
     accountRecordStatus: !userId ? "guest" : syncFailed ? "unavailable" : account?.owner === owner && account.available && account.best >= best ? "synced" : "pending",
     isNewBest: Boolean(response && response.game.score > baseline),
     answer,
-    next: () => void request("next"),
+    next,
+    commitNext,
     restart: () => void request("start"),
     retry: () => {
       const { action, choice } = lastRequest.current;

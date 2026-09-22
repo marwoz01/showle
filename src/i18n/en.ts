@@ -2,9 +2,11 @@ import { normalizeDisplayText } from "@/lib/typography";
 import { Translations } from "./types";
 import { recommendationEn } from "@/i18n/recommendation";
 import { profileEn } from "@/i18n/profile";
+import { socialEn } from "@/i18n/social";
 
 const en: Translations = {
   profile: profileEn,
+  social: socialEn,
   recommendation: recommendationEn,
   meta: {
     title: "Showle · Daily Movie",

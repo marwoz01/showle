@@ -25,6 +25,7 @@ import { PATCH as updatePreferences } from "@/app/api/profile/preferences/route"
 import { DELETE } from "@/app/api/profile/data/route";
 import { exportProfileData } from "@/lib/user-profile-data";
 import { getOrCreateUserProfile } from "@/lib/user-profile";
+import { socialPostgresCases } from "@/lib/__tests__/social-postgres.cases";
 
 // Real Prisma SQL, transactions and PostgreSQL protocol; replace only WebSocket transport.
 class LoopbackTransport extends EventEmitter {
@@ -76,9 +77,10 @@ describe.skipIf(!enabled)("profile migration and persistence on isolated Postgre
     await harness.client.$executeRawUnsafe(`CREATE SCHEMA "${schema}"`);
     schemaCreated = true;
     const migration = readFileSync("prisma/migrations/20260922_user_profiles/migration.sql", "utf8");
+    const socialMigration = readFileSync("prisma/migrations/20260922_social_profiles/migration.sql", "utf8");
     await harness.client.$transaction(async (tx) => {
       await tx.$executeRawUnsafe(`SET LOCAL search_path TO "${schema}"`);
-      for (const statement of `${baseline}\n${migration}`.split(";").map((sql) => sql.trim()).filter(Boolean)) await tx.$executeRawUnsafe(statement);
+      for (const statement of `${baseline}\n${migration}\n${socialMigration}`.split(";").map((sql) => sql.trim()).filter(Boolean)) await tx.$executeRawUnsafe(statement);
     }, { timeout: 20_000 });
     await harness.client.$executeRawUnsafe(`INSERT INTO "${schema}"."RecommendationMovie" VALUES (1, 'Verified title', 'Sprawdzony film', 2001, '/verified.jpg')`);
   }, 30_000);
@@ -92,6 +94,7 @@ describe.skipIf(!enabled)("profile migration and persistence on isolated Postgre
     });
   });
   const request = (body: unknown, method = "PATCH") => new Request("http://localhost/api/profile", { method, body: JSON.stringify(body) });
+  socialPostgresCases(() => harness.client!);
 
   it("applies the checked-in migration and persists private defaults, preferences and verified favorite snapshots", async () => {
     const created = await getOrCreateUserProfile("viewer");

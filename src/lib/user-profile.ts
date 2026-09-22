@@ -32,6 +32,7 @@ export function profilePreferences(profile: Pick<UserProfile, "genres" | "exclud
 export function privateProfileView(profile: UserProfile): ProfileDetails {
   return {
     displayName: profile.displayName, bio: profile.bio, isPublic: profile.isPublic,
+    activityVisibility: profile.activityVisibility === "public" || profile.activityVisibility === "private" ? profile.activityVisibility : "friends",
     publicSlug: profile.publicSlug, avatarUrl: profile.avatarUrl,
     favoriteMovies: profile.favoriteMovies as unknown as ProfileMovie[],
     preferences: profilePreferences(profile), locale: profile.locale === "en" ? "en" : "pl",

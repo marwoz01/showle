@@ -9,8 +9,9 @@ import type { ProfileResponse } from "@/types/profile";
 import ProfileOverview from "@/components/profile/ProfileOverview";
 import ProfileTaste from "@/components/profile/ProfileTaste";
 import ProfileSettings from "@/components/profile/ProfileSettings";
+import ProfileFriends from "@/components/profile/social/ProfileFriends";
 
-type Tab = "overview" | "taste" | "settings";
+type Tab = "overview" | "taste" | "friends" | "settings";
 
 export default function ProfilePage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -24,7 +25,7 @@ function ProfileWorkspace({ userId, avatarVersion }: { userId: string; avatarVer
   const { t } = useTranslation();
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [failed, setFailed] = useState(false);
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("invite") ? "friends" : "overview");
   const tabId = useId();
   const load = useCallback(async (signal?: AbortSignal) => {
     const response = await fetch("/api/profile", { cache: "no-store", signal });
@@ -67,17 +68,18 @@ function ProfileWorkspace({ userId, avatarVersion }: { userId: string; avatarVer
         </div>
         {profile.isPublic && <Link href={`/u/${profile.publicSlug}`} className="mt-5 inline-flex items-center gap-2 text-sm text-accent-purple hover:underline">{t.profile.viewPublic}<ExternalLink size={14} /></Link>}
       </header>
-      <div role="tablist" aria-label={t.profile.title} className="grid grid-cols-3 gap-1 rounded-xl border border-white/6 bg-white/3 p-1">
-        {(["overview", "taste", "settings"] as const).map((value, index, tabs) => <button key={value} id={`${tabId}-${value}-tab`} role="tab" aria-selected={tab === value} aria-controls={`${tabId}-${value}-panel`} tabIndex={tab === value ? 0 : -1}
+      <div role="tablist" aria-label={t.profile.title} className="grid grid-cols-2 gap-1 rounded-xl border border-white/6 bg-white/3 p-1 sm:grid-cols-4">
+        {(["overview", "taste", "friends", "settings"] as const).map((value, index, tabs) => <button key={value} id={`${tabId}-${value}-tab`} role="tab" aria-selected={tab === value} aria-controls={`${tabId}-${value}-panel`} tabIndex={tab === value ? 0 : -1}
           onClick={() => setTab(value)} onKeyDown={(event) => {
-            const next = event.key === "ArrowRight" ? tabs[(index + 1) % 3] : event.key === "ArrowLeft" ? tabs[(index + 2) % 3] : event.key === "Home" ? tabs[0] : event.key === "End" ? tabs[2] : null;
+            const next = event.key === "ArrowRight" ? tabs[(index + 1) % tabs.length] : event.key === "ArrowLeft" ? tabs[(index + tabs.length - 1) % tabs.length] : event.key === "Home" ? tabs[0] : event.key === "End" ? tabs[tabs.length - 1] : null;
             if (next) { event.preventDefault(); setTab(next); document.getElementById(`${tabId}-${next}-tab`)?.focus(); }
-          }} className={`min-h-12 rounded-lg px-2 py-3 text-xs font-semibold transition-colors sm:text-sm ${tab === value ? "bg-accent-purple/15 text-accent-purple" : "text-muted hover:bg-white/5 hover:text-foreground"}`}>{t.profile[value]}</button>)}
+          }} className={`min-h-12 rounded-lg px-1 py-3 text-xs font-semibold transition-colors sm:px-2 sm:text-sm ${tab === value ? "bg-accent-purple/15 text-accent-purple" : "text-muted hover:bg-white/5 hover:text-foreground"}`}>{value === "friends" ? t.social.title : t.profile[value]}</button>)}
       </div>
       {failed && <p role="alert" className="text-sm text-muted">{t.common.genericError}</p>}
       <div role="tabpanel" id={`${tabId}-${tab}-panel`} aria-labelledby={`${tabId}-${tab}-tab`} className="space-y-6">
         {tab === "overview" && <ProfileOverview data={data} onSaved={refresh} />}
         {tab === "taste" && <ProfileTaste key={profile.publicSlug} userId={userId} initial={profile.preferences} onSaved={refresh} />}
+        {tab === "friends" && <ProfileFriends key={profile.publicSlug} slug={profile.publicSlug} />}
         {tab === "settings" && <ProfileSettings key={profile.publicSlug} profile={profile} userId={userId} onSaved={refresh} />}
       </div>
     </div>

@@ -1,3 +1,5 @@
+import type { ActivityVisibility } from "@/types/social";
+
 export interface ProfileMovie {
   id: number;
   title: string;
@@ -16,6 +18,7 @@ export interface ProfileDetails {
   displayName: string;
   bio: string;
   isPublic: boolean;
+  activityVisibility: ActivityVisibility;
   publicSlug: string;
   avatarUrl: string | null;
   favoriteMovies: ProfileMovie[];

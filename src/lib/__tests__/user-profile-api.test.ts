@@ -3,6 +3,7 @@ const mocks = vi.hoisted(() => {
   const delegate = () => ({ findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), findMany: vi.fn(), count: vi.fn(), update: vi.fn(), upsert: vi.fn(), deleteMany: vi.fn() });
   const db = {
     userProfile: delegate(), savedMovie: delegate(), rankedList: delegate(), gameResult: delegate(), userStats: delegate(),
+    userFollow: delegate(), userFriendship: delegate(),
     recommendationFeedback: delegate(), userWallet: delegate(), coinTransaction: delegate(), higherLowerRecord: delegate(), dailyUsage: delegate(), recommendationMovie: delegate(),
     $executeRaw: vi.fn(),
   };

@@ -2,18 +2,28 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Copy, Flame, Loader2, RefreshCw, Trophy, X } from "@/components/ui/icons";
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Copy, Flame, RefreshCw, Trophy, X } from "@/components/ui/icons";
 import { useTranslation } from "@/i18n";
 import { higherLowerCopy } from "@/i18n/higher-lower";
 import { profileIntegrationCopy } from "@/i18n/profile-integrations";
 import { useHigherLower } from "@/hooks/useHigherLower";
 import HigherLowerMovie from "@/components/game/higher-lower/HigherLowerMovie";
+import { useHigherLowerMotion } from "@/components/game/higher-lower/useHigherLowerMotion";
 import styles from "@/components/game/higher-lower/higher-lower.module.css";
 
 export default function HigherLowerGame() {
   const { locale } = useTranslation();
+  const state = useHigherLower(locale);
+  return <HigherLowerScreen key={state.scope} locale={locale} state={state} />;
+}
+
+function HigherLowerScreen({ locale, state }: { locale: "pl" | "en"; state: ReturnType<typeof useHigherLower> }) {
   const copy = higherLowerCopy[locale];
-  const { game, pending, error, best, recordSaved, accountRecordStatus, isNewBest, answer, next, restart, retry } = useHigherLower(locale);
+  const { game, preparedNext, pending, error, best, recordSaved, accountRecordStatus, isNewBest, answer, next, commitNext, restart, retry } = state;
+  const { arena, revealed } = useHigherLowerMotion(game, preparedNext, commitNext);
+  const outcome = revealed ? game?.outcome : null;
+  const score = game ? game.score - (!revealed && game.status === "revealed" ? 1 : 0) : 0;
+  const visibleBest = !revealed && isNewBest && game?.status === "revealed" && best === game.score ? Math.max(0, best - 1) : best;
   const recordHint = accountRecordStatus === "synced" ? profileIntegrationCopy[locale].accountRecord
     : accountRecordStatus === "unavailable" ? profileIntegrationCopy[locale].recordSyncUnavailable
       : recordSaved ? copy.recordHint : copy.recordUnavailable;
@@ -24,13 +34,17 @@ export default function HigherLowerGame() {
   const previousRound = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!game || pending) return;
+    if (game?.status === "revealed" && !pending && !error && !preparedNext) next();
+  }, [game?.status, pending, error, preparedNext, next]);
+
+  useEffect(() => {
+    if (!game || pending || (game.status !== "guessing" && !revealed)) return;
     if (previousStatus.current !== null && (previousStatus.current !== game.status || previousRound.current !== game.round)) {
       primaryAction.current?.focus({ preventScroll: true });
     }
     previousStatus.current = game.status;
     previousRound.current = game.round;
-  }, [game, pending]);
+  }, [game, pending, revealed]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -56,7 +70,7 @@ export default function HigherLowerGame() {
     }
   }, [copy, game]);
 
-  const feedback = game?.outcome === "equal" ? copy.equal : game?.outcome === "correct" ? copy.correct : game?.outcome === "wrong" ? copy.wrong : "";
+  const feedback = outcome === "equal" ? copy.equal : outcome === "correct" ? copy.correct : outcome === "wrong" ? copy.wrong : "";
   const errorMessage = error === "invalid_session" ? copy.sessionExpired : error === "rate_limit" ? copy.rateLimited : copy.error;
 
   return (
@@ -64,24 +78,25 @@ export default function HigherLowerGame() {
       <header className={styles.header}>
         <Link href="/play" className={styles.back} aria-label={copy.back} title={copy.back}><ArrowLeft size={19} /></Link>
         <div className={styles.stats}>
-          <div className={styles.stat} role="group" aria-label={`${copy.streak}: ${game?.score ?? 0}`}><Flame size={17} aria-hidden="true" /><strong>{game?.score ?? 0}</strong></div>
-          <div className={`${styles.stat} ${styles.best}`} role="group" aria-label={`${copy.best}: ${best}`} title={recordHint}><Trophy size={16} aria-hidden="true" /><strong>{best}</strong></div>
+          <div className={styles.stat} role="group" aria-label={`${copy.streak}: ${score}`}><Flame size={17} aria-hidden="true" /><strong>{score}</strong></div>
+          <div className={`${styles.stat} ${styles.best}`} role="group" aria-label={`${copy.best}: ${visibleBest}`} title={recordHint}><Trophy size={16} aria-hidden="true" /><strong>{visibleBest}</strong></div>
         </div>
       </header>
 
       <p className="sr-only">{copy.subtitle}</p>
       <div className={styles.liveStatus} role="status" aria-live="polite" aria-atomic="true">
-        {pending ? copy.checking : feedback && game ? `${feedback} ${game.right.title}: ${game.right.year}. ${copy.streak}: ${game.score}.` : ""}
+        {feedback && game ? `${feedback} ${game.right.title}: ${game.right.year}. ${copy.streak}: ${game.score}.` : pending || (game?.outcome && !revealed) ? copy.checking : ""}
       </div>
 
       {game ? (
-        <div className={styles.arena}>
-          <HigherLowerMovie key={`left-${game.round}`} movie={game.left} copy={copy} side="left" carried={game.round > 1 && game.status === "guessing"} />
-          <div className={`${styles.versus} ${game.outcome === "wrong" ? styles.versusWrong : game.outcome ? styles.versusCorrect : ""}`} aria-hidden="true">
-            {game.outcome === "wrong" ? <X size={24} /> : game.outcome ? <Check size={24} /> : copy.versus}
+        <div ref={arena} className={styles.arena}>
+          <div data-round-feedback className={`${styles.versus} ${outcome === "wrong" ? styles.versusWrong : outcome ? styles.versusCorrect : ""}`} aria-hidden="true">
+            {outcome === "wrong" ? <X size={24} /> : outcome ? <Check size={24} /> : copy.versus}
           </div>
-          <HigherLowerMovie key={`right-${game.round}`} movie={game.right} copy={copy} side="right" outcome={game.outcome}>
-            {game.status === "guessing" ? (
+          {[game.left, game.right, ...(preparedNext ? [preparedNext.right] : [])].map((movie, index) => (
+          <HigherLowerMovie key={`${movie.id}:${game.round + index - 1}`} movie={movie} copy={copy} side={index === 0 ? "left" : index === 1 ? "right" : "incoming"} revealing={index === 1 && game.right.year !== null && !revealed} outcome={index === 1 ? outcome : null}>
+            {index === 0 ? null : index === 2 ? <div className={styles.answerArea} /> :
+            game.status === "guessing" ? (
               <div className={styles.answerArea}>
                 <div className={styles.actions}>
                   <button ref={primaryAction} type="button" className={styles.primary} disabled={pending || Boolean(error)} onClick={() => answer("higher")} aria-keyshortcuts="ArrowUp"><ArrowUp size={19} />{copy.higher}</button>
@@ -89,12 +104,10 @@ export default function HigherLowerGame() {
                 </div>
                 {pending && <p className={styles.hint}>{copy.checking}</p>}
               </div>
-            ) : (
-              <div className={styles.answerArea}>
+            ) : !revealed ? <div className={styles.answerArea}><p className={styles.hint}>{copy.checking}</p></div> : (
+              <div className={styles.answerArea} data-round-feedback>
                 <p className={`${styles.feedback} ${game.status === "finished" ? styles.loss : ""}`}>{feedback}</p>
-                {game.status === "revealed" ? (
-                  <button ref={primaryAction} type="button" className={styles.primary} disabled={pending || Boolean(error)} onClick={next}>{pending ? <Loader2 size={18} /> : <ArrowRight size={18} />}{copy.continue}</button>
-                ) : (
+                {game.status === "revealed" ? (pending ? <p className={styles.hint}>{copy.loading}</p> : null) : (
                   <div className={styles.result}>
                     <p className={styles.resultTitle}>{isNewBest ? copy.newBest : copy.gameOver} <span>· {game.score}</span></p>
                     <div className={styles.actions}>
@@ -107,6 +120,7 @@ export default function HigherLowerGame() {
               </div>
             )}
           </HigherLowerMovie>
+          ))}
         </div>
       ) : (
         <div className={styles.empty}>

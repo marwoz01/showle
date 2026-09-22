@@ -9,19 +9,21 @@ import styles from "@/components/game/higher-lower/higher-lower.module.css";
 interface Props {
   movie: HigherLowerMovieView;
   copy: (typeof higherLowerCopy)["pl"];
-  side: "left" | "right";
-  carried?: boolean;
+  side: "left" | "right" | "incoming";
+  revealing?: boolean;
   outcome?: "correct" | "equal" | "wrong" | null;
   children?: ReactNode;
 }
 
-export default function HigherLowerMovie({ movie, copy, side, carried, outcome, children }: Props) {
+export default function HigherLowerMovie({ movie, copy, side, revealing, outcome, children }: Props) {
   const hidden = movie.year === null;
   return (
     <article
-      className={`${styles.movie} ${side === "left" ? styles.left : styles.right} ${carried ? styles.carried : ""}`}
+      className={`${styles.movie} ${side === "left" ? styles.left : styles.right} ${side === "incoming" ? styles.incoming : ""}`}
       aria-labelledby={`higher-lower-${side}-title`}
       data-side={side}
+      data-movie-id={movie.id}
+      aria-hidden={side === "incoming" || undefined}
     >
       <Image
         src={`https://image.tmdb.org/t/p/w1280${movie.backdropPath}`}
@@ -36,10 +38,10 @@ export default function HigherLowerMovie({ movie, copy, side, carried, outcome, 
         <h2 id={`higher-lower-${side}-title`} className={styles.movieTitle}>{movie.title}</h2>
         <p className={styles.metricLabel}>{copy.releaseYear}</p>
         <p
-          className={`${styles.value} ${outcome ? styles.revealed : ""} ${outcome === "wrong" ? styles.wrongValue : outcome ? styles.correctValue : ""}`}
-          aria-label={hidden ? copy.unknown : undefined}
+          className={`${styles.value} ${outcome === "wrong" ? styles.wrongValue : outcome ? styles.correctValue : ""}`}
+          aria-label={hidden ? copy.unknown : revealing ? copy.checking : undefined}
         >
-          <span>{hidden ? "?" : movie.year}</span>
+          <span key={side} data-year aria-hidden={revealing || undefined}>{hidden ? "?" : revealing ? 0 : movie.year}</span>
         </p>
         {children}
       </div>

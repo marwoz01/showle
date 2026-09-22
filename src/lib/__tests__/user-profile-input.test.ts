@@ -13,6 +13,10 @@ describe("profile input validation", () => {
   it("allows clearing all favorites", () => {
     expect(parseProfilePatch({ favoriteMovieIds: [] })).toEqual({ favoriteMovieIds: [] });
   });
+  it("accepts only explicit activity audiences", () => {
+    for (const activityVisibility of ["private", "friends", "public"]) expect(parseProfilePatch({ activityVisibility })).toEqual({ activityVisibility });
+    expect(() => parseProfilePatch({ activityVisibility: "followers" })).toThrow("invalid_activity_visibility");
+  });
   it("keeps omitted preferences untouched, including when changing only the language", () => {
     expect(parsePreferencePatch({ locale: "en" }, current)).toEqual({ locale: "en" });
     expect(parsePreferencePatch({ maxRuntime: null }, current)).toEqual({ maxRuntime: null });

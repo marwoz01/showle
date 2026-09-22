@@ -7,10 +7,12 @@ import { higherLowerCopy } from "@/i18n/higher-lower";
 const mocks = vi.hoisted(() => ({
   locale: "pl" as "pl" | "en",
   useHigherLower: vi.fn(),
+  revealed: false,
 }));
 
 vi.mock("@/i18n", () => ({ useTranslation: () => ({ locale: mocks.locale }) }));
 vi.mock("@/hooks/useHigherLower", () => ({ useHigherLower: mocks.useHigherLower }));
+vi.mock("@/components/game/higher-lower/useHigherLowerMotion", () => ({ useHigherLowerMotion: () => ({ arena: { current: null }, revealed: mocks.revealed }) }));
 vi.mock("@/components/ui/icons", () => ({
   ArrowDown: () => null,
   ArrowLeft: () => null,
@@ -54,7 +56,9 @@ function game(status: HigherLowerGameView["status"] = "guessing"): HigherLowerGa
 
 function render(overrides: Partial<HookState> = {}) {
   mocks.useHigherLower.mockReturnValue({
+    scope: "guest:0:pl",
     game: game(),
+    preparedNext: null,
     pending: false,
     error: null,
     best: 8,
@@ -63,6 +67,7 @@ function render(overrides: Partial<HookState> = {}) {
     isNewBest: false,
     answer: vi.fn(),
     next: vi.fn(),
+    commitNext: vi.fn(),
     restart: vi.fn(),
     retry: vi.fn(),
     ...overrides,
@@ -84,6 +89,7 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
   beforeEach(() => {
     mocks.locale = locale;
     mocks.useHigherLower.mockClear();
+    mocks.revealed = false;
   });
 
   it("keeps the candidate release year hidden everywhere until the answer and labels both choices", () => {
@@ -92,10 +98,10 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
     expect(candidate).toBeDefined();
     expect(candidate).toContain('aria-labelledby="higher-lower-right-title"');
     expect(candidate).toContain(`aria-label="${copy.unknown}"`);
-    expect(candidate).toContain("<span>?</span>");
+    expect(candidate).toContain('data-year="true">?</span>');
     expect(candidate).not.toContain("2014");
     expect(html).not.toContain("2014");
-    expect(html).toContain("<span>2010</span>");
+    expect(html).toContain('data-year="true">2010</span>');
     expect(html).toContain(copy.releaseYear);
     expect(button(html, copy.higher)).toContain('aria-keyshortcuts="ArrowUp"');
     expect(button(html, copy.lower)).toContain('aria-keyshortcuts="ArrowDown"');
@@ -105,25 +111,27 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
     expect(mocks.useHigherLower).toHaveBeenCalledWith(locale);
   });
 
-  it.each(["correct", "equal"] as const)("reveals the %s result and allows only advancing", (outcome) => {
+  it.each(["correct", "equal"] as const)("reveals the %s result without requiring an advance button", (outcome) => {
+    mocks.revealed = true;
     const nextGame = game("revealed");
     nextGame.outcome = outcome;
     if (outcome === "equal") nextGame.right.year = nextGame.left.year;
     const html = render({ game: nextGame });
-    expect(html).toContain(`<span>${nextGame.right.year}</span>`);
+    expect(html).toContain(`data-year="true">${nextGame.right.year}</span>`);
     expect(html).toContain(outcome === "equal" ? copy.equal : copy.correct);
     expect(html).toContain(`Interstellar: ${nextGame.right.year}.`);
     expect(html).toContain('aria-live="polite"');
     expect(html).not.toContain(`aria-label="${copy.unknown}"`);
-    expect(button(html, copy.continue)).toBeDefined();
+    expect(button(html, copy.continue)).toBeUndefined();
     expect(button(html, copy.higher)).toBeUndefined();
     expect(button(html, copy.lower)).toBeUndefined();
     expect(button(html, copy.playAgain)).toBeUndefined();
   });
 
   it("ends a failed streak with replay and a named share action", () => {
+    mocks.revealed = true;
     const html = render({ game: game("finished") });
-    expect(html).toContain("<span>2014</span>");
+    expect(html).toContain('data-year="true">2014</span>');
     expect(html).toContain(copy.wrong);
     expect(html).toContain(copy.gameOver);
     expect(button(html, copy.playAgain)).toBeDefined();
@@ -134,9 +142,22 @@ describe.each(["pl", "en"] as const)("higher/lower game screen (%s)", (locale) =
   });
 
   it("distinguishes a new personal best from an ordinary finished run", () => {
+    mocks.revealed = true;
     const html = render({ game: game("finished"), isNewBest: true, best: 3 });
     expect(html).toContain(copy.newBest);
     expect(html).not.toContain(copy.gameOver);
+  });
+
+  it.each(["revealed", "finished"] as const)("keeps the year and %s outcome hidden until the counter finishes", (status) => {
+    const html = render({ game: game(status) });
+    expect(html).not.toContain("2014");
+    expect(html).not.toContain(copy.correct);
+    expect(html).not.toContain(copy.wrong);
+    expect(html).not.toContain(copy.gameOver);
+    expect(html).toContain(copy.checking);
+    expect(html).toContain('aria-hidden="true">0</span>');
+    expect(button(html, copy.playAgain)).toBeUndefined();
+    expect(button(html, copy.continue)).toBeUndefined();
   });
 
   it("disables both guesses while an answer is pending and keeps its value hidden", () => {

@@ -5,6 +5,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { compareMovieTaste, profileMovieSnapshots, rankSharedSuggestions, sharedSuggestionWhere } from "@/lib/profile-comparison";
 import type { ProfilePreferences } from "@/types/profile";
 import type { ProfileComparisonResponse } from "@/types/public-profile";
+import { canReadSocialProfile } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "private, no-store" };
@@ -21,9 +22,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!/^[a-z0-9-]{3,64}$/.test(slug)) return NextResponse.json({ error: "not_found" }, { status: 404, headers });
   try {
     const other = await prisma.userProfile.findUnique({
-      where: { publicSlug: slug, isPublic: true }, select: { userId: true, ...preferenceSelect },
+      where: { publicSlug: slug }, select: { userId: true, isPublic: true, ...preferenceSelect },
     });
-    if (!other) return NextResponse.json({ error: "not_found" }, { status: 404, headers });
+    if (!other || !await canReadSocialProfile(other, userId)) return NextResponse.json({ error: "not_found" }, { status: 404, headers });
     if (other.userId === userId) return NextResponse.json({ error: "own_profile" }, { status: 409, headers });
     const [viewer, viewerMovies, otherMovies, negativeFeedback] = await Promise.all([
       prisma.userProfile.findUnique({ where: { userId }, select: preferenceSelect }),
@@ -48,7 +49,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       rating: movie.rating, popularity: 0, posterPath: movie.posterPath, backdropPath: movie.backdropPath,
       overview: polish ? movie.overviewPl || movie.overview : movie.overview,
     }));
-    if (!await prisma.userProfile.findUnique({ where: { publicSlug: slug, isPublic: true }, select: { userId: true } }))
+    const current = await prisma.userProfile.findUnique({ where: { publicSlug: slug }, select: { userId: true, isPublic: true } });
+    if (!current || current.userId !== other.userId || !await canReadSocialProfile(current, userId))
       return NextResponse.json({ error: "not_found" }, { status: 404, headers });
     return NextResponse.json({ comparison, suggestions } satisfies ProfileComparisonResponse, { headers });
   } catch (error) {
