@@ -37,6 +37,7 @@ const movie = (id: number, locale = "en"): MediaDetails => ({
   country: "France",
   director: "Director",
   leadActor: "Actor",
+  castNames: ["Actor"],
   runtime: 120,
   budget: 20,
   popularity: 80,

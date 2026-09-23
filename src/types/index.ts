@@ -26,6 +26,7 @@ export interface MediaDetails {
   overview: string;
   tagline?: string;
   cast?: CastMember[];
+  castNames?: string[];
 }
 
 export type MatchStatus = "exact" | "partial" | "miss";
@@ -44,6 +45,7 @@ export interface GuessResult {
   comparison: ComparisonField[];
   isCorrect: boolean;
   attemptNumber: number;
+  castComparison?: { name: string; status: "exact" | "miss" }[];
 }
 
 export interface Hint {

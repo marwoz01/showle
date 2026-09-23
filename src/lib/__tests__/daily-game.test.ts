@@ -52,6 +52,7 @@ vi.mock("@/lib/movie-snapshot", () => ({
       country: "France",
       director: "Director",
       leadActor: "Actor",
+      castNames: ["Actor"],
       runtime: 120,
       budget: 20,
       popularity: 8000,

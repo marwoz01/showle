@@ -49,6 +49,7 @@ describe("movie details requests", () => {
       director: "Richard Kelly",
       directorProfilePath: "/richard.jpg",
       leadActor: "Jake Gyllenhaal",
+      castNames: ["Jake Gyllenhaal", "Supporting Actor"],
       runtime: 114,
       budget: 5,
       popularity: 12400,
@@ -83,6 +84,18 @@ describe("movie details requests", () => {
     expect(two!.genres).toEqual(["Drama"]);
     expect(two!.cast![0].name).toBe("Jake Gyllenhaal");
     expect(await getMovieDetails(141)).toEqual(two);
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("keeps full cast names for matching while limiting displayed cast to eight", async () => {
+    const source = details();
+    source.credits.cast = Array.from({ length: 14 }, (_, order) => ({ name: `Actor ${order}`, order, character: `Character ${order}`, profile_path: null }));
+    fetchMock.mockResolvedValueOnce(Response.json(source));
+    const { getMovieDetails } = await import("@/lib/tmdb");
+    const movie = await getMovieDetails(141);
+    expect(movie?.cast).toHaveLength(8);
+    expect(movie?.castNames).toHaveLength(14);
+    expect(movie?.castNames?.[13]).toBe("Actor 13");
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 

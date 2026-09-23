@@ -5,10 +5,11 @@ import Image from "next/image";
 import type { GuessResult } from "@/types";
 import { useTranslation } from "@/i18n";
 import { normalizeDisplayText } from "@/lib/typography";
+import { knownCastNames, normalizeCastName } from "@/lib/cast-comparison";
 import { useDailyCardAnimation } from "@/hooks/useDailyCardAnimation";
-import DailyMoviePerson from "./DailyMoviePerson";
-import DailyMovieMetric from "./DailyMovieMetric";
-import { Film, UserRound } from "@/components/ui/icons";
+import DailyMoviePerson from "@/components/game/DailyMoviePerson";
+import DailyMovieMetric from "@/components/game/DailyMovieMetric";
+import { Film } from "@/components/ui/icons";
 import styles from "./daily-movie-card.module.css";
 
 export default function GuessCard({ result, animate = false, headingLevel = 3 }: {
@@ -23,9 +24,13 @@ export default function GuessCard({ result, animate = false, headingLevel = 3 }:
   const genre = field(t.comparison.genre);
   const director = field(t.comparison.director);
   const leadActor = field(t.comparison.leadActor);
-  const knownName = (name: string) => Boolean(name.trim()) && !["unknown", t.common.unknown.toLowerCase()].includes(name.trim().toLowerCase());
-  const leadMember = guess.cast?.find((member) => member.name.toLowerCase() === guess.leadActor.toLowerCase());
-  const supporting = guess.cast?.filter((member) => member.name.toLowerCase() !== guess.leadActor.toLowerCase()).slice(0, 4) ?? [];
+  const knownName = (name: string) => knownCastNames([name]).length > 0 && normalizeCastName(name) !== normalizeCastName(t.common.unknown);
+  const castStatus = (name: string) => knownName(name)
+    ? result.castComparison?.find((member) => normalizeCastName(member.name) === normalizeCastName(name))?.status
+    : undefined;
+  const leadStatus = castStatus(guess.leadActor) ?? (knownName(guess.leadActor) && leadActor?.status === "exact" ? "exact" : undefined);
+  const leadMember = guess.cast?.find((member) => normalizeCastName(member.name) === normalizeCastName(guess.leadActor));
+  const supporting = guess.cast?.filter((member) => normalizeCastName(member.name) !== normalizeCastName(guess.leadActor)).slice(0, 4) ?? [];
   const metrics = comparison.filter((item) => ![t.comparison.genre, t.comparison.director, t.comparison.leadActor].includes(item.label));
 
   return (
@@ -55,15 +60,12 @@ export default function GuessCard({ result, animate = false, headingLevel = 3 }:
         </div>
         <div className={`mt-5 border-t border-white/6 pt-4 ${styles.people}`}>
           <dl className={styles.personGroup}><DailyMoviePerson label={t.comparison.director} name={director?.guessValue} profilePath={guess.directorProfilePath} status={knownName(guess.director) ? director?.status : undefined} celebrate /></dl>
-          <dl className={styles.personGroup}><DailyMoviePerson label={t.comparison.leadActor} name={leadActor?.guessValue} profilePath={leadMember?.profilePath} status={knownName(guess.leadActor) ? leadActor?.status : undefined} celebrate /></dl>
+          <dl className={styles.personGroup}><DailyMoviePerson label={t.comparison.leadActor} name={leadActor?.guessValue} profilePath={leadMember?.profilePath} status={leadStatus} celebrate /></dl>
           {supporting.length > 0 && <div className={styles.supporting}>
             <p className="mb-3 text-[9px] font-medium uppercase tracking-wider text-muted/65">{t.result.cast}</p>
             <ul className="grid grid-cols-4 gap-3">
               {supporting.map((member) => <li key={member.name} className="min-w-0 text-center">
-                <span className="relative mx-auto block h-12 w-12 overflow-hidden rounded-full bg-white/5 sm:h-16 sm:w-16">
-                  {member.profilePath ? <Image src={`https://image.tmdb.org/t/p/w185${member.profilePath}`} alt="" fill sizes="64px" className="object-cover" /> : <span className="flex h-full items-center justify-center text-muted/40"><UserRound size={22} /></span>}
-                </span>
-                <span className="mt-3 block text-[11px] leading-4 text-muted [overflow-wrap:anywhere]">{normalizeDisplayText(member.name)}</span>
+                <dl><DailyMoviePerson label={t.result.cast} name={member.name} profilePath={member.profilePath} status={castStatus(member.name)} compact celebrate /></dl>
               </li>)}
             </ul>
           </div>}

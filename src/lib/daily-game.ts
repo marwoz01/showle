@@ -3,6 +3,8 @@ import { MAX_ATTEMPTS } from "@/constants";
 import { getDailyMovieId } from "@/lib/daily";
 import { getMovieSnapshot } from "@/lib/movie-snapshot";
 import { compareMedia } from "@/lib/comparer";
+import { compareGuessCast } from "@/lib/cast-comparison";
+import { getAnswerCastNames } from "@/lib/daily-cast";
 import { generateHints, getRevealedHints } from "@/lib/hints";
 import { getWinReward, STREAK_MILESTONES } from "@/lib/coins";
 import { DAILY_PARTICIPATION_REWARD } from "@/constants/gems";
@@ -173,6 +175,9 @@ export async function getDailyGameView(
       : Promise.resolve(game);
   const answerId = getDailyMovieId(dateKey);
   const answerPromise = getMovieSnapshot(dateKey, answerId);
+  const castNamesPromise = Promise.all([savedPromise, answerPromise]).then(([saved, answer]) =>
+    saved?.guessIds.length ? getAnswerCastNames(dateKey, answer) : undefined,
+  );
   const localizedPromise =
     locale === "en"
       ? answerPromise
@@ -189,28 +194,34 @@ export async function getDailyGameView(
       }),
     ),
   );
-  const [saved, answer, localized, movies] = await Promise.all([
+  const [saved, answer, localized, movies, castNames] = await Promise.all([
     savedPromise,
     answerPromise,
     localizedPromise,
     moviesPromise,
+    castNamesPromise,
   ]);
   const status =
     saved?.status === "won" || saved?.status === "lost"
       ? saved.status
       : "playing";
-  const guesses = movies.map(({ id, movie, display }, index) => ({
-    guess: display,
-    attemptNumber: index + 1,
-    isCorrect: id === answer.id,
-    comparison: compareMedia(movie, answer, t, locale).map((field) => ({
-      ...field,
-      answerValue:
-        field.status === "exact" || status !== "playing"
-          ? field.answerValue
-          : "",
-    })),
-  }));
+  const guesses = movies.map(({ id, movie, display }, index) => {
+    const visibleGuess = { ...display };
+    delete visibleGuess.castNames;
+    return {
+      guess: visibleGuess,
+      attemptNumber: index + 1,
+      isCorrect: id === answer.id,
+      castComparison: compareGuessCast(movie, answer, castNames),
+      comparison: compareMedia(movie, answer, t, locale).map((field) => ({
+        ...field,
+        answerValue:
+          field.status === "exact" || status !== "playing"
+            ? field.answerValue
+            : "",
+      })),
+    };
+  });
   const hintAnswer = {
     ...answer,
     title: localized.title,

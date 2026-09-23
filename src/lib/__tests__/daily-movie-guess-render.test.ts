@@ -45,6 +45,49 @@ describe("daily movie guess card", () => {
     expect(animation.mock.calls.at(-1)?.[1]).toBeUndefined();
   });
 
+  it("uses cast membership even when the guessed lead has a supporting role in the answer", () => {
+    const result = matchedPeopleGuess();
+    result.comparison = result.comparison.map((field) => ({ ...field, status: "miss" }));
+    result.castComparison = [
+      { name: " jim carrey ", status: "exact" },
+      { name: "Kate Winslet", status: "miss" },
+    ];
+    const html = renderToStaticMarkup(createElement(GuessCard, { result, animate: true }));
+
+    expect(html).toContain('data-person-name="Jim Carrey" data-status="exact"');
+    expect(html).toContain('data-person-name="Kate Winslet" data-status="miss"');
+    expect(html).toContain("ring-match-miss");
+    expect(html.match(/data-card-celebrate="true"/g)).toHaveLength(1);
+  });
+
+  it("marks absent lead and supporting actors red, and matching supporting actors green", () => {
+    const result = matchedPeopleGuess();
+    result.guess.cast!.push({ name: "Elijah Wood", character: "Patrick", profilePath: "" });
+    result.comparison = result.comparison.map((field) => ({ ...field, status: "miss" }));
+    result.castComparison = [
+      { name: "Jim Carrey", status: "miss" },
+      { name: "Kate Winslet", status: "miss" },
+      { name: "Elijah Wood", status: "exact" },
+    ];
+    const html = renderToStaticMarkup(createElement(GuessCard, { result }));
+
+    expect(html).toContain('data-person-name="Jim Carrey" data-status="miss"');
+    expect(html).toContain('data-person-name="Kate Winslet" data-status="miss"');
+    expect(html).toContain('data-person-name="Elijah Wood" data-status="exact"');
+    expect(html).toContain(en.game.mobile.miss);
+    expect(animation.mock.calls.at(-1)?.[1]).toBeUndefined();
+  });
+
+  it("keeps actors neutral when a nonmatching lead clue cannot confirm their absence", () => {
+    const result = matchedPeopleGuess();
+    result.comparison = result.comparison.map((field) => ({ ...field, status: "miss" }));
+    const html = renderToStaticMarkup(createElement(GuessCard, { result }));
+
+    expect(html).toContain('data-person-name="Jim Carrey"><dt');
+    expect(html).toContain('data-person-name="Kate Winslet"><dt');
+    expect(html).not.toContain('data-card-celebrate="true"');
+  });
+
   it("does not mark missing director and lead actor data as correct matches", () => {
     const result = matchedPeopleGuess();
     result.guess.director = "Unknown";

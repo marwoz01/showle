@@ -284,6 +284,7 @@ async function loadMovieDetails(id: number, language: string): Promise<MediaDeta
       overview: movie.overview,
       tagline: movie.tagline || undefined,
       cast,
+      castNames: sortedCast.map((member) => member.name),
     };
   } catch {
     return null;

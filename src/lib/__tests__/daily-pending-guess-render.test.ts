@@ -8,7 +8,7 @@ import type { MovieSuggestion } from "@/types/movie-suggestion";
 
 const language = vi.hoisted(() => ({ locale: "pl" as "pl" | "en" }));
 vi.mock("@/i18n", () => ({ useTranslation: () => ({ t: language.locale === "pl" ? pl : en, locale: language.locale }) }));
-vi.mock("@/components/ui/icons", () => ({ Film: () => null, Lightbulb: () => null, Lock: () => null, UserRound: () => null, Check: () => null }));
+vi.mock("@/components/ui/icons", () => ({ Film: () => null, Lightbulb: () => null, Lock: () => null, UserRound: () => null, Check: () => null, X: () => null }));
 import PendingGuessCard from "@/components/game/PendingGuessCard";
 import DailyMobileContent from "@/components/game/DailyMobileContent";
 
