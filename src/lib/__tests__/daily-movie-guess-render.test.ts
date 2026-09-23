@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GuessResult } from "@/types";
 import en from "@/i18n/en";
+import { compareMedia } from "@/lib/comparer";
 import { mobileGuess } from "./fixtures/daily-mobile";
 
 const animation = vi.hoisted(() => vi.fn());
@@ -25,6 +26,17 @@ function matchedPeopleGuess(): GuessResult {
 
 describe("daily movie guess card", () => {
   beforeEach(() => animation.mockClear());
+
+  it("highlights only shared genres when the guessed film includes extra genres", () => {
+    const result = matchedPeopleGuess();
+    result.guess.genres = ["Drama", "Thriller", "Crime"];
+    result.comparison = compareMedia(result.guess, { ...result.guess, genres: ["Drama"] }, en);
+    const html = renderToStaticMarkup(createElement(GuessCard, { result }));
+
+    expect(html).toContain('data-genre="Drama" data-status="exact" data-card-celebrate="true"');
+    expect(html).toContain('data-genre="Thriller" data-status="miss" data-card-celebrate="false"');
+    expect(html).toContain('data-genre="Crime" data-status="miss" data-card-celebrate="false"');
+  });
 
   it("marks exact director and lead actor matches without claiming supporting cast matches", () => {
     const html = renderToStaticMarkup(createElement(GuessCard, { result: matchedPeopleGuess(), animate: true }));

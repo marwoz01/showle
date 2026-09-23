@@ -38,6 +38,7 @@ export interface ComparisonField {
   answerValue: string;
   status: MatchStatus;
   direction?: Direction;
+  items?: { value: string; status: "exact" | "miss" }[];
 }
 
 export interface GuessResult {

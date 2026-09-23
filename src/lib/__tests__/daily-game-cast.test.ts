@@ -55,4 +55,17 @@ describe("authoritative daily actor payload", () => {
     expect((await getDailyGameView("viewer", "2026-09-24", "en")).guesses).toEqual([]);
     expect(mocks.details).not.toHaveBeenCalled();
   });
+
+  it.each(["en", "pl"] as const)("includes only guessed genre items and withholds the missing answer genre in %s", async (locale) => {
+    mocks.snapshots.get(1)!.genres = [" Drama "];
+    mocks.snapshots.get(42)!.genres = ["Drama", "Comedy"];
+    const { getDailyGameView } = await import("@/lib/daily-game");
+    const result = await getDailyGameView("viewer", "2026-09-24", locale);
+    const genre = result.guesses[0].comparison[1];
+    expect(genre).toMatchObject({ status: "partial", answerValue: "", items: [{ value: locale === "pl" ? "Dramat" : "Drama", status: "exact" }] });
+    expect(result.guesses[0].comparison).toHaveLength(9);
+    expect(result.guesses[0].comparison.filter((field) => field.items)).toHaveLength(1);
+    expect(result.answer).toBeNull();
+    expect(JSON.stringify(result)).not.toMatch(/Comedy|Komedia/);
+  });
 });

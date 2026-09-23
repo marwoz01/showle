@@ -22,6 +22,7 @@ export default function GuessCard({ result, animate = false, headingLevel = 3 }:
   const { guess, comparison } = result;
   const field = (label: string) => comparison.find((item) => item.label === label);
   const genre = field(t.comparison.genre);
+  const genreItems = genre?.items ?? genre?.guessValue.split(", ").map((value) => ({ value, status: genre.status })) ?? [];
   const director = field(t.comparison.director);
   const leadActor = field(t.comparison.leadActor);
   const knownName = (name: string) => knownCastNames([name]).length > 0 && normalizeCastName(name) !== normalizeCastName(t.common.unknown);
@@ -46,11 +47,12 @@ export default function GuessCard({ result, animate = false, headingLevel = 3 }:
               <span className="shrink-0 rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-semibold text-muted">#{result.attemptNumber}</span>
             </div>
             {result.isCorrect && <p className="mt-1 text-xs font-semibold text-match-exact">{t.game.correct}</p>}
-            {genre && <dl className="mt-3" data-card-celebrate={genre.status === "exact"}>
+            {genre && <dl className="mt-3">
               <dt className="sr-only">{genre.label}</dt>
               <dd className="flex flex-wrap gap-1.5">
-                {genre.guessValue.split(", ").map((name) => <span key={name} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${genre.status === "exact" ? "bg-match-exact/10 text-match-exact" : genre.status === "partial" ? "bg-match-partial/10 text-match-partial" : "bg-match-miss/10 text-match-miss"}`}>{normalizeDisplayText(name)}</span>)}
-                <span className="sr-only">. {t.game.mobile[genre.status]}</span>
+                {genreItems.map(({ value, status }) => <span key={value} data-genre={value} data-status={status} data-card-celebrate={status === "exact"} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${status === "exact" ? "bg-match-exact/10 text-match-exact" : status === "partial" ? "bg-match-partial/10 text-match-partial" : "bg-match-miss/10 text-match-miss"}`}>
+                  {normalizeDisplayText(value)}<span className="sr-only">. {t.game.mobile[status]}</span>
+                </span>)}
               </dd>
             </dl>}
           </header>

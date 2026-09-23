@@ -3,7 +3,7 @@ import type { Locale } from "@/i18n";
 import { Translations } from "@/i18n/types";
 import {
   localizeCountry,
-  localizeGenres,
+  localizeGenre,
   localizeUnknown,
 } from "@/lib/localization";
 
@@ -42,8 +42,11 @@ function compareYear(guess: number, answer: number, t: Translations): Comparison
 }
 
 function compareGenres(guess: string[], answer: string[], t: Translations): ComparisonField {
-  const guessSet = new Set(guess.map((g) => g.toLowerCase()));
-  const answerSet = new Set(answer.map((g) => g.toLowerCase()));
+  const normalize = (genre: string) => genre.trim().toLowerCase();
+  const canonicalNames = new Map(Object.keys(t.genres).map((genre) => [normalize(genre), genre]));
+  const localize = (genre: string) => localizeGenre(canonicalNames.get(normalize(genre)) ?? genre.trim(), t);
+  const guessSet = new Set(guess.map(normalize));
+  const answerSet = new Set(answer.map(normalize));
   const common = [...guessSet].filter((g) => answerSet.has(g));
 
   let status: MatchStatus = "miss";
@@ -55,9 +58,10 @@ function compareGenres(guess: string[], answer: string[], t: Translations): Comp
 
   return {
     label: t.comparison.genre,
-    guessValue: localizeGenres(guess, t).join(", "),
-    answerValue: localizeGenres(answer, t).join(", "),
+    guessValue: guess.map(localize).join(", "),
+    answerValue: answer.map(localize).join(", "),
     status,
+    items: guess.map((genre) => ({ value: localize(genre), status: answerSet.has(normalize(genre)) ? "exact" : "miss" })),
   };
 }
 

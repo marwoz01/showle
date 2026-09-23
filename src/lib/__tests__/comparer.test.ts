@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { compareMedia } from "@/lib/comparer";
 import { MediaDetails } from "@/types";
 import en from "@/i18n/en";
+import pl from "@/i18n/pl";
 
 function makeMovie(overrides: Partial<MediaDetails> = {}): MediaDetails {
   return {
@@ -88,6 +89,8 @@ describe("genres comparison", () => {
       en
     );
     expect(result[1].status).toBe("exact");
+    expect(result[1].items).toEqual([{ value: "Action", status: "exact" }, { value: "Drama", status: "exact" }]);
+    expect(result.filter((field) => field.items)).toHaveLength(1);
   });
 
   it("exact is case-insensitive", () => {
@@ -115,6 +118,24 @@ describe("genres comparison", () => {
       en
     );
     expect(result[1].status).toBe("miss");
+    expect(result[1].items).toEqual([{ value: "Horror", status: "miss" }]);
+  });
+
+  it.each([
+    ["en", en, ["Drama", "Thriller", "Crime"]],
+    ["pl", pl, ["Dramat", "Thriller", "Kryminał"]],
+  ] as const)("marks only matching guessed genres green with localized %s labels", (locale, translations, labels) => {
+    const [genre] = compareMedia(makeMovie({ genres: [" Drama ", "THRILLER", "crime"] }), makeMovie({ genres: [" drama "] }), translations, locale).slice(1, 2);
+    expect(genre.status).toBe("partial");
+    expect(genre.guessValue).toBe(labels.join(", "));
+    expect(genre.items).toEqual(labels.map((value, index) => ({ value, status: index === 0 ? "exact" : "miss" })));
+  });
+
+  it("keeps a guessed subset partial without including unguessed genres in items", () => {
+    const genre = compareMedia(makeMovie({ genres: ["Drama"] }), makeMovie({ genres: ["Drama", "Comedy"] }), en)[1];
+    expect(genre.status).toBe("partial");
+    expect(genre.items).toEqual([{ value: "Drama", status: "exact" }]);
+    expect(JSON.stringify(genre.items)).not.toContain("Comedy");
   });
 });
 
