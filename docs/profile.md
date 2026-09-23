@@ -9,7 +9,7 @@ The account name/avatar opens `/profile`. The four tabs contain:
 
 Profile creation is lazy and private by default. Nicknames initially use Clerk username/first name, never email; avatars come from the verified Clerk user. A new profile keeps the browser's `showle-locale` preference. Existing account language is loaded on login and subsequent language changes persist across devices.
 
-The overview also shows blue gems, earning rules and recent rewards. Game badges display their gem rewards and whether they were credited; collection badges do not grant gems. The sidebar and mobile top bar link directly to `/profile#gems`. See [gems.md](gems.md) for earning rules and persistence.
+The profile gem panel is currently hidden. Game badges still display their gem rewards and whether they were credited; collection badges do not grant gems. On desktop and mobile, a blue gem icon and balance sit beside the streak flame without a visible label, border or link. See [gems.md](gems.md) for earning rules and persistence.
 
 ## API and privacy
 

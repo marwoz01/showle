@@ -120,6 +120,18 @@ export default function Sidebar() {
 
   const navLabel = (key: string) => t.nav[key as keyof typeof t.nav] || key;
 
+  const gameBalances = isSignedIn && (
+    <div className="flex items-center gap-2">
+      <SidebarGemBalance />
+      {streak !== null && streak > 0 && (
+        <span role="img" aria-label={`${t.profile.streak}: ${streak}`} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-orange-500/15 px-2 py-1 text-xs font-semibold text-orange-400">
+          <Flame size={12} className="animate-flame" aria-hidden="true" />
+          <span className="tabular-nums">{streak}</span>
+        </span>
+      )}
+    </div>
+  );
+
   const sidebarContent = (
     <>
       {/* Logo */}
@@ -220,19 +232,13 @@ export default function Sidebar() {
           <div className="space-y-3">
             <Link href="/profile" aria-label={t.profile.title} className="flex items-center gap-3 rounded-lg transition-colors hover:bg-white/4 focus-visible:outline-accent-purple">
               <SidebarAvatar key={`${user.id}:${user.imageUrl}`} imageUrl={user.imageUrl || null} />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 space-y-1">
                 <p className="truncate text-sm font-medium text-foreground">
                   {user.fullName || user.primaryEmailAddress?.emailAddress}
                 </p>
+                {gameBalances}
               </div>
-              {streak !== null && streak > 0 && (
-                <div className="flex items-center gap-1 rounded-full bg-orange-500/15 px-2 py-1 text-xs font-semibold text-orange-400">
-                  <Flame size={12} className="animate-flame" />
-                  {streak}
-                </div>
-              )}
             </Link>
-            <SidebarGemBalance onNavigate={() => setOpen(false)} />
             <button
               onClick={() => signOut()}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground"
@@ -273,7 +279,7 @@ export default function Sidebar() {
             Showle
           </span>
         </Link>
-        <div className="ml-auto"><SidebarGemBalance compact /></div>
+        <div className="ml-auto">{gameBalances}</div>
       </div>
 
       {/* Mobile overlay */}

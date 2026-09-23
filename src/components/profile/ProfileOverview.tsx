@@ -9,7 +9,6 @@ import type { ProfileResponse } from "@/types/profile";
 import ProfileFavorites from "@/components/profile/ProfileFavorites";
 import ProfileBadges from "@/components/profile/ProfileBadges";
 import ProfileCompareLink from "@/components/profile/ProfileCompareLink";
-import ProfileGems from "@/components/profile/ProfileGems";
 
 export default function ProfileOverview({ data, onSaved }: { data: ProfileResponse; onSaved: () => Promise<void> }) {
   const { t, locale } = useTranslation();
@@ -23,7 +22,6 @@ export default function ProfileOverview({ data, onSaved }: { data: ProfileRespon
   ];
   return <>
     <div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{cards.map((card) => <Link key={card.label} href={card.href} className="soft-card rounded-2xl p-5 transition-colors hover:border-accent-purple/30"><card.icon size={20} className="mb-4 text-accent-purple" /><p className="font-display text-3xl font-bold">{card.value}</p><p className="mt-2 text-xs text-muted">{card.label}</p></Link>)}</div><p className="mt-3 text-xs text-muted">{t.profile.timeHint}</p></div>
-    <ProfileGems />
     <ProfileFavorites movies={data.profile.favoriteMovies} onSaved={onSaved} />
     <section className="soft-card rounded-2xl p-5 sm:p-6"><h2 className="font-display text-xl font-semibold">{t.profile.genreTitle}</h2>
       {summary.favoriteGenres.length ? <div className="mt-5 flex flex-wrap gap-2">{summary.favoriteGenres.slice(0, 5).map(({ genre, count }) => <span key={genre} className="rounded-full bg-accent-purple/10 px-4 py-2 text-sm text-accent-purple">{localizeGenre(genre, t)} <span className="ml-1 text-muted">{count}</span></span>)}</div> : <p className="mt-3 text-sm text-muted">{t.profile.noGenres}</p>}

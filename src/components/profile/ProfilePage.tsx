@@ -25,24 +25,8 @@ function ProfileWorkspace({ userId, avatarVersion }: { userId: string; avatarVer
   const { t } = useTranslation();
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [failed, setFailed] = useState(false);
-  const [tab, setTab] = useState<Tab>(() => typeof window !== "undefined" && window.location.hash !== "#gems" && new URLSearchParams(window.location.search).has("invite") ? "friends" : "overview");
+  const [tab, setTab] = useState<Tab>(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("invite") ? "friends" : "overview");
   const tabId = useId();
-  useEffect(() => {
-    let frame: number | undefined;
-    const openGems = (event: Event) => {
-      if (event.type !== "showle-open-gems" && window.location.hash !== "#gems") return;
-      setTab("overview");
-      if (frame !== undefined) cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => document.getElementById("gems")?.scrollIntoView({ block: "start" }));
-    };
-    window.addEventListener("hashchange", openGems);
-    window.addEventListener("showle-open-gems", openGems);
-    return () => {
-      if (frame !== undefined) cancelAnimationFrame(frame);
-      window.removeEventListener("hashchange", openGems);
-      window.removeEventListener("showle-open-gems", openGems);
-    };
-  }, []);
   const load = useCallback(async (signal?: AbortSignal) => {
     const response = await fetch("/api/profile", { cache: "no-store", signal });
     if (!response.ok) throw new Error("profile");
