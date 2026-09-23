@@ -43,6 +43,7 @@ interface ResultScreenProps {
   guesses: GuessResult[];
   hintsUsed: number;
   celebrate?: boolean;
+  celebrateReward?: boolean;
   dateKey?: string;
 }
 
@@ -59,6 +60,7 @@ export default function ResultScreen({
   guesses,
   hintsUsed,
   celebrate = false,
+  celebrateReward = false,
   dateKey = getTodayKey(),
 }: ResultScreenProps) {
   const { t, locale } = useTranslation();
@@ -346,7 +348,7 @@ export default function ResultScreen({
         </div>
       </div>
 
-      <DailyGemReward dateKey={dateKey} />
+      <DailyGemReward dateKey={dateKey} animate={celebrateReward} />
 
       {/* Three-column body: poster | details | trailer and stats */}
       <div

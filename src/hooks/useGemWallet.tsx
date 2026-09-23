@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useInsertionEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { HIGHER_LOWER_ACCOUNT_RESET_EVENT } from "@/lib/higher-lower-storage";
 import type { GemsWallet } from "@/types/gems";
+import { createGemRewardPresentation, getGemDisplayedBalance } from "@/lib/gem-reward-presentation";
 
 export const GEM_WALLET_UPDATED_EVENT = "gem-wallet-updated";
 
@@ -14,8 +15,25 @@ interface WalletState {
   error: boolean;
 }
 
-const GemWalletContext = createContext({
-  wallet: null as GemsWallet | null,
+interface GemWalletValue {
+  wallet: GemsWallet | null;
+  displayedBalance: number | null;
+  activeRewardId: string | null;
+  beginReward: (id: string) => boolean;
+  collectReward: (id: string, amount: number) => void;
+  finishReward: (id: string) => void;
+  loading: boolean;
+  error: boolean;
+  refresh: () => void;
+}
+
+const GemWalletContext = createContext<GemWalletValue>({
+  wallet: null,
+  displayedBalance: null,
+  activeRewardId: null,
+  beginReward: () => false,
+  collectReward: () => {},
+  finishReward: () => {},
   loading: false,
   error: false,
   refresh: () => {},
@@ -27,6 +45,13 @@ export function GemWalletProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const request = useRef<AbortController | null>(null);
   const [state, setState] = useState<WalletState>({ userId: null, data: null, error: false });
+  const [resetVersion, setResetVersion] = useState(0);
+  const [scope, setScope] = useState(() => ({ userId, pathname, resetVersion, presentation: createGemRewardPresentation() }));
+  if (scope.userId !== userId || scope.pathname !== pathname || scope.resetVersion !== resetVersion) {
+    setScope({ userId, pathname, resetVersion, presentation: createGemRewardPresentation() });
+  }
+  const presentation = scope.presentation;
+  const activeReward = useSyncExternalStore(presentation.subscribe, presentation.getSnapshot, presentation.getServerSnapshot);
   const refresh = useCallback(() => {
     request.current?.abort();
     if (!userId) return;
@@ -53,6 +78,7 @@ export function GemWalletProvider({ children }: { children: React.ReactNode }) {
     const reset = (event: Event) => {
       if ((event as CustomEvent<string>).detail !== userId) return;
       setState({ userId, data: null, error: false });
+      setResetVersion((version) => version + 1);
       refresh();
     };
     events.forEach((event) => window.addEventListener(event, refresh));
@@ -67,7 +93,19 @@ export function GemWalletProvider({ children }: { children: React.ReactNode }) {
   if (state.userId !== userId) setState({ userId, data: null, error: false });
   const data = state.userId === userId && userId ? state.data : null;
   const error = state.userId === userId && Boolean(userId) && state.error;
-  return <GemWalletContext.Provider value={{ wallet: data, loading: Boolean(userId) && !data && !error, error, refresh }}>{children}</GemWalletContext.Provider>;
+  // Publish the receipt before descendants begin their animation in layout effects.
+  useInsertionEffect(() => { presentation.setWallet(data); }, [presentation, data]);
+  return <GemWalletContext.Provider value={{
+    wallet: data,
+    displayedBalance: getGemDisplayedBalance(data, activeReward),
+    activeRewardId: activeReward?.id ?? null,
+    beginReward: presentation.beginReward,
+    collectReward: presentation.collectReward,
+    finishReward: presentation.finishReward,
+    loading: Boolean(userId) && !data && !error,
+    error,
+    refresh,
+  }}>{children}</GemWalletContext.Provider>;
 }
 
 export function useGemWallet() {

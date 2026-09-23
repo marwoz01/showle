@@ -18,6 +18,7 @@ export default function PlayMoviePage() {
     pending,
     error,
     celebrate,
+    celebrateReward,
     refresh,
     submitGuess,
     giveUp,
@@ -107,6 +108,7 @@ export default function PlayMoviePage() {
           guesses={guesses}
           hintsUsed={hints.length}
           celebrate={celebrate}
+          celebrateReward={celebrateReward}
           dateKey={game.dateKey}
         />
       )}

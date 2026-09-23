@@ -14,6 +14,11 @@ export function useGame() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
+  const rewardScope = `${isLoaded ? userId ?? "guest" : "loading"}:${locale}`;
+  const [rewardCompletion, setRewardCompletion] = useState<{ scope: string; dateKey: string } | null>(null);
+  if (rewardCompletion && (rewardCompletion.scope !== rewardScope || rewardCompletion.dateKey !== getTodayKey())) {
+    setRewardCompletion(null);
+  }
   const busy = useRef(false);
   const version = useRef(0);
 
@@ -39,6 +44,7 @@ export function useGame() {
 
   const refresh = useCallback(async () => {
     const current = ++version.current;
+    setRewardCompletion(null);
     setError(false);
     try {
       const response = await fetch(`/api/game/state?lang=${locale}`, {
@@ -144,6 +150,9 @@ export function useGame() {
         if (current !== version.current) return;
         remember(view);
         setCelebrate(view.status === "won");
+        setRewardCompletion(view.status !== "playing" && view.guesses.length > 0 && view.dateKey === game.dateKey
+          ? { scope: rewardScope, dateKey: view.dateKey }
+          : null);
         if (view.status !== "playing")
           window.dispatchEvent(new Event("game-completed"));
         return view;
@@ -154,7 +163,7 @@ export function useGame() {
         setPending(false);
       }
     },
-    [game, loading, locale, refresh, remember],
+    [game, loading, locale, refresh, remember, rewardScope],
   );
 
   return {
@@ -163,6 +172,7 @@ export function useGame() {
     pending,
     error,
     celebrate,
+    celebrateReward: Boolean(rewardCompletion && rewardCompletion.scope === rewardScope && rewardCompletion.dateKey === game?.dateKey && game.status !== "playing"),
     refresh,
     submitGuess: (movie: { id: number }) =>
       act({ type: "guess", movieId: movie.id }),
