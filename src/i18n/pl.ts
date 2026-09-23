@@ -3,6 +3,7 @@ import { Translations } from "./types";
 import { recommendationPl } from "@/i18n/recommendation";
 import { profilePl } from "@/i18n/profile";
 import { socialPl } from "@/i18n/social";
+import { gemsPl } from "@/i18n/gems";
 
 function polishMovieCount(count: number): string {
   const lastDigit = count % 10;
@@ -25,6 +26,7 @@ function polishGameCount(count: number): string {
 }
 
 const pl: Translations = {
+  gems: gemsPl,
   profile: profilePl,
   social: socialPl,
   recommendation: recommendationPl,

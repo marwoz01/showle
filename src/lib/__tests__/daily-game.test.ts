@@ -89,7 +89,7 @@ describe("authoritative daily game", () => {
     const result = await applyDailyAction("user", "2026-09-06", action, true);
     expect(result.status).toBe("playing");
     expect(mocks.coins).not.toHaveBeenCalled();
-    expect(mocks.lock).toHaveBeenCalledOnce();
+    expect(mocks.lock).toHaveBeenCalledTimes(2);
   });
   it("does not count duplicate attempts or pay twice for a completed game", async () => {
     await applyDailyAction(
@@ -120,6 +120,7 @@ describe("authoritative daily game", () => {
     expect(repeated.status).toBe("won");
     expect(mocks.stats).toHaveBeenCalledOnce();
     expect(mocks.coins).toHaveBeenCalledOnce();
+    expect(mocks.coins).toHaveBeenCalledWith({ data: expect.objectContaining({ amount: 40, rewardKey: "daily:2026-09-06", reason: "win_reward" }) });
   });
   it("restores giving up with no attempts and does not reward guests", async () => {
     await applyDailyAction(
@@ -175,5 +176,17 @@ describe("authoritative daily game", () => {
     expect(result.status).toBe("lost");
     expect(result.attemptCount).toBe(7);
     expect(mocks.coins).toHaveBeenCalledOnce();
+    expect(mocks.coins).toHaveBeenCalledWith({ data: expect.objectContaining({ amount: 5, reason: "daily_participation_reward" }) });
+  });
+  it("pays participation only after at least one attempt and never rewards guest wins", async () => {
+    await applyDailyAction("user", "2026-09-06", { type: "give-up" }, true);
+    expect(mocks.coins).toHaveBeenLastCalledWith({ data: expect.objectContaining({ amount: 0, rewardKey: "daily:2026-09-06" }) });
+    await applyDailyAction("user", "2026-09-07", { type: "guess", movieId: 1 }, true);
+    await applyDailyAction("user", "2026-09-07", { type: "give-up" }, true);
+    expect(mocks.coins).toHaveBeenLastCalledWith({ data: expect.objectContaining({ amount: 5, rewardKey: "daily:2026-09-07" }) });
+    vi.clearAllMocks();
+    await applyDailyAction("guest:viewer", "2026-09-07", { type: "guess", movieId: 42 }, false);
+    expect(mocks.wallet).not.toHaveBeenCalled();
+    expect(mocks.coins).not.toHaveBeenCalled();
   });
 });

@@ -2,8 +2,10 @@ import type { MovieGenre } from "@/constants/genres";
 import type { RecommendationCopy } from "@/i18n/recommendation";
 import type { ProfileCopy } from "@/i18n/profile";
 import type { SocialCopy } from "@/i18n/social";
+import type { GemsCopy } from "@/i18n/gems";
 
 export interface Translations {
+  gems: GemsCopy;
   profile: ProfileCopy;
   social: SocialCopy;
   recommendation: RecommendationCopy;

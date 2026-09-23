@@ -191,6 +191,7 @@ export function useHigherLower(locale: HigherLowerLocale) {
       setBest(bestInMemory.current);
       setAccount({ owner, best: body.bestScore, available: true });
       setSyncFailed(false);
+      window.dispatchEvent(new Event("gem-wallet-updated"));
       try { localStorage.setItem(bestKey, String(bestInMemory.current)); } catch { /* Account sync succeeded. */ }
     }).catch(() => { if (active && activeOwner.current === owner) setSyncFailed(true); })
       .finally(() => window.clearTimeout(timeout));

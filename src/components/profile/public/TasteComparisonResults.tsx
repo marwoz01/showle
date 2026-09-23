@@ -26,7 +26,7 @@ export default function TasteComparisonResults({ comparison }: { comparison: Tas
             <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="7" className="text-white/8" />
             {score !== null && <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="7" pathLength="100" strokeDasharray={`${score} 100`} strokeLinecap="round" className="text-accent-purple" />}
           </svg>
-          <span className="font-display text-4xl font-bold tracking-tight text-foreground">{score === null ? "—" : `${score}%`}</span>
+          <span className="font-display text-4xl font-bold tracking-tight text-foreground">{score === null ? "-" : `${score}%`}</span>
         </div>
         <div className="min-w-0 flex-1 text-center sm:pt-2 sm:text-left">
           <h3 className="font-display text-xl font-semibold sm:text-2xl">{copy.taste}</h3>
@@ -37,7 +37,7 @@ export default function TasteComparisonResults({ comparison }: { comparison: Tas
       <dl className="mt-6 grid gap-3 border-t border-white/8 pt-5 sm:grid-cols-3">
         {metrics.map(({ value, label, note }) => <div key={label} className="flex items-center justify-between gap-3 rounded-xl bg-white/3 px-4 py-3 sm:block">
           <dt className="text-xs text-muted">{label}{note && <span className="mt-1 block text-[11px]">{note}</span>}</dt>
-          <dd className="font-display text-2xl font-semibold tabular-nums sm:mt-2">{value === null ? "—" : value}</dd>
+          <dd className="font-display text-2xl font-semibold tabular-nums sm:mt-2">{value === null ? "-" : value}</dd>
         </div>)}
       </dl>
     </section>

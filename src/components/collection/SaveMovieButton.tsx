@@ -55,7 +55,7 @@ export default function SaveMovieButton({
     setShowPopover(false);
 
     try {
-      await fetch("/api/collection", {
+      const response = await fetch("/api/collection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -71,6 +71,8 @@ export default function SaveMovieButton({
           category,
         }),
       });
+      if (!response.ok) throw new Error("save");
+      window.dispatchEvent(new Event("collection-updated"));
       setSaved(true);
     } catch {
       // silently fail

@@ -157,11 +157,12 @@ function CollectionContent() {
     setMovies((prev) =>
       prev.map((m) => (m.id === id ? { ...m, rating } : m))
     );
-    await fetch(`/api/collection/${id}`, {
+    const response = await fetch(`/api/collection/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rating }),
     });
+    if (response.ok) window.dispatchEvent(new Event("collection-updated"));
   };
 
   const handleChangeCategory = async (
@@ -170,18 +171,20 @@ function CollectionContent() {
   ) => {
     setMovies((prev) => prev.filter((m) => m.id !== id));
     setTotal((prev) => prev - 1);
-    await fetch(`/api/collection/${id}`, {
+    const response = await fetch(`/api/collection/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ category }),
     });
+    if (response.ok) window.dispatchEvent(new Event("collection-updated"));
     fetchCounts();
   };
 
   const handleDelete = async (id: string) => {
     setMovies((prev) => prev.filter((m) => m.id !== id));
     setTotal((prev) => prev - 1);
-    await fetch(`/api/collection/${id}`, { method: "DELETE" });
+    const response = await fetch(`/api/collection/${id}`, { method: "DELETE" });
+    if (response.ok) window.dispatchEvent(new Event("collection-updated"));
     fetchCounts();
   };
 

@@ -5,6 +5,8 @@ import { getMovieSnapshot } from "@/lib/movie-snapshot";
 import { compareMedia } from "@/lib/comparer";
 import { generateHints, getRevealedHints } from "@/lib/hints";
 import { getWinReward, STREAK_MILESTONES } from "@/lib/coins";
+import { DAILY_PARTICIPATION_REWARD } from "@/constants/gems";
+import { lockGemWallet } from "@/lib/gems";
 import { previousDateKey, normalizeStoredDate } from "@/lib/game-date";
 import pl from "@/i18n/pl";
 import en from "@/i18n/en";
@@ -43,7 +45,7 @@ export async function applyDailyAction(
   return prisma.$transaction(
     async (tx) => {
       // One writer per player, including requests from multiple tabs/devices.
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${actorId}))`;
+      await lockGemWallet(tx, actorId);
       const where = {
         userId_dateKey_mode: { userId: actorId, dateKey, mode: "daily-movie" },
       };
@@ -102,7 +104,9 @@ export async function applyDailyAction(
       const reward = won
         ? getWinReward(guessIds.length) +
           (STREAK_MILESTONES[currentStreak] ?? 0)
-        : 0;
+        : guessIds.length > 0
+          ? DAILY_PARTICIPATION_REWARD
+          : 0;
       const gamesPlayed = (stats?.gamesPlayed ?? 0) + 1;
       const statData = {
         gamesPlayed,
@@ -133,10 +137,13 @@ export async function applyDailyAction(
           amount: reward,
           reason: won
             ? "win_reward"
-            : freezeUsed
-              ? "use_freeze"
-              : "game_completed",
+            : reward > 0
+              ? "daily_participation_reward"
+              : freezeUsed
+                ? "use_freeze"
+                : "game_completed",
           dateKey,
+          rewardKey: `daily:${dateKey}`,
         },
       });
       return result;

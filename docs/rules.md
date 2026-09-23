@@ -2,6 +2,8 @@
 
 ## Code Style
 
+- Do not use long dash characters in user-facing copy. Prefer short, natural sentences or commas.
+
 - TypeScript strict mode — no `any`, no `@ts-ignore`
 - Functional components only, no class components
 - Use `"use client"` only when the component needs browser APIs, hooks, or interactivity
@@ -89,3 +91,7 @@ export default function MyComponent() {
 - Add new keys to both language files simultaneously
 - Use function interpolation for dynamic content: `wonMessage: (title: string, attempts: number) => string`
 - Type all translation keys in `src/i18n/types.ts`
+
+## Delivery
+
+- After completing and verifying the user's changes, commit and push them to `origin/master` automatically, as requested by the user. Include only task-related files and never force push.

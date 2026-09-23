@@ -118,9 +118,12 @@ model CoinTransaction {
   amount    Int
   reason    String
   dateKey   String?
+  rewardKey String?
   createdAt DateTime @default(now())
 
+  @@unique([userId, rewardKey])
   @@index([userId])
+  @@index([userId, createdAt])
 }
 
 model DailyUsage {

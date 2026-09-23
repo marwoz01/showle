@@ -6,6 +6,7 @@ import { I18nProvider, useTranslation } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { clerkEn, clerkPl } from "@/i18n/clerk";
 import AccountLocaleSync from "@/components/providers/AccountLocaleSync";
+import { GemWalletProvider } from "@/hooks/useGemWallet";
 
 const appearance = {
   baseTheme: dark,
@@ -56,7 +57,7 @@ function LocalizedClerkProvider({ children }: { children: React.ReactNode }) {
       localization={locale === "pl" ? clerkPl : clerkEn}
     >
       <AccountLocaleSync />
-      {children}
+      <GemWalletProvider>{children}</GemWalletProvider>
     </ClerkProvider>
   );
 }

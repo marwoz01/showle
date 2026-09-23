@@ -1,5 +1,6 @@
 import type { SavedMovie } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { lockGemWallet } from "@/lib/gems";
 
 export async function exportProfileData(userId: string) {
   return prisma.$transaction(async (tx) => {
@@ -39,7 +40,7 @@ export function collectionCsv(movies: Pick<SavedMovie, "tmdbId" | "title" | "yea
 
 export async function deleteProfileData(userId: string): Promise<void> {
   await prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"profile:" + userId}))`;
+    await lockGemWallet(tx, userId);
     // Ranking items are removed by the existing ON DELETE CASCADE relation.
     await tx.rankedList.deleteMany({ where: { userId } });
     await tx.savedMovie.deleteMany({ where: { userId } });

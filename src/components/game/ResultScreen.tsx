@@ -32,6 +32,7 @@ import type { MovieTrailer } from "@/lib/trailers";
 import { buildShareResult } from "@/lib/share-result";
 import { getTodayKey } from "@/lib/game-date";
 import experience from "@/i18n/experience";
+import DailyGemReward from "@/components/game/DailyGemReward";
 
 gsap.registerPlugin(useGSAP);
 
@@ -344,6 +345,8 @@ export default function ResultScreen({
           )}
         </div>
       </div>
+
+      <DailyGemReward dateKey={dateKey} />
 
       {/* Three-column body: poster | details | trailer and stats */}
       <div

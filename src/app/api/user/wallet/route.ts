@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma";
+import { getGemWallet } from "@/lib/gems";
 
 export async function GET() {
   const { userId } = await auth();
@@ -8,14 +8,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const wallet = await prisma.userWallet.upsert({
-    where: { userId },
-    update: {},
-    create: { userId },
-  });
-
-  return NextResponse.json({
-    balance: wallet.balance,
-    streakFreezes: wallet.streakFreezes,
-  });
+  try {
+    return NextResponse.json(await getGemWallet(userId), { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) {
+    console.error("Could not load gem wallet", error);
+    return NextResponse.json({ error: "Could not load wallet" }, { status: 500 });
+  }
 }

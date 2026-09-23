@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useTranslation, Locale } from "@/i18n";
 import SidebarAvatar from "@/components/layout/SidebarAvatar";
+import SidebarGemBalance from "@/components/layout/SidebarGemBalance";
 import {
   Clapperboard,
   Home,
@@ -231,6 +232,7 @@ export default function Sidebar() {
                 </div>
               )}
             </Link>
+            <SidebarGemBalance onNavigate={() => setOpen(false)} />
             <button
               onClick={() => signOut()}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/6 bg-white/3 px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-white/6 hover:text-foreground"
@@ -271,6 +273,7 @@ export default function Sidebar() {
             Showle
           </span>
         </Link>
+        <div className="ml-auto"><SidebarGemBalance compact /></div>
       </div>
 
       {/* Mobile overlay */}
