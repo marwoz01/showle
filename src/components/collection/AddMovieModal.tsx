@@ -72,7 +72,6 @@ export default function AddMovieModal({ onClose, onSaved }: AddMovieModalProps) 
         })) }),
       });
       if (!response.ok) throw new Error("save");
-      window.dispatchEvent(new Event("collection-updated"));
       onSaved(await response.json() as CollectionSaveResult);
     } catch {
       setError("save");

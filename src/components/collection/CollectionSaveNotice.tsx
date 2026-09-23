@@ -33,7 +33,6 @@ export default function CollectionSaveNotice({ result, onUndone, onDismiss }: Co
         return;
       }
       setUndone(true);
-      window.dispatchEvent(new Event("collection-updated"));
       onUndone();
     } catch {
       setError("failed");

@@ -9,23 +9,20 @@ Gems use the existing `UserWallet.balance` and `CoinTransaction` ledger. Previou
 | Solve Daily Movie | 50, 40, 30, 25, 20, 15 for attempts 1-6; 10 after that |
 | Finish Daily Movie without solving it, after at least one guess | 5 |
 | Daily streak 5 / 10 / 25 / 50 / 100 | 25 / 50 / 100 / 200 / 500 bonus |
-| First watched film badge | 25 |
-| 50 watched films badge | 100 |
 | First Daily Movie win badge | 25 |
 | Seven-win daily streak badge | 100 |
 | Higher or lower 10 badge | 100 |
-| 10 / 25 / 100 rated watched films | 25 / 60 / 150 |
 | Higher or lower record 25 / 50 | 75 / 150 |
 
 Daily rewards are credited once per authenticated account and day within the existing game transaction. Zero-guess surrender and anonymous play earn nothing. Existing server verification of guesses and signed Higher or lower records remains authoritative. The daily win reward includes any streak bonus in the same receipt.
 
-Badges and collection/record milestones each pay once per account. `GET /api/user/wallet` reconciles eligibility from owned database records, including achievements already reached before release. Removing and re-adding films or repeating a milestone cannot grant its reward again. Lowering current progress does not remove previously earned gems. An explicit full Showle account-data reset removes the balance and ledger along with progress.
+Game badges and record milestones each pay once per account. `GET /api/user/wallet` reconciles eligibility from server-verified game statistics and records, including achievements already reached before release. Collection size, watched status and ratings never grant gems. Collection badges remain cosmetic achievements. Previously granted collection rewards stay in the balance and transaction history; no new rewards of those kinds are issued. Repeating a game milestone cannot grant its reward again. An explicit full Showle account-data reset removes the balance and ledger along with progress.
 
 ## Consistency and UI
 
 The authenticated wallet endpoint returns a private, uncached balance, recent 12 positive receipts and the keys of credited one-time rewards. It does not accept a client-supplied amount or eligibility. The `(userId, rewardKey)` unique index prevents duplicate credits; nullable keys preserve older ledger entries. Reconciliation, daily rewards and account reset acquire the profile lock followed by the existing player/wallet lock.
 
-A shared client provider updates desktop/mobile balance, the profile gem panel and badge reward labels. It refreshes on navigation, focus, successful collection changes, completed daily games and saved Higher or lower records. Account transitions cancel requests and clear previous account data. The daily result shows a positive receipt from the server for that game's date.
+A shared client provider updates desktop/mobile balance, the profile gem panel and game-badge reward labels. It refreshes on navigation, focus, completed daily games and saved Higher or lower records. Account transitions cancel requests and clear previous account data. The daily result shows a positive receipt from the server for that game's date.
 
 ## Deployment and validation
 

@@ -49,7 +49,7 @@ export function GemWalletProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refresh();
-    const events = ["focus", "game-completed", "collection-updated", GEM_WALLET_UPDATED_EVENT];
+    const events = ["focus", "game-completed", GEM_WALLET_UPDATED_EVENT];
     const reset = (event: Event) => {
       if ((event as CustomEvent<string>).detail !== userId) return;
       setState({ userId, data: null, error: false });

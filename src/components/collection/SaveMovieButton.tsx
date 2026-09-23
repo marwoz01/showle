@@ -72,7 +72,6 @@ export default function SaveMovieButton({
         }),
       });
       if (!response.ok) throw new Error("save");
-      window.dispatchEvent(new Event("collection-updated"));
       setSaved(true);
     } catch {
       // silently fail

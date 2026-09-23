@@ -32,7 +32,7 @@ export default function ProfileBadges({ badges }: { badges: ProfileBadge[] }) {
           </div>
           <div className="mt-4 flex items-center justify-between gap-2 text-xs"><span className={`inline-flex items-center gap-1.5 ${badge.unlocked ? appearance.accent : "text-muted"}`}>{badge.unlocked ? <Check size={13} /> : <Lock size={12} />}{badge.unlocked ? t.profile.unlocked : t.profile.locked}</span><span className="tabular-nums text-muted">{progress} / {badge.target}</span></div>
           <progress aria-label={labels[badge.id][0]} max={badge.target} value={progress} className={`mt-2 h-1 w-full appearance-none overflow-hidden rounded-full [&::-webkit-progress-bar]:bg-white/6 [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-current [&::-moz-progress-bar]:bg-current ${badge.unlocked ? appearance.accent : "text-muted/45"}`} />
-          <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gem-blue/8 px-2.5 py-1.5 text-xs text-gem-blue"><Gem size={13} aria-hidden="true" /><span className="font-semibold tabular-nums">+{BADGE_GEM_REWARDS[badge.id]}</span><span className="ml-1">{credited ? t.gems.credited : t.gems.reward}</span></div>
+          {BADGE_GEM_REWARDS[badge.id] > 0 && <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gem-blue/8 px-2.5 py-1.5 text-xs text-gem-blue"><Gem size={13} aria-hidden="true" /><span className="font-semibold tabular-nums">+{BADGE_GEM_REWARDS[badge.id]}</span><span className="ml-1">{credited ? t.gems.credited : t.gems.reward}</span></div>}
         </li>;
       })}
     </ul>

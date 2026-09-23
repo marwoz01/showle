@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { Award, CalendarDays, Flame, Gem, Star, TrendingUp } from "lucide-react";
+import { Award, CalendarDays, Flame, Gem, TrendingUp } from "lucide-react";
 import { useTranslation } from "@/i18n";
 import { useGemWallet } from "@/hooks/useGemWallet";
-import { BADGE_GEM_REWARDS, DAILY_PARTICIPATION_REWARD, HIGHER_LOWER_MILESTONES, RATED_COLLECTION_MILESTONES } from "@/constants/gems";
+import { BADGE_GEM_REWARDS, DAILY_PARTICIPATION_REWARD, HIGHER_LOWER_MILESTONES } from "@/constants/gems";
 import { COIN_REWARDS, STREAK_MILESTONES, getWinReward } from "@/lib/coins";
 import { MAX_ATTEMPTS } from "@/constants";
 import type { GemTransaction } from "@/types/gems";
@@ -32,12 +32,11 @@ export default function ProfileGems() {
     if (transaction.reason === "daily_participation_reward") return t.gems.participationReward;
     return t.gems.otherReward;
   };
-  const badgeRewards = Object.values(BADGE_GEM_REWARDS);
+  const badgeRewards = Object.values(BADGE_GEM_REWARDS).filter((amount) => amount > 0);
   const rules = [
     { icon: CalendarDays, title: t.gems.daily, hint: `${t.gems.dailyHint} ${t.gems.participation(DAILY_PARTICIPATION_REWARD)}`, amounts: [t.gems.dailyRange(getWinReward(MAX_ATTEMPTS), Math.max(...Object.values(COIN_REWARDS)))] },
     { icon: Award, title: t.gems.badges, hint: t.gems.badgesHint, amounts: [t.gems.badgeRange(Math.min(...badgeRewards), Math.max(...badgeRewards))] },
     { icon: Flame, title: t.gems.streak, hint: t.gems.streakHint, amounts: Object.entries(STREAK_MILESTONES).map(([target, amount]) => t.gems.milestone(Number(target), amount)) },
-    { icon: Star, title: t.gems.ratings, hint: t.gems.ratingsHint, amounts: RATED_COLLECTION_MILESTONES.map(({ target, amount }) => t.gems.milestone(target, amount)) },
     { icon: TrendingUp, title: t.gems.higherLower, hint: t.gems.higherLowerHint, amounts: HIGHER_LOWER_MILESTONES.map(({ target, amount }) => t.gems.milestone(target, amount)) },
   ];
   return <section id="gems" aria-labelledby="gems-title" className="soft-card scroll-mt-24 overflow-hidden rounded-2xl lg:scroll-mt-8">

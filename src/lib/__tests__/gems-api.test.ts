@@ -12,7 +12,7 @@ describe("private gem wallet API", () => {
     expect(mocks.wallet).not.toHaveBeenCalled();
   });
   it("uses the verified actor and prevents shared caching", async () => {
-    const wallet = { balance: 25, streakFreezes: 0, transactions: [], earnedRewardKeys: ["badge:first-film"] };
+    const wallet = { balance: 25, streakFreezes: 0, transactions: [], earnedRewardKeys: ["badge:daily-first-win"] };
     mocks.wallet.mockResolvedValue(wallet);
     const response = await GET();
     expect(await response.json()).toEqual(wallet);
