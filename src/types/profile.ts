@@ -43,13 +43,12 @@ export interface ProfileSummary {
 }
 
 export interface ProfileActivity {
-  kind: "watched" | "watchlist" | "rating" | "game";
+  kind: "watched" | "watchlist" | "rating";
   id: string;
   title: string;
   posterPath: string;
   date: string;
   rating?: number | null;
-  won?: boolean;
 }
 
 export interface ProfileBadge {

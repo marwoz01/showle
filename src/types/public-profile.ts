@@ -14,10 +14,22 @@ export interface PublicProfile {
   badges: Pick<ProfileBadge, "id">[];
 }
 
+export interface ComparedMovieRating extends ProfileMovie {
+  viewerRating: number;
+  otherRating: number;
+  gap: number;
+}
+
 export interface TasteComparison {
   score: number | null;
   sharedRatingCount: number;
   sharedMovies: ProfileMovie[];
+  averageRatingGap: number | null;
+  agreementCount: number | null;
+  differenceCount: number | null;
+  ratingDetailsVisible: boolean;
+  similarRatings: ComparedMovieRating[];
+  differentRatings: ComparedMovieRating[];
 }
 
 export interface ProfileComparisonResponse {

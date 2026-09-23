@@ -21,6 +21,7 @@ import { GET as exportGet } from "@/app/api/profile/export/route";
 import { DELETE } from "@/app/api/profile/data/route";
 import { collectionCsv } from "@/lib/user-profile-data";
 import { getOrCreateUserProfile } from "@/lib/user-profile";
+import { getProfileActivity } from "@/lib/user-profile-activity";
 
 const profile = {
   userId: "viewer", publicSlug: "random-public-slug", displayName: "Kinoman", bio: "Hi", isPublic: false, avatarUrl: null,
@@ -46,6 +47,18 @@ beforeEach(() => {
 });
 
 describe("authenticated profile APIs", () => {
+  it("keeps recent profile activity limited to the collection without loading game history", async () => {
+    const updatedAt = new Date("2026-09-23T10:00:00Z");
+    mocks.db.savedMovie.findMany.mockResolvedValue([
+      { id: "rated", title: "Rated film", posterPath: "", updatedAt, category: "watched", rating: 8 },
+      { id: "saved", title: "Watch later", posterPath: "", updatedAt, category: "watchlist", rating: null },
+      { id: "seen", title: "Watched film", posterPath: "", updatedAt, category: "watched", rating: null },
+    ]);
+    const activity = await getProfileActivity("viewer");
+    expect(activity.map((entry) => entry.kind)).toEqual(["rating", "watchlist", "watched"]);
+    expect(activity[0]).toMatchObject({ title: "Rated film", rating: 8, date: updatedAt.toISOString() });
+    expect(mocks.db.gameResult.findMany).not.toHaveBeenCalled();
+  });
   it("keeps a new English user's selected language and uses a localized fallback name", async () => {
     mocks.cookieLocale = "en";
     mocks.db.userProfile.findUnique.mockResolvedValue(null);

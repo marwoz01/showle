@@ -42,7 +42,6 @@ export default function SocialActions({ person, onChanged }: { person: SocialPer
       {relation.friendship === "friends" && button("remove")}
       {(person.isPublic || relation.isFollowing) && button(relation.isFollowing ? "unfollow" : "follow")}
     </div>
-    {(relation.friendship === "incoming" || relation.friendship === "none") && <p className="max-w-2xl text-xs leading-relaxed text-muted">{t.social.friendshipHint}</p>}
     {confirm && <div className="space-y-3 rounded-xl border border-white/10 bg-white/3 p-3"><p className="text-sm text-muted">{t.social.removeConfirm}</p><div className="flex flex-wrap gap-2"><button disabled={pending} onClick={() => void act("remove")} className="min-h-11 rounded-lg bg-accent-purple px-3 py-2 text-sm disabled:opacity-50">{t.social.confirmRemove}</button><button disabled={pending} onClick={() => setConfirm(false)} className="min-h-11 rounded-lg px-3 py-2 text-sm">{t.social.keep}</button></div></div>}
     {failed && <p role="alert" className="text-sm text-muted">{t.common.genericError}</p>}
   </div>;

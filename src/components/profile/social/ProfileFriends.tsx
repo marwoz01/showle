@@ -42,7 +42,6 @@ export default function ProfileFriends({ slug }: { slug: string }) {
     <FriendSearch initialCode={initialCode} onChanged={refresh} />
     <section className="soft-card space-y-5 rounded-2xl p-5 sm:p-6">
       <div className="flex flex-wrap gap-2">{(["friends", "requests", "following", "followers"] as const).map((value) => <button key={value} aria-pressed={list === value} onClick={() => setList(value)} className={`min-h-11 rounded-xl px-3 py-2 text-sm font-medium ${list === value ? "bg-accent-purple/15 text-accent-purple" : "bg-white/3 text-muted hover:text-foreground"}`}>{t.social[value]}{counts && <span className="ml-2 tabular-nums">{counts[value]}</span>}</button>)}</div>
-      <p className="text-xs leading-relaxed text-muted">{t.social.friendshipHint}</p>
       {failed && <div role="alert" className="space-y-3"><p className="text-sm text-muted">{t.common.genericError}</p><button onClick={refresh} className="min-h-11 rounded-xl border border-white/10 px-4 text-sm">{t.common.tryAgain}</button></div>}
       {!data ? !failed && <p role="status" className="text-sm text-muted">{t.social.loading}</p> : list === "requests" ? <div className="space-y-6">
         {data.incoming.length > 0 && <div className="space-y-3"><h3 className="font-display font-semibold">{t.social.incoming}</h3>{cards(data.incoming)}</div>}

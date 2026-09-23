@@ -15,7 +15,7 @@ import { GET as compare } from "@/app/api/profiles/[slug]/compare/route";
 
 const params = { params: Promise.resolve({ slug: "public-friend" }) };
 const request = () => new NextRequest("http://localhost/api/profiles/public-friend?userId=other-user");
-const profile = { userId: "friend", isPublic: true, publicSlug: "public-friend", displayName: "Friend", bio: "Hello", avatarUrl: null, favoriteMovies: [], genres: [], excludedGenres: [], providerIds: [], maxRuntime: null };
+const profile = { userId: "friend", isPublic: true, activityVisibility: "friends", publicSlug: "public-friend", displayName: "Friend", bio: "Hello", avatarUrl: null, favoriteMovies: [], genres: [], excludedGenres: [], providerIds: [], maxRuntime: null };
 
 beforeEach(() => {
   vi.clearAllMocks(); mocks.userId = "viewer"; mocks.allowed = true;
@@ -94,7 +94,8 @@ describe("authenticated taste comparison", () => {
     expect(mocks.feedback.mock.calls[0][0].where).toEqual({ userId: { in: ["viewer", "friend"] }, reaction: "less" });
     const body = await response.json();
     expect(body.comparison.score).toBeNull();
-    expect(body.comparison.sharedMovies).toHaveLength(1);
+    expect(body.comparison.sharedMovies).toHaveLength(0);
+    expect(body.comparison.ratingDetailsVisible).toBe(false);
     expect(JSON.stringify(body)).not.toMatch(/private|review|userId|genres|providerIds|category/);
     expect(response.headers.get("Cache-Control")).toContain("no-store");
   });
@@ -110,5 +111,46 @@ describe("authenticated taste comparison", () => {
     expect((await compare(request(), params)).status).toBe(200);
     mocks.friendship.mockResolvedValueOnce({ status: "accepted" }).mockResolvedValueOnce(null);
     expect((await compare(request(), params)).status).toBe(404);
+  });
+  it.each([
+    { visibility: "public", public: true, friendship: null, visible: true },
+    { visibility: "friends", public: true, friendship: null, visible: false },
+    { visibility: "friends", public: true, friendship: "pending", visible: false },
+    { visibility: "friends", public: false, friendship: "accepted", visible: true },
+    { visibility: "private", public: false, friendship: "accepted", visible: false },
+  ])("respects $visibility activity for public=$public friendship=$friendship", async ({ visibility, public: isPublic, friendship, visible }) => {
+    mocks.profile.mockResolvedValue({ ...profile, isPublic, activityVisibility: visibility });
+    mocks.friendship.mockResolvedValue(friendship ? { status: friendship } : null);
+    mocks.collection.mockResolvedValue([{ tmdbId: 7, title: "Known", year: 2000, posterPath: "", genres: [], rating: 9, category: "watched" }]);
+    const response = await compare(request(), params);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.comparison.ratingDetailsVisible).toBe(visible);
+    expect(body.comparison.similarRatings).toHaveLength(visible ? 1 : 0);
+    expect(body.comparison.sharedMovies).toHaveLength(visible ? 1 : 0);
+    expect(body.comparison.averageRatingGap).toBe(visible ? 0 : null);
+  });
+  it("rechecks activity privacy after retrieving ratings", async () => {
+    mocks.profile.mockResolvedValueOnce({ ...profile, activityVisibility: "public" })
+      .mockResolvedValueOnce(profile).mockResolvedValueOnce({ ...profile, activityVisibility: "private" });
+    mocks.collection.mockResolvedValue([{ tmdbId: 7, title: "Known", year: 2000, posterPath: "", genres: [], rating: 9, category: "watched" }]);
+    const response = await compare(request(), params);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.comparison.ratingDetailsVisible).toBe(false);
+    expect(body.comparison.similarRatings).toEqual([]);
+  });
+  it("hides rated watchlist titles even when activity is public", async () => {
+    mocks.profile.mockResolvedValue({ ...profile, activityVisibility: "public" });
+    mocks.collection.mockResolvedValueOnce([{ tmdbId: 7, title: "Known", year: 2000, posterPath: "", genres: [], rating: 9, category: "watched" }])
+      .mockResolvedValueOnce([{ tmdbId: 7, title: "Private watchlist metadata", year: 2000, posterPath: "", genres: [], rating: 9, category: "watchlist" }]);
+    const body = await (await compare(request(), params)).json();
+    expect(body.comparison.ratingDetailsVisible).toBe(true);
+    expect(body.comparison.sharedRatingCount).toBe(1);
+    expect(body.comparison.similarRatings).toEqual([]);
+    expect(body.comparison.sharedMovies).toEqual([]);
+    expect(body.comparison.averageRatingGap).toBeNull();
+    expect(body.comparison.agreementCount).toBeNull();
+    expect(JSON.stringify(body)).not.toContain("Private watchlist metadata");
   });
 });

@@ -36,8 +36,9 @@ export default function ProfileOverview({ data, onSaved }: { data: ProfileRespon
       </div>
     </section>
     <ProfileBadges badges={data.badges} />
-    <div className="grid gap-6 lg:grid-cols-2"><section className="soft-card rounded-2xl p-5 sm:p-6"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h2 className="font-display text-xl font-semibold">{t.profile.activity}</h2><Link href="/history" className="text-xs text-accent-purple hover:underline">{t.profile.allHistory}</Link></div>
-      {!activity.length ? <p className="text-sm text-muted">{t.profile.noActivity}</p> : <ul className="divide-y divide-white/6">{activity.slice(0, 6).map((item) => <li key={`${item.kind}-${item.id}`} className="py-3 first:pt-0"><p className="text-xs text-muted">{item.kind === "game" ? (item.won ? t.profile.activityWon : t.profile.activityLost) : item.kind === "rating" ? t.profile.activityRating : item.kind === "watched" ? t.profile.activityWatched : t.profile.activityWatchlist}</p><p className="mt-1 text-sm font-medium break-words">{normalizeDisplayText(item.title)}{item.rating != null && <span className="ml-2 text-accent-purple">{item.rating}/10</span>}</p><time dateTime={item.date} className="mt-1 block text-xs text-muted">{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(item.date))}</time></li>)}</ul>}
-    </section><ProfileCompareLink /></div>
+    <section className="soft-card rounded-2xl p-5 sm:p-6"><h2 className="mb-5 font-display text-xl font-semibold">{t.profile.activity}</h2>
+      {!activity.length ? <p className="text-sm text-muted">{t.profile.noActivity}</p> : <ul className="divide-y divide-white/6">{activity.slice(0, 6).map((item) => <li key={`${item.kind}-${item.id}`} className="py-3 first:pt-0"><p className="text-xs text-muted">{item.kind === "rating" ? t.profile.activityRating : item.kind === "watched" ? t.profile.activityWatched : t.profile.activityWatchlist}</p><p className="mt-1 text-sm font-medium break-words">{normalizeDisplayText(item.title)}{item.rating != null && <span className="ml-2 text-accent-purple">{item.rating}/10</span>}</p><time dateTime={item.date} className="mt-1 block text-xs text-muted">{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(item.date))}</time></li>)}</ul>}
+    </section>
+    <ProfileCompareLink />
   </>;
 }

@@ -7,6 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import { ArrowLeft, Check, Clock, Copy, Eye, Flame, Trophy, UserRound } from "@/components/ui/icons";
 import ProfileMovieGrid from "@/components/profile/public/ProfileMovieGrid";
 import ProfileComparison from "@/components/profile/public/ProfileComparison";
+import ProfileBadgeEmblem, { BADGE_APPEARANCE } from "@/components/profile/ProfileBadgeEmblem";
 import { useTranslation } from "@/i18n";
 import { publicProfileCopy } from "@/i18n/profile-public";
 import type { PublicProfile } from "@/types/public-profile";
@@ -78,7 +79,7 @@ function PublicProfileContent({ slug }: { slug: string }) {
       <PublicSocial slug={slug} onChanged={refresh} />
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">{stats.map(({ label, value, Icon }) => <div key={label} className="rounded-2xl border border-white/8 bg-white/3 p-4 sm:p-5"><Icon size={18} className="mb-3 text-accent-purple" /><dd className="font-display text-2xl font-bold">{value.toLocaleString(locale)}</dd><dt className="mt-1 text-xs leading-relaxed text-muted">{label}</dt></div>)}</dl>
       <section><h2 className="mb-5 font-display text-xl font-semibold sm:text-2xl">{copy.favorites}</h2>{profile.favoriteMovies.length ? <ProfileMovieGrid movies={profile.favoriteMovies} /> : <p className="rounded-xl bg-white/3 p-5 text-sm text-muted">{copy.emptyFavorites}</p>}</section>
-      <section><h2 className="mb-4 font-display text-xl font-semibold sm:text-2xl">{copy.badges}</h2>{profile.badges.length ? <ul className="flex flex-wrap gap-3">{profile.badges.map((badge) => <li key={badge.id} className="flex items-center gap-2 rounded-full border border-accent-purple/20 bg-accent-purple/10 px-4 py-2 text-sm text-foreground"><Trophy size={16} className="text-accent-purple" />{copy.badgeNames[badge.id]}</li>)}</ul> : <p className="text-sm text-muted">{copy.noBadges}</p>}</section>
+      <section><h2 className="mb-4 font-display text-xl font-semibold sm:text-2xl">{copy.badges}</h2>{profile.badges.length ? <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{profile.badges.map((badge) => <li key={badge.id} className={`flex items-center gap-3 rounded-2xl border bg-linear-to-br to-card p-3 ${BADGE_APPEARANCE[badge.id].surface}`}><ProfileBadgeEmblem id={badge.id} /><span className="font-display text-sm font-semibold">{copy.badgeNames[badge.id]}</span></li>)}</ul> : <p className="text-sm text-muted">{copy.noBadges}</p>}</section>
       <ProfileComparison slug={slug} onPrivate={() => { setProfile(null); setState("missing"); }} />
       <SocialFeed slug={slug} revision={retry} />
     </>}

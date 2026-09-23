@@ -44,10 +44,63 @@ describe("taste comparison", () => {
   });
   it("returns known shared favourites and high ratings without exposing private ratings or unknown films", () => {
     const fav = { id: 99, title: "Favourite", year: 1999, posterPath: "" };
-    const result = compareMovieTaste([movie(1, 8), movie(2, 7)], [movie(1, 9, { title: "Private metadata" }), movie(2, 9), movie(3, 10)], [fav], [fav]);
+    const result = compareMovieTaste([movie(1, 8), movie(2, 7)], [movie(1, 9, { title: "Private metadata" }), movie(2, 9), movie(3, 10)], [fav], [fav], true);
     expect(result.sharedMovies.map((film) => film.id)).toEqual([99, 1]);
     expect(result.sharedMovies[1].title).toBe("Film 1");
     expect(JSON.stringify(result.sharedMovies)).not.toMatch(/rating|Private|category/);
+  });
+  it("shows both agreement and disagreement only on mutually rated known titles", () => {
+    const own = [movie(1, 9), movie(2, 3), movie(3, 9), movie(4, 6), movie(5, null), movie(6, 10)];
+    const other = [movie(1, 8.5), movie(2, 3), movie(3, 4), movie(4, 8), movie(5, 9), movie(7, 10, { title: "Unknown private film" })];
+    const result = compareMovieTaste(own, other, [], [], true);
+    expect(result.sharedRatingCount).toBe(4);
+    expect(result.averageRatingGap).toBe(1.88);
+    expect(result.score).toBe(80);
+    expect(result.agreementCount).toBe(2);
+    expect(result.differenceCount).toBe(1);
+    expect(result.similarRatings.map(({ id }) => id)).toEqual([2, 1]);
+    expect(result.differentRatings).toEqual([{ id: 3, title: "Film 3", year: 2000, posterPath: "/poster.jpg", viewerRating: 9, otherRating: 4, gap: 5 }]);
+    expect(JSON.stringify(result)).not.toContain("Unknown private film");
+  });
+  it("includes threshold boundaries, keeps complete counts and caps each example list", () => {
+    const own = Array.from({ length: 12 }, (_, index) => movie(index + 1, 8));
+    const other = own.map((entry, index) => movie(entry.tmdbId, index < 6 ? 7 : 5));
+    const result = compareMovieTaste(own, other, [], [], true);
+    expect(result.agreementCount).toBe(6);
+    expect(result.differenceCount).toBe(6);
+    expect(result.similarRatings).toHaveLength(4);
+    expect(result.differentRatings).toHaveLength(4);
+    expect(result.similarRatings.map(({ id }) => id)).toEqual([1, 2, 3, 4]);
+    expect(result.differentRatings.map(({ id }) => id)).toEqual([7, 8, 9, 10]);
+  });
+  it("keeps detailed ratings and inferred favourites private by default", () => {
+    const favourite = { id: 99, title: "Shared favourite", year: 1999, posterPath: "" };
+    const own = [movie(1, 9), movie(2, 3), movie(3, 10)];
+    const other = [movie(1, 9), movie(2, 8), movie(3, 9)];
+    const result = compareMovieTaste(own, other, [favourite], [favourite]);
+    expect(result.score).toBe(79);
+    expect(result.ratingDetailsVisible).toBe(false);
+    expect(result.similarRatings).toEqual([]);
+    expect(result.differentRatings).toEqual([]);
+    expect(result.sharedMovies).toEqual([favourite]);
+    expect(JSON.stringify(result)).not.toMatch(/viewerRating|otherRating|Film 1/);
+  });
+  it("does not expose a private rating gap through a small aggregate", () => {
+    const result = compareMovieTaste([movie(1, 7)], [movie(1, 10)], [], []);
+    expect(result.score).toBeNull();
+    expect(result.averageRatingGap).toBeNull();
+    expect(result.agreementCount).toBeNull();
+    expect(result.differenceCount).toBeNull();
+    expect(result.sharedRatingCount).toBe(1);
+    expect(compareMovieTaste([], [], [], [], true).averageRatingGap).toBeNull();
+  });
+  it("never reveals rated watchlist entries through examples or inferred favourites", () => {
+    const result = compareMovieTaste([movie(1, 9), movie(2, 3), movie(3, 8)],
+      [movie(1, 9, { category: "watchlist" }), movie(2, 9, { category: "watchlist" }), movie(3, 8)], [], [], true);
+    expect(result.sharedRatingCount).toBe(3);
+    expect(result.sharedMovies.map(({ id }) => id)).toEqual([3]);
+    expect(result.similarRatings.map(({ id }) => id)).toEqual([3]);
+    expect(result.differentRatings).toEqual([]);
   });
 });
 

@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type { ProfileBadge, ProfileMovie, ProfilePreferences, ProfileSummary } from "@/types/profile";
-import type { PublicProfile, TasteComparison } from "@/types/public-profile";
+import type { ComparedMovieRating, PublicProfile, TasteComparison } from "@/types/public-profile";
 
 export const MIN_SHARED_RATINGS = 3;
 
@@ -44,24 +44,40 @@ function validRating(value: number | null): value is number {
 }
 
 /** A similarity indicator, not a prediction: average rating gap over the full 0.5–10 scale. */
-export function compareMovieTaste(viewer: ComparisonMovie[], other: ComparisonMovie[], viewerFavorites: ProfileMovie[], otherFavorites: ProfileMovie[]): TasteComparison {
+export function compareMovieTaste(viewer: ComparisonMovie[], other: ComparisonMovie[], viewerFavorites: ProfileMovie[], otherFavorites: ProfileMovie[], ratingDetailsVisible = false): TasteComparison {
   const otherById = new Map(other.map((movie) => [movie.tmdbId, movie]));
-  const sharedRatings = viewer.filter((movie) => validRating(movie.rating) && validRating(otherById.get(movie.tmdbId)?.rating ?? null));
-  const averageGap = sharedRatings.reduce((sum, movie) => sum + Math.abs(movie.rating! - otherById.get(movie.tmdbId)!.rating!), 0) / (sharedRatings.length || 1);
+  const sharedRatings: ComparedMovieRating[] = [];
+  for (const movie of viewer) {
+    const otherRating = otherById.get(movie.tmdbId)?.rating ?? null;
+    if (!validRating(movie.rating) || !validRating(otherRating)) continue;
+    // Share only mutually rated films, using the viewer's own known metadata.
+    sharedRatings.push({ id: movie.tmdbId, title: movie.title, year: movie.year, posterPath: movie.posterPath,
+      viewerRating: movie.rating, otherRating, gap: Math.abs(movie.rating - otherRating) });
+  }
+  const averageGap = sharedRatings.reduce((sum, movie) => sum + movie.gap, 0) / (sharedRatings.length || 1);
+  const agreements = sharedRatings.filter((movie) => movie.gap <= 1).sort((a, b) => a.gap - b.gap || b.viewerRating + b.otherRating - a.viewerRating - a.otherRating || a.id - b.id);
+  const differences = sharedRatings.filter((movie) => movie.gap >= 3).sort((a, b) => b.gap - a.gap || a.id - b.id);
+  const canShowMovie = (movie: ComparedMovieRating) => ratingDetailsVisible && otherById.get(movie.id)?.category === "watched";
+  const showAggregates = sharedRatings.length >= MIN_SHARED_RATINGS || (ratingDetailsVisible && sharedRatings.every(canShowMovie));
   const viewerFavoriteIds = new Set(viewerFavorites.map((movie) => movie.id));
   const sharedMovies = otherFavorites.filter((movie) => viewerFavoriteIds.has(movie.id));
   const sharedIds = new Set(sharedMovies.map((movie) => movie.id));
   for (const movie of sharedRatings) {
-    if (movie.rating! >= 8 && otherById.get(movie.tmdbId)!.rating! >= 8 && !sharedIds.has(movie.tmdbId)) {
-      // Use the viewer's own known movie metadata, never the other person's private records.
-      sharedMovies.push({ id: movie.tmdbId, title: movie.title, year: movie.year, posterPath: movie.posterPath });
-      sharedIds.add(movie.tmdbId);
+    if (canShowMovie(movie) && movie.viewerRating >= 8 && movie.otherRating >= 8 && !sharedIds.has(movie.id)) {
+      sharedMovies.push({ id: movie.id, title: movie.title, year: movie.year, posterPath: movie.posterPath });
+      sharedIds.add(movie.id);
     }
   }
   return {
     score: sharedRatings.length >= MIN_SHARED_RATINGS ? Math.max(0, Math.round(100 * (1 - averageGap / 9.5))) : null,
     sharedRatingCount: sharedRatings.length,
     sharedMovies: sharedMovies.slice(0, 8),
+    averageRatingGap: showAggregates && sharedRatings.length ? Math.round(averageGap * 100) / 100 : null,
+    agreementCount: showAggregates ? agreements.length : null,
+    differenceCount: showAggregates ? differences.length : null,
+    ratingDetailsVisible,
+    similarRatings: agreements.filter(canShowMovie).slice(0, 4),
+    differentRatings: differences.filter(canShowMovie).slice(0, 4),
   };
 }
 
